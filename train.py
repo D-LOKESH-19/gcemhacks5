@@ -37,6 +37,19 @@ class TrainingSliceEnvWrapper(gym.Wrapper):
         self.episode_costs.clear()
         self.episode_raw_rewards.clear()
 
+        # Randomize bot counts per slice across train_bot_range (0.3x to 3.0x)
+        bot_range = self.raw_env.cfg.get("train_bot_range", {"low": 0.3, "high": 3.0})
+        low = float(bot_range.get("low", 0.3))
+        high = float(bot_range.get("high", 3.0))
+
+        for s in self.raw_env.slices:
+            scale = random.uniform(low, high)
+            count = int(round(self.raw_env.default_bot_counts[s] * scale))
+            self.raw_env.set_bots(s, count)
+
+        # Refresh initial observation after setting randomized bot counts
+        obs = self.raw_env._get_observation()
+
         # Randomize spikes during training to prepare policy for surges
         if random.random() < 0.60:
             target_slice = random.choice(["embb", "urllc", "murllc"])
