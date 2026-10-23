@@ -464,3 +464,33 @@ This document records the automated verification logs across development phases,
 | **FT-26** | Feed Category Filtering | Explainability feed filters by spikes, bots, shield, and SLA categories | **PASSED** | P1 |
 | **FT-27** | Simplex Share Display | Resource cards display PRB/vCPU shares summing to 100% and real shield intervention meter | **PASSED** | P0 |
 
+---
+
+## Phase R0: Gate, Allocation Block & Backend Engine (AT-1 to AT-16)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Git Tag**: `pre-allocation` (verified)
+- **Script**: `python test_allocation_r0.py`
+- **Result**: **15/15 PASSED (P0/P1)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **AT-1** | Block Present | `allocation` block present on all 3 policies with finite 3-element arrays | **PASSED** | P0 |
+| **AT-2** | Shares Valid | `raw`, `final`, `prev` sum to 1.0 within 1e-5; `final` equals applied simulator shares | **PASSED** | P0 |
+| **AT-3** | Unit Counts | PRB counts sum to 100 and vCPU to 8; each count >= floor(final * total); handles alternate totals | **PASSED** | P0 |
+| **AT-4** | Determinism | Identical shares produce identical counts; ties break in eMBB, URLLC, mURLLC order | **PASSED** | P1 |
+| **AT-5** | Transfers Net Zero | Donors' decreases equal receivers' increases; positive non-zero amounts | **PASSED** | P0 |
+| **AT-6** | Transfers Match Deltas | Reconstructing counts from previous counts plus transfers equals current counts exactly | **PASSED** | P0 |
+| **AT-7** | Static is Static | Static policy produces zero transfers across all steps after step 1 | **PASSED** | P0 |
+| **AT-8** | Shield Changed Flag | `changed` is true exactly when a slice shifts by >3 percentage points | **PASSED** | P0 |
+| **AT-9** | Floors Protected | Final URLLC and mURLLC shares strictly >= configured floors across steps | **PASSED** | P0 |
+| **AT-10** | Capacity & Utilization | Recomputed from simulator formulas; utilization non-negative and finite | **PASSED** | P0 |
+| **AT-11** | Bottleneck Rules | All 5 bottleneck classifications (`idle`, `none`, `both`, `radio`, `compute`) validated | **PASSED** | P0 |
+| **AT-12** | Reason Codes | All 4 transfer reason codes (`idle_harvest`, `floor_restore`, `surge`, `rebalance`) verified | **PASSED** | P1 |
+| **AT-13** | Capability Flag | `GET /api/capabilities` returns `allocation: true` | **PASSED** | P1 |
+| **AT-14** | Performance & Size | Step computation runtime ~1.02ms (<25ms); message size ~7.96KB (<15KB) | **PASSED** | P1 |
+| **AT-15** | No Regression | All legacy and existing API endpoints (`/health`, `/summary`, `/bots`) remain functional | **PASSED** | P0 |
+| **AT-16** | Traffic Fairness | Static, Heuristic, and Agent policies receive bit-for-bit identical arrivals and events | **PASSED** | P0 |
+

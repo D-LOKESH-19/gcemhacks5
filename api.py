@@ -25,6 +25,7 @@ from sim import SliceEnv
 from baselines import StaticPolicy, HeuristicPolicy
 from shield import apply_shield, shares_to_action_logits
 import sla
+from allocation_engine import largest_remainder_counts, build_allocation_block, SLICES
 
 
 class SpikeRequest(BaseModel):
@@ -124,6 +125,21 @@ class SimulationManager:
             "agent": {"total_violations": 0.0, "total_arrivals": 0.0, "total_embb_served": 0.0, "total_embb_demand": 0.0},
         }
         self.event_logs = ["Simulation reset. Traffic baseline active."]
+
+        # Resource Allocation tracking (Section 14.5)
+        prb_tot = int(self.cfg.get("prb_total", 100))
+        vcpu_tot = int(self.cfg.get("vcpu_total", 8))
+        init_s = [0.60, 0.25, 0.15]
+        self.prev_shares = {
+            "static": {"prb": list(init_s), "cpu": list(init_s)},
+            "heuristic": {"prb": list(init_s), "cpu": list(init_s)},
+            "agent": {"prb": list(init_s), "cpu": list(init_s)},
+        }
+        self.prev_counts = {
+            "static": {"prb": largest_remainder_counts(init_s, prb_tot), "cpu": largest_remainder_counts(init_s, vcpu_tot)},
+            "heuristic": {"prb": largest_remainder_counts(init_s, prb_tot), "cpu": largest_remainder_counts(init_s, vcpu_tot)},
+            "agent": {"prb": largest_remainder_counts(init_s, prb_tot), "cpu": largest_remainder_counts(init_s, vcpu_tot)},
+        }
 
     def trigger_spike(self, slice_name: str, factor: float, duration: int):
         """Inject synchronized spike on all 3 environments."""
@@ -307,6 +323,86 @@ class SimulationManager:
         sla_h = {s: sla.window_status(self.history_heuristic, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
         sla_a = {s: sla.window_status(self.history_agent, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
 
+        # Compute Section 14.5 Resource Allocation blocks
+        # 1. Static
+        raw_prb_s = [0.60, 0.25, 0.15]
+        raw_cpu_s = [0.60, 0.25, 0.15]
+        final_prb_s = [self.info_static["shares"]["prb"][s] for s in SLICES]
+        final_cpu_s = [self.info_static["shares"]["vcpu"][s] for s in SLICES]
+        demand_s = [self.info_static["arrivals"][s] + self.info_static["queue"][s] for s in SLICES]
+        alloc_static = build_allocation_block(
+            policy_name="static",
+            raw_prb=raw_prb_s,
+            final_prb=final_prb_s,
+            prev_prb=self.prev_shares["static"]["prb"],
+            raw_cpu=raw_cpu_s,
+            final_cpu=final_cpu_s,
+            prev_cpu=self.prev_shares["static"]["cpu"],
+            prev_prb_counts=self.prev_counts["static"]["prb"],
+            prev_cpu_counts=self.prev_counts["static"]["cpu"],
+            demand=demand_s,
+            cfg=self.cfg,
+            shield_changed=False,
+            shield_delta_pct=[0.0, 0.0, 0.0],
+        )
+        self.prev_shares["static"]["prb"] = final_prb_s
+        self.prev_shares["static"]["cpu"] = final_cpu_s
+        self.prev_counts["static"]["prb"] = alloc_static["prb"]["counts"]
+        self.prev_counts["static"]["cpu"] = alloc_static["cpu"]["counts"]
+
+        # 2. Heuristic
+        final_prb_h = [self.info_heuristic["shares"]["prb"][s] for s in SLICES]
+        final_cpu_h = [self.info_heuristic["shares"]["vcpu"][s] for s in SLICES]
+        raw_prb_h = list(final_prb_h)
+        raw_cpu_h = list(final_cpu_h)
+        demand_h = [self.info_heuristic["arrivals"][s] + self.info_heuristic["queue"][s] for s in SLICES]
+        alloc_heuristic = build_allocation_block(
+            policy_name="heuristic",
+            raw_prb=raw_prb_h,
+            final_prb=final_prb_h,
+            prev_prb=self.prev_shares["heuristic"]["prb"],
+            raw_cpu=raw_cpu_h,
+            final_cpu=final_cpu_h,
+            prev_cpu=self.prev_shares["heuristic"]["cpu"],
+            prev_prb_counts=self.prev_counts["heuristic"]["prb"],
+            prev_cpu_counts=self.prev_counts["heuristic"]["cpu"],
+            demand=demand_h,
+            cfg=self.cfg,
+            shield_changed=False,
+            shield_delta_pct=[0.0, 0.0, 0.0],
+        )
+        self.prev_shares["heuristic"]["prb"] = final_prb_h
+        self.prev_shares["heuristic"]["cpu"] = final_cpu_h
+        self.prev_counts["heuristic"]["prb"] = alloc_heuristic["prb"]["counts"]
+        self.prev_counts["heuristic"]["cpu"] = alloc_heuristic["cpu"]["counts"]
+
+        # 3. Agent
+        raw_prb_a = [float(r_prb[0]), float(r_prb[1]), float(r_prb[2])] if self.agent_model is not None else list(final_prb_h)
+        raw_cpu_a = [float(r_cpu[0]), float(r_cpu[1]), float(r_cpu[2])] if self.agent_model is not None else list(final_cpu_h)
+        final_prb_a = [self.info_agent["shares"]["prb"][s] for s in SLICES]
+        final_cpu_a = [self.info_agent["shares"]["vcpu"][s] for s in SLICES]
+        demand_a = [self.info_agent["arrivals"][s] + self.info_agent["queue"][s] for s in SLICES]
+        delta_pct_arr = [round(abs(final_prb_a[i] - raw_prb_a[i]) * 100.0, 2) for i in range(3)]
+        alloc_agent = build_allocation_block(
+            policy_name="agent",
+            raw_prb=raw_prb_a,
+            final_prb=final_prb_a,
+            prev_prb=self.prev_shares["agent"]["prb"],
+            raw_cpu=raw_cpu_a,
+            final_cpu=final_cpu_a,
+            prev_cpu=self.prev_shares["agent"]["cpu"],
+            prev_prb_counts=self.prev_counts["agent"]["prb"],
+            prev_cpu_counts=self.prev_counts["agent"]["cpu"],
+            demand=demand_a,
+            cfg=self.cfg,
+            shield_changed=shield_changed,
+            shield_delta_pct=delta_pct_arr,
+        )
+        self.prev_shares["agent"]["prb"] = final_prb_a
+        self.prev_shares["agent"]["cpu"] = final_cpu_a
+        self.prev_counts["agent"]["prb"] = alloc_agent["prb"]["counts"]
+        self.prev_counts["agent"]["cpu"] = alloc_agent["cpu"]["counts"]
+
         # Package telemetry payload
         total_arrivals = sum(self.info_agent.get("arrivals", {}).values())
         payload = {
@@ -375,6 +471,7 @@ class SimulationManager:
                     "feasible": bool(self.info_static.get("feasible", True)),
                     "sla_ok": bool(sla_s["urllc"]["status"] != "breach" and sla_s["murllc"]["status"] != "breach"),
                     "shield": {"active": False, "changed": False, "delta_pct": 0.0, "intervention_rate_20": 0.0},
+                    "allocation": alloc_static,
                 },
                 "heuristic": {
                     "throughput": self.info_heuristic["throughput"],
@@ -389,6 +486,7 @@ class SimulationManager:
                     "feasible": bool(self.info_heuristic.get("feasible", True)),
                     "sla_ok": bool(sla_h["urllc"]["status"] != "breach" and sla_h["murllc"]["status"] != "breach"),
                     "shield": {"active": False, "changed": False, "delta_pct": 0.0, "intervention_rate_20": 0.0},
+                    "allocation": alloc_heuristic,
                 },
                 "agent": {
                     "throughput": self.info_agent["throughput"],
@@ -410,6 +508,7 @@ class SimulationManager:
                     "bots_by_location": self.info_agent.get("bots_by_location", {}),
                     "feasible": bool(self.info_agent.get("feasible", True)),
                     "sla_ok": bool(sla_a["urllc"]["status"] != "breach" and sla_a["murllc"]["status"] != "breach"),
+                    "allocation": alloc_agent,
                 },
             },
             "scoreboard": {
@@ -630,6 +729,7 @@ def get_capabilities():
         "training_log": os.path.exists("runs/log.csv"),
         "results": os.path.exists("results/sla_table.csv") and os.path.exists("results/ablation.csv"),
         "delay": True,
+        "allocation": True,
     }
 
 
