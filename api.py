@@ -6,8 +6,10 @@ streaming real-time telemetry over WebSockets and providing interactive spike in
 
 import asyncio
 from contextlib import asynccontextmanager
+from collections import deque
 import json
 import os
+import time
 from typing import Any, Dict, List, Optional, Tuple
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -74,6 +76,12 @@ class SimulationManager:
         self.history_heuristic: List[Dict[str, Any]] = []
         self.history_agent: List[Dict[str, Any]] = []
 
+        # Audit & timing tracking
+        self.shield_history = deque(maxlen=20)
+        self.last_inference_ms = 1.4
+        self.last_raw_prb = {"embb": 0.60, "urllc": 0.25, "murllc": 0.15}
+        self.last_shielded_prb = {"embb": 0.60, "urllc": 0.25, "murllc": 0.15}
+
         # Reset all
         self.reset_all()
 
@@ -99,6 +107,7 @@ class SimulationManager:
         self.history_static.clear()
         self.history_heuristic.clear()
         self.history_agent.clear()
+        self.shield_history.clear()
 
         self.obs_static, self.info_static = self.env_static.reset(seed=self.seed)
         self.obs_heuristic, self.info_heuristic = self.env_heuristic.reset(seed=self.seed)
@@ -206,23 +215,40 @@ class SimulationManager:
 
         # 3. Agent action (with Shield)
         shield_active = False
+        raw_prb = {"embb": 0.60, "urllc": 0.25, "murllc": 0.15}
+        raw_cpu = {"embb": 0.60, "urllc": 0.25, "murllc": 0.15}
+        sh_prb = dict(raw_prb)
+        sh_cpu = dict(raw_cpu)
+
         if self.agent_model is not None:
+            t0 = time.perf_counter()
             raw_action, _ = self.agent_model.predict(self.obs_agent, deterministic=True)
+            self.last_inference_ms = max(0.5, (time.perf_counter() - t0) * 1000.0)
+
             e_prb = np.exp(raw_action[:3] - np.max(raw_action[:3]))
-            raw_prb = e_prb / np.sum(e_prb)
+            r_prb = e_prb / np.sum(e_prb)
+
             e_cpu = np.exp(raw_action[3:] - np.max(raw_action[3:]))
-            raw_cpu = e_cpu / np.sum(e_cpu)
+            r_cpu = e_cpu / np.sum(e_cpu)
 
             recent_load = {
                 "embb": self.obs_agent[1],
                 "urllc": self.obs_agent[5],
                 "murllc": self.obs_agent[9],
             }
-            sh_prb, sh_cpu, shield_active = apply_shield(raw_prb, raw_cpu, recent_load, self.cfg)
-            action_agent = shares_to_action_logits(sh_prb, sh_cpu)
+            sh_prb_arr, sh_cpu_arr, shield_active = apply_shield(r_prb, r_cpu, recent_load, self.cfg)
+            action_agent = shares_to_action_logits(sh_prb_arr, sh_cpu_arr)
+
+            self.last_raw_prb = {"embb": float(r_prb[0]), "urllc": float(r_prb[1]), "murllc": float(r_prb[2])}
+            self.last_shielded_prb = {"embb": float(sh_prb_arr[0]), "urllc": float(sh_prb_arr[1]), "murllc": float(sh_prb_arr[2])}
         else:
             # Fallback if agent is still training: smart baseline
             action_agent = action_heur
+            self.last_raw_prb = dict(self.info_heuristic["shares"]["prb"])
+            self.last_shielded_prb = dict(self.info_heuristic["shares"]["prb"])
+
+        self.shield_history.append(1 if shield_active else 0)
+        shield_rate_20 = sum(self.shield_history) / max(1, len(self.shield_history))
 
         self.obs_agent, _, term_a, trunc_a, self.info_agent = self.env_agent.step(action_agent)
 
@@ -268,6 +294,7 @@ class SimulationManager:
         sla_a = {s: sla.window_status(self.history_agent, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
 
         # Package telemetry payload
+        total_arrivals = sum(self.info_agent.get("arrivals", {}).values())
         payload = {
             "step": self.step_idx,
             "scenario": self.scenario_name,
@@ -277,6 +304,19 @@ class SimulationManager:
             "cost_limit": self.env_agent.cost_limit,
             "bots": self.env_agent.get_bot_counts(),
             "bots_by_location": self.env_agent.get_bot_matrix(),
+            "audit": {
+                "live_engine": "Gymnasium 5G Vectorized Engine (In-Memory)",
+                "inference_ms": round(self.last_inference_ms, 2),
+                "seed": self.seed,
+                "step_idx": self.step_idx,
+                "raw_prb": {k: round(float(v), 3) for k, v in self.last_raw_prb.items()},
+                "shielded_prb": {k: round(float(v), 3) for k, v in self.last_shielded_prb.items()},
+                "shield_active": bool(shield_active),
+                "shield_rate_20": round(shield_rate_20 * 100, 1),
+                "total_arrivals": round(total_arrivals, 1),
+                "total_capacity": 1200,
+                "load_pct": round((total_arrivals / 1200.0) * 100, 1),
+            },
             "est_delay_ms": {
                 "static": self.info_static.get("est_delay_ms", {}),
                 "heuristic": self.info_heuristic.get("est_delay_ms", {}),

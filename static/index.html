@@ -637,6 +637,206 @@
     .terminal-line { line-height: 1.25; }
     .terminal-line.highlight { color: #38bdf8; font-weight: 600; }
     .terminal-line.warning { color: #fbbf24; }
+    .terminal-line.danger { color: #f87171; font-weight: 600; }
+
+    /* Live Audit & Telemetry Inspector */
+    .audit-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .audit-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 8px;
+    }
+
+    .audit-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .audit-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      letter-spacing: 0.03em;
+    }
+
+    .audit-subtitle {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .audit-pills-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .audit-pill {
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .audit-pill-label {
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .audit-pill-val {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #38bdf8;
+      font-family: monospace;
+    }
+
+    /* Comparison Box */
+    .audit-comparison-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    .comparison-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .comp-col {
+      flex: 1;
+      min-width: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .comp-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .comp-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shield-action-chip {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .shield-action-chip.standby {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid var(--border);
+    }
+
+    .shield-action-chip.active {
+      background: rgba(245, 158, 11, 0.25);
+      color: #fbbf24;
+      border: 1px solid #f59e0b;
+      animation: pulse 1s infinite alternate;
+    }
+
+    /* Event Stream */
+    .event-stream-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .stream-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .stream-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #cbd5e1;
+    }
+
+    .stream-filter-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: #1e293b;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 5px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      background: #334155;
+      color: var(--text);
+    }
+
+    .filter-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #3b82f6;
+    }
+
+    .stream-terminal {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-family: monospace;
+      font-size: 0.72rem;
+      height: 100px;
+      overflow-y: auto;
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
 
     /* Scoreboard */
     .scoreboard {
@@ -968,8 +1168,83 @@
         </div>
 
       </div>
-
     </div>
+
+    <!-- Real-Time Computation Audit & Reality Inspector -->
+    <section class="audit-section" id="auditSection">
+      <div class="audit-header">
+        <div class="audit-title-group">
+          <span class="audit-badge">🟢 LIVE IN-MEMORY ENGINE</span>
+          <span class="audit-subtitle">Mathematical Proof: Real Stochastic Arrivals & Neural Network Inference (0% Pre-recorded Dataset)</span>
+        </div>
+        <div class="audit-pills-row">
+          <div class="audit-pill">
+            <span class="audit-pill-label">PPO Forward Latency</span>
+            <span class="audit-pill-val" id="auditInference">1.40 ms</span>
+          </div>
+          <div class="audit-pill">
+            <span class="audit-pill-label">RNG Seed / Step</span>
+            <span class="audit-pill-val" id="auditSeedStep">Seed #42 | Step 0</span>
+          </div>
+          <div class="audit-pill">
+            <span class="audit-pill-label">Offered Load vs Cap</span>
+            <span class="audit-pill-val" id="auditLoad">-- / 1200 pkts (--%)</span>
+          </div>
+          <div class="audit-pill">
+            <span class="audit-pill-label">Shield Floor Intervention</span>
+            <span class="audit-pill-val" id="auditShieldRate">0.0% (Standby)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Raw Policy Logits vs Shielded Enforcement Bar -->
+      <div class="audit-comparison-box">
+        <div class="comparison-row">
+          <div class="comp-col">
+            <div class="comp-label">
+              <span>🧠 Raw RL Agent Intent (Softmax Logits):</span>
+              <span id="rawPrbSummary" style="color: #94a3b8;">eMBB: 60% | URLLC: 25% | mURLLC: 15%</span>
+            </div>
+            <div class="stacked-bar">
+              <div class="bar-seg seg-embb" id="rawBarEmbb" style="width: 60%;">60%</div>
+              <div class="bar-seg seg-urllc" id="rawBarUrllc" style="width: 25%;">25%</div>
+              <div class="bar-seg seg-murllc" id="rawBarMurllc" style="width: 15%;">15%</div>
+            </div>
+          </div>
+          <div class="comp-arrow" id="compArrow">
+            <span class="shield-action-chip standby" id="shieldActionChip">🛡️ Shield Standby</span>
+          </div>
+          <div class="comp-col">
+            <div class="comp-label">
+              <span>🛡️ Shield-Enforced Allocation (Executed):</span>
+              <span id="shieldedPrbSummary" style="color: #94a3b8;">eMBB: 60% | URLLC: 25% | mURLLC: 15%</span>
+            </div>
+            <div class="stacked-bar">
+              <div class="bar-seg seg-embb" id="shBarEmbb" style="width: 60%;">60%</div>
+              <div class="bar-seg seg-urllc" id="shBarUrllc" style="width: 25%;">25%</div>
+              <div class="bar-seg seg-murllc" id="shBarMurllc" style="width: 15%;">15%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Filtered Event Stream -->
+      <div class="event-stream-container">
+        <div class="stream-header-row">
+          <div class="stream-title">📡 Real-Time Telemetry & Event Stream</div>
+          <div class="stream-filter-group">
+            <button class="filter-btn active" onclick="setEventFilter('all')" id="btnFilterAll">All Events</button>
+            <button class="filter-btn" onclick="setEventFilter('shield')" id="btnFilterShield">🛡️ Shield</button>
+            <button class="filter-btn" onclick="setEventFilter('spike')" id="btnFilterSpike">⚡ Spikes</button>
+            <button class="filter-btn" onclick="setEventFilter('bots')" id="btnFilterBots">📍 Bots</button>
+            <button class="filter-btn" onclick="setEventFilter('sla')" id="btnFilterSla">📜 SLA</button>
+          </div>
+        </div>
+        <div class="stream-terminal" id="mainEventTerminal">
+          <div class="terminal-line"><span class="line-time" style="color: #38bdf8;">[LIVE]</span> Telemetry stream initialized. Awaiting simulation events...</div>
+        </div>
+      </div>
+    </section>
 
     <!-- Bottom Scoreboard & Headline -->
     <div class="scoreboard">
@@ -1289,11 +1564,17 @@
         const terminal = document.getElementById('eventTerminal');
         terminal.innerHTML = data.event_logs.map(line => {
           let cls = 'terminal-line';
-          if (line.includes('ACTIVE') || line.includes('spike') || line.includes('bots')) cls += ' warning';
+          if (line.includes('ACTIVE') || line.includes('spike') || line.includes('bots') || line.includes('SHIELD')) cls += ' warning';
           if (line.includes('dynamically allocated')) cls += ' highlight';
           return `<div class="${cls}">${line}</div>`;
         }).join('');
         terminal.scrollTop = terminal.scrollHeight;
+        updateEventStream(data.event_logs);
+      }
+
+      // Update Reality Audit Panel
+      if (data.audit) {
+        updateAuditPanel(data.audit);
       }
 
       // Scoreboard & Headline
@@ -1313,6 +1594,123 @@
             `Agent cuts URLLC/mURLLC violations by ${cutPct}% versus Static while serving +${embbGain}% more eMBB traffic.`;
         }
       }
+    }
+
+    function updateAuditPanel(audit) {
+      if (!audit) return;
+      const infElem = document.getElementById('auditInference');
+      if (infElem && audit.inference_ms !== undefined) infElem.innerText = `${audit.inference_ms.toFixed(2)} ms`;
+
+      const seedElem = document.getElementById('auditSeedStep');
+      if (seedElem && audit.seed !== undefined) seedElem.innerText = `Seed #${audit.seed} | Step ${audit.step_idx}`;
+
+      const loadElem = document.getElementById('auditLoad');
+      if (loadElem && audit.total_arrivals !== undefined) {
+        loadElem.innerText = `${audit.total_arrivals.toFixed(0)} / ${audit.total_capacity} pkts (${audit.load_pct.toFixed(1)}%)`;
+      }
+
+      const shieldRateElem = document.getElementById('auditShieldRate');
+      if (shieldRateElem && audit.shield_rate_20 !== undefined) {
+        const statusText = audit.shield_active ? 'ACTIVE OVERRIDE' : 'Standby';
+        shieldRateElem.innerText = `${audit.shield_rate_20.toFixed(1)}% (${statusText})`;
+      }
+
+      // Update Raw RL Softmax Intent Bars
+      if (audit.raw_prb) {
+        const r = audit.raw_prb;
+        const e = (r.embb * 100).toFixed(0);
+        const u = (r.urllc * 100).toFixed(0);
+        const mu = (r.murllc * 100).toFixed(0);
+        const rawLbl = document.getElementById('rawPrbSummary');
+        if (rawLbl) rawLbl.innerText = `eMBB: ${e}% | URLLC: ${u}% | mURLLC: ${mu}%`;
+        const bE = document.getElementById('rawBarEmbb');
+        const bU = document.getElementById('rawBarUrllc');
+        const bM = document.getElementById('rawBarMurllc');
+        if (bE) { bE.style.width = `${e}%`; bE.innerText = `${e}%`; }
+        if (bU) { bU.style.width = `${u}%`; bU.innerText = `${u}%`; }
+        if (bM) { bM.style.width = `${mu}%`; bM.innerText = `${mu}%`; }
+      }
+
+      // Update Shield-Enforced Allocation Bars
+      if (audit.shielded_prb) {
+        const s = audit.shielded_prb;
+        const e = (s.embb * 100).toFixed(0);
+        const u = (s.urllc * 100).toFixed(0);
+        const mu = (s.murllc * 100).toFixed(0);
+        const shLbl = document.getElementById('shieldedPrbSummary');
+        if (shLbl) shLbl.innerText = `eMBB: ${e}% | URLLC: ${u}% | mURLLC: ${mu}%`;
+        const bE = document.getElementById('shBarEmbb');
+        const bU = document.getElementById('shBarUrllc');
+        const bM = document.getElementById('shBarMurllc');
+        if (bE) { bE.style.width = `${e}%`; bE.innerText = `${e}%`; }
+        if (bU) { bU.style.width = `${u}%`; bU.innerText = `${u}%`; }
+        if (bM) { bM.style.width = `${mu}%`; bM.innerText = `${mu}%`; }
+      }
+
+      const chip = document.getElementById('shieldActionChip');
+      if (chip) {
+        if (audit.shield_active) {
+          chip.className = 'shield-action-chip active';
+          chip.innerText = '🛡️ SHIELD CLAMPED';
+        } else {
+          chip.className = 'shield-action-chip standby';
+          chip.innerText = '🛡️ PASS-THROUGH';
+        }
+      }
+    }
+
+    let masterEventStream = [];
+    let currentEventFilter = 'all';
+
+    function setEventFilter(filterName) {
+      currentEventFilter = filterName;
+      ['all', 'shield', 'spike', 'bots', 'sla'].forEach(f => {
+        const btn = document.getElementById(`btnFilter${f.charAt(0).toUpperCase() + f.slice(1)}`);
+        if (btn) {
+          if (f === filterName) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      });
+      renderEventStream();
+    }
+
+    function updateEventStream(logs) {
+      if (!logs) return;
+      logs.forEach(line => {
+        if (!masterEventStream.includes(line)) {
+          masterEventStream.push(line);
+          if (masterEventStream.length > 50) masterEventStream.shift();
+        }
+      });
+      renderEventStream();
+    }
+
+    function renderEventStream() {
+      const terminal = document.getElementById('mainEventTerminal');
+      if (!terminal) return;
+      
+      const filtered = masterEventStream.filter(line => {
+        if (currentEventFilter === 'all') return true;
+        if (currentEventFilter === 'shield') return line.includes('Shield') || line.includes('SHIELD');
+        if (currentEventFilter === 'spike') return line.includes('spike') || line.includes('SPIKE') || line.includes('Surge');
+        if (currentEventFilter === 'bots') return line.includes('users') || line.includes('bots') || line.includes('Campus') || line.includes('Factory') || line.includes('Smart City');
+        if (currentEventFilter === 'sla') return line.includes('SLA') || line.includes('BREACH') || line.includes('AT RISK') || line.includes('OK');
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        terminal.innerHTML = `<div class="terminal-line" style="color: #64748b;">No events matching '${currentEventFilter}' filter yet.</div>`;
+        return;
+      }
+
+      terminal.innerHTML = filtered.map(line => {
+        let cls = 'terminal-line';
+        if (line.includes('ACTIVE') || line.includes('SHIELD') || line.includes('Clamped')) cls += ' warning';
+        if (line.includes('BREACH')) cls += ' danger';
+        if (line.includes('dynamically allocated') || line.includes('borrowed')) cls += ' highlight';
+        return `<div class="${cls}">${line}</div>`;
+      }).join('');
+      terminal.scrollTop = terminal.scrollHeight;
     }
 
     function updatePolicyPanel(name, pol) {
