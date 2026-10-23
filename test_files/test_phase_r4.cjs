@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 console.log('====================================================');
 console.log('PHASE R4 ACCEPTANCE TESTS (AT-26, AT-27, AT-29)');
@@ -20,7 +22,7 @@ function assert(condition, message) {
 // AT-26: DecisionPipeline (5 stages, Static 'Fixed rule', shield text)
 // -------------------------------------------------------------
 try {
-  const pipeSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'allocation', 'DecisionPipeline.tsx'), 'utf-8');
+  const pipeSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'allocation', 'DecisionPipeline.tsx'), 'utf-8');
 
   assert(
     pipeSrc.includes('1. Observe') &&
@@ -48,7 +50,7 @@ try {
 // AT-27: TransferLedger (50 events, hover pause, burst merge, empty state)
 // -------------------------------------------------------------
 try {
-  const ledgerSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'allocation', 'TransferLedger.tsx'), 'utf-8');
+  const ledgerSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'allocation', 'TransferLedger.tsx'), 'utf-8');
 
   assert(
     ledgerSrc.includes('combined.slice(0, 50)'),
@@ -84,7 +86,7 @@ try {
 // AT-29: CouplingPanel (radio vs compute, effective capacity, text)
 // -------------------------------------------------------------
 try {
-  const coupSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'allocation', 'CouplingPanel.tsx'), 'utf-8');
+  const coupSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'allocation', 'CouplingPanel.tsx'), 'utf-8');
 
   assert(
     coupSrc.includes('Radio (PRB):') && coupSrc.includes('Compute:') && coupSrc.includes('Effective Cap:'),

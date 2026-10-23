@@ -3,6 +3,12 @@
 Verifies Section 14.5 and 14.8 requirements from SPEC.md.
 """
 
+import sys, os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+os.chdir(_ROOT)
+
 import unittest
 import copy
 import json

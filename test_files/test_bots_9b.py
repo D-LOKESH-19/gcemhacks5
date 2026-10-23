@@ -6,6 +6,12 @@ BT-7: mURLLC storm with 500 bots produces bursty correlated arrivals without NaN
 BT-16: Retrained model evaluation at 0.3x, 1.0x, and 3.0x default bot counts
 """
 
+import sys, os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+os.chdir(_ROOT)
+
 import sys
 import numpy as np
 import pandas as pd

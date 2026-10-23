@@ -1,5 +1,11 @@
 """Acceptance test for api.py endpoints (Phase 5)."""
 
+import sys, os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+os.chdir(_ROOT)
+
 import sys
 from fastapi.testclient import TestClient
 from api import app, sim_manager

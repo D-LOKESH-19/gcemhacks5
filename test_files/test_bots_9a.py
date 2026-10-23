@@ -12,6 +12,12 @@ BT-10: Observation shape (12,) bounded in [0, 1] at 0 and max bots
 BT-11: Zero bots produce 0 arrivals with no division-by-zero
 """
 
+import sys, os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+os.chdir(_ROOT)
+
 import sys
 import time
 import numpy as np

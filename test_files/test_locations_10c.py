@@ -3,6 +3,12 @@ test_locations_10c.py: Sub-Phase 10c Acceptance Tests (UI & DOM Verification)
 Tests LT-19 through LT-30, LT-32, LT-33, LT-38, LT-39.
 """
 
+import sys, os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+os.chdir(_ROOT)
+
 import os
 import re
 import unittest

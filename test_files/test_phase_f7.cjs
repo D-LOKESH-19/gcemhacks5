@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 console.log('====================================================');
 console.log('PHASE F7 ACCEPTANCE TESTS (FT-57 to FT-62)');
@@ -21,7 +23,7 @@ async function runTests() {
   // FT-57: Presenter Mode 2m readable typography (>= 24px - 48px)
   // -------------------------------------------------------------
   try {
-    const presenterSrc = fs.readFileSync(path.join(__dirname, 'src', 'pages', 'PresenterPage.tsx'), 'utf-8');
+    const presenterSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'pages', 'PresenterPage.tsx'), 'utf-8');
     const hasLargeText = 
       presenterSrc.includes('text-4xl') && 
       presenterSrc.includes('text-5xl') && 
@@ -38,7 +40,7 @@ async function runTests() {
   // FT-58: Keyboard shortcuts (1, 2, 3, Space, R, P, Esc, ?) & Help modal
   // -------------------------------------------------------------
   try {
-    const presenterSrc = fs.readFileSync(path.join(__dirname, 'src', 'pages', 'PresenterPage.tsx'), 'utf-8');
+    const presenterSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'pages', 'PresenterPage.tsx'), 'utf-8');
     const hasKeys = 
       presenterSrc.includes('e.key === "1"') &&
       presenterSrc.includes('e.key === "2"') &&
@@ -60,8 +62,8 @@ async function runTests() {
   // FT-59: Loading, empty, and error states with Retry button
   // -------------------------------------------------------------
   try {
-    const errorSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'common', 'ErrorBoundary.tsx'), 'utf-8');
-    const skeletonSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'common', 'LoadingSkeleton.tsx'), 'utf-8');
+    const errorSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'common', 'ErrorBoundary.tsx'), 'utf-8');
+    const skeletonSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'common', 'LoadingSkeleton.tsx'), 'utf-8');
     assert(
       errorSrc.includes('Retry Component') && 
       errorSrc.includes('handleRetry') && 
@@ -76,8 +78,8 @@ async function runTests() {
   // FT-60: Layout responsiveness (1920x1080 and 1366x768)
   // -------------------------------------------------------------
   try {
-    const presenterSrc = fs.readFileSync(path.join(__dirname, 'src', 'pages', 'PresenterPage.tsx'), 'utf-8');
-    const shellSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'layout', 'AppShell.tsx'), 'utf-8');
+    const presenterSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'pages', 'PresenterPage.tsx'), 'utf-8');
+    const shellSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'layout', 'AppShell.tsx'), 'utf-8');
     assert(
       presenterSrc.includes('grid-cols-1 md:grid-cols-3') &&
       presenterSrc.includes('grid-cols-1 lg:grid-cols-2') &&
@@ -92,8 +94,8 @@ async function runTests() {
   // FT-61: Background tab handling without buffer blowup
   // -------------------------------------------------------------
   try {
-    const wsHookSrc = fs.readFileSync(path.join(__dirname, 'src', 'hooks', 'useWebSocketStream.ts'), 'utf-8');
-    const storeSrc = fs.readFileSync(path.join(__dirname, 'src', 'store', 'useSliceStore.ts'), 'utf-8');
+    const wsHookSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'hooks', 'useWebSocketStream.ts'), 'utf-8');
+    const storeSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'store', 'useSliceStore.ts'), 'utf-8');
     assert(
       wsHookSrc.includes('!isDocumentVisibleRef.current') &&
       wsHookSrc.includes('now - lastRenderTimeRef.current < 1000') &&
@@ -108,7 +110,7 @@ async function runTests() {
   // FT-62: Color + icon + text multi-channel status indicators
   // -------------------------------------------------------------
   try {
-    const badgeSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'common', 'Badge.tsx'), 'utf-8');
+    const badgeSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'common', 'Badge.tsx'), 'utf-8');
     assert(
       badgeSrc.includes('CheckCircle2') &&
       badgeSrc.includes('AlertTriangle') &&

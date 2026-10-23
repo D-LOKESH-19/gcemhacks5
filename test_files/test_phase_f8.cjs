@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+const ROOT_DIR = path.resolve(__dirname, '..');
 const http = require('http');
 
 console.log('====================================================');
@@ -88,7 +90,7 @@ async function runTests() {
   // -------------------------------------------------------------
   try {
     const legacyRes = await httpGet('/legacy');
-    const headerSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'layout', 'Header.tsx'), 'utf-8');
+    const headerSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'layout', 'Header.tsx'), 'utf-8');
     const legacyHasReactLink = legacyRes.body.includes('Enterprise React Suite') && legacyRes.body.includes('href="/"');
     const reactHasLegacyLink = headerSrc.includes('href="/legacy"') && headerSrc.includes('Classic View');
     assert(
@@ -103,7 +105,7 @@ async function runTests() {
   // FT-67: Fallback mechanism in api.py
   // -------------------------------------------------------------
   try {
-    const apiSrc = fs.readFileSync(path.join(__dirname, '..', 'api.py'), 'utf-8');
+    const apiSrc = fs.readFileSync(path.join(ROOT_DIR, 'api.py'), 'utf-8');
     assert(
       apiSrc.includes('os.path.join("frontend", "dist", "index.html")') &&
       apiSrc.includes('os.path.join("static", "index.html")') &&
@@ -118,8 +120,8 @@ async function runTests() {
   // FT-68: Zero external CDN references in dist/ (100% self-contained offline)
   // -------------------------------------------------------------
   try {
-    const distIndex = fs.readFileSync(path.join(__dirname, 'dist', 'index.html'), 'utf-8');
-    const distAssets = fs.readdirSync(path.join(__dirname, 'dist', 'assets'));
+    const distIndex = fs.readFileSync(path.join(FRONTEND_DIR, 'dist', 'index.html'), 'utf-8');
+    const distAssets = fs.readdirSync(path.join(FRONTEND_DIR, 'dist', 'assets'));
     
     // Check index.html for external URLs
     const externalUrlRegex = /(https?:)?\/\/(?!localhost|127\.0\.0\.1)[^\s"'>]+/gi;
@@ -143,7 +145,7 @@ async function runTests() {
   // FT-69: Production asset serving over HTTP
   // -------------------------------------------------------------
   try {
-    const distAssets = fs.readdirSync(path.join(__dirname, 'dist', 'assets'));
+    const distAssets = fs.readdirSync(path.join(FRONTEND_DIR, 'dist', 'assets'));
     const sampleJs = distAssets.find(f => f.endsWith('.js'));
     const sampleCss = distAssets.find(f => f.endsWith('.css'));
     const sampleFont = distAssets.find(f => f.endsWith('.woff2'));
@@ -165,7 +167,7 @@ async function runTests() {
   // -------------------------------------------------------------
   try {
     const crypto = require('crypto');
-    const modelBuf = fs.readFileSync(path.join(__dirname, '..', 'models', 'agent.zip'));
+    const modelBuf = fs.readFileSync(path.join(ROOT_DIR, 'models', 'agent.zip'));
     const hash = crypto.createHash('sha256').update(modelBuf).digest('hex');
     assert(
       hash === '3cd0a7e66847f16a2ddc828bd7173878aba1538b15a79756675e177cd26314e1',
@@ -179,9 +181,9 @@ async function runTests() {
   // FT-71: Simulator & safety shield core logic untouched
   // -------------------------------------------------------------
   try {
-    const simSrc = fs.readFileSync(path.join(__dirname, '..', 'sim.py'), 'utf-8');
-    const shieldSrc = fs.readFileSync(path.join(__dirname, '..', 'shield.py'), 'utf-8');
-    const slaSrc = fs.readFileSync(path.join(__dirname, '..', 'sla.py'), 'utf-8');
+    const simSrc = fs.readFileSync(path.join(ROOT_DIR, 'sim.py'), 'utf-8');
+    const shieldSrc = fs.readFileSync(path.join(ROOT_DIR, 'shield.py'), 'utf-8');
+    const slaSrc = fs.readFileSync(path.join(ROOT_DIR, 'sla.py'), 'utf-8');
 
     assert(
       simSrc.includes('class SliceEnv') &&
@@ -198,7 +200,7 @@ async function runTests() {
   // FT-72: Documentation integrity and coexistence
   // -------------------------------------------------------------
   try {
-    const readmeSrc = fs.readFileSync(path.join(__dirname, '..', 'README.md'), 'utf-8');
+    const readmeSrc = fs.readFileSync(path.join(ROOT_DIR, 'README.md'), 'utf-8');
     assert(
       readmeSrc.includes('Enterprise React 18') && readmeSrc.includes('/legacy'),
       'FT-72: README.md fully specifies enterprise architecture and legacy coexistence'

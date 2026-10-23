@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+const ROOT_DIR = path.resolve(__dirname, '..');
 const http = require('http');
 
 console.log('====================================================');
@@ -68,7 +70,7 @@ async function runTests() {
   // FT-18: Overlay charts have 3 policies and SLA dashed line
   // -------------------------------------------------------------
   try {
-    const chartSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'live', 'LiveChartsOverlay.tsx'), 'utf-8');
+    const chartSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'live', 'LiveChartsOverlay.tsx'), 'utf-8');
     assert(chartSrc.includes('#F87171'), 'FT-18: Static policy line uses #F87171 (red)');
     assert(chartSrc.includes('#CBD5E1'), 'FT-18: Heuristic policy line uses #CBD5E1 (grey)');
     assert(chartSrc.includes('#34D399'), 'FT-18: Agent policy line uses #34D399 (emerald)');
@@ -81,7 +83,7 @@ async function runTests() {
   // FT-19: Axis rule max(2 x SLA, 1.2 x maxVal)
   // -------------------------------------------------------------
   try {
-    const chartSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'live', 'LiveChartsOverlay.tsx'), 'utf-8');
+    const chartSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'live', 'LiveChartsOverlay.tsx'), 'utf-8');
     assert(chartSrc.includes('Math.max(slaUrllcLimit * 2, maxVal * 1.2'), 'FT-19: Dynamic Y-axis upper bound strictly follows max(2 x SLA limit, 1.2 x highest value)');
   } catch (e) {
     assert(false, `FT-19 exception: ${e.message}`);
@@ -101,7 +103,7 @@ async function runTests() {
   // FT-23: Feed collapses consecutive duplicate lines (x12)
   // -------------------------------------------------------------
   try {
-    const feedSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'live', 'ExplainabilityFeed.tsx'), 'utf-8');
+    const feedSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'live', 'ExplainabilityFeed.tsx'), 'utf-8');
     assert(feedSrc.includes('last.count += 1') && feedSrc.includes('x{item.count}'), 'FT-23: Feed groups consecutive repeat events with counter tag (xN)');
   } catch (e) {
     assert(false, `FT-23 exception: ${e.message}`);
@@ -126,7 +128,7 @@ async function runTests() {
   // FT-26: Feed filter chips implemented
   // -------------------------------------------------------------
   try {
-    const feedSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'live', 'ExplainabilityFeed.tsx'), 'utf-8');
+    const feedSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'live', 'ExplainabilityFeed.tsx'), 'utf-8');
     assert(
       feedSrc.includes('"spikes"') && feedSrc.includes('"bots"') && feedSrc.includes('"shield"') && feedSrc.includes('"sla"'),
       'FT-26: Feed supports specific category filter chips (spikes, bots, shield, sla)'
@@ -139,7 +141,7 @@ async function runTests() {
   // FT-27: Policy cards share bars sum to 100%
   // -------------------------------------------------------------
   try {
-    const cardSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'live', 'PolicyResourceCards.tsx'), 'utf-8');
+    const cardSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'live', 'PolicyResourceCards.tsx'), 'utf-8');
     assert(
       cardSrc.includes('prbEmbbPct') && cardSrc.includes('prbUrllcPct') && cardSrc.includes('prbMurllcPct'),
       'FT-27: Policy cards compute PRB and vCPU shares summing to 100%'

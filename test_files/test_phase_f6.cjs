@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+const ROOT_DIR = path.resolve(__dirname, '..');
 const http = require('http');
 
 console.log('====================================================');
@@ -38,7 +40,7 @@ async function runTests() {
   // FT-45: SLA Promise Card limits match config.yaml
   // -------------------------------------------------------------
   try {
-    const promiseSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'sla', 'SlaPromiseCard.tsx'), 'utf-8');
+    const promiseSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'sla', 'SlaPromiseCard.tsx'), 'utf-8');
     assert(
       promiseSrc.includes('URLLC Latency') &&
       promiseSrc.includes('mURLLC Reliability') &&
@@ -53,7 +55,7 @@ async function runTests() {
   // FT-46: SLA grid matrix & empty slice 'No traffic'
   // -------------------------------------------------------------
   try {
-    const gridSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'sla', 'SlaGridMatrix.tsx'), 'utf-8');
+    const gridSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'sla', 'SlaGridMatrix.tsx'), 'utf-8');
     assert(
       gridSrc.includes('NO_TRAFFIC') && gridSrc.includes('No arrivals recorded'),
       'FT-46: SlaGridMatrix renders "No traffic" when a slice has 0 arrivals'
@@ -66,7 +68,7 @@ async function runTests() {
   // FT-47: Overload banner & 'URLLC and mURLLC protected first'
   // -------------------------------------------------------------
   try {
-    const promiseSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'sla', 'SlaPromiseCard.tsx'), 'utf-8');
+    const promiseSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'sla', 'SlaPromiseCard.tsx'), 'utf-8');
     assert(
       promiseSrc.includes('OVERLOAD ACTIVE') &&
       promiseSrc.includes('URLLC and mURLLC protected first'),
@@ -80,7 +82,7 @@ async function runTests() {
   // FT-48: Window compliance numbers
   // -------------------------------------------------------------
   try {
-    const gridSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'sla', 'SlaGridMatrix.tsx'), 'utf-8');
+    const gridSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'sla', 'SlaGridMatrix.tsx'), 'utf-8');
     assert(
       gridSrc.includes('getWindowCompliance') && gridSrc.includes('of 20-step windows'),
       'FT-48: 20-step window compliance percentage displayed per candidate policy'
@@ -93,7 +95,7 @@ async function runTests() {
   // FT-49: Training cards: final lambdas labelled 'final trained value'
   // -------------------------------------------------------------
   try {
-    const cardsSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'training', 'TrainingMetricsCards.tsx'), 'utf-8');
+    const cardsSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'training', 'TrainingMetricsCards.tsx'), 'utf-8');
     assert(
       cardsSrc.includes('final trained value') &&
       cardsSrc.includes('λ_urllc Penalty Weight') &&
@@ -118,7 +120,7 @@ async function runTests() {
   // FT-50: Training curves: costs with dashed limit lines & empty state
   // -------------------------------------------------------------
   try {
-    const curvesSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'training', 'TrainingCurves.tsx'), 'utf-8');
+    const curvesSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'training', 'TrainingCurves.tsx'), 'utf-8');
     assert(
       curvesSrc.includes('strokeDasharray="4 4"') &&
       curvesSrc.includes('URLLC Limit (0.005)') &&
@@ -148,7 +150,7 @@ async function runTests() {
   // FT-52: Scenario chart has error bars
   // -------------------------------------------------------------
   try {
-    const chartSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'results', 'ScenarioGroupedBarChart.tsx'), 'utf-8');
+    const chartSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'results', 'ScenarioGroupedBarChart.tsx'), 'utf-8');
     assert(
       chartSrc.includes('<ErrorBar') && chartSrc.includes('Static_err'),
       'FT-52: ScenarioGroupedBarChart displays 95% bootstrap confidence interval error bars'
@@ -161,7 +163,7 @@ async function runTests() {
   // FT-53: Ablation table has 4 rows
   // -------------------------------------------------------------
   try {
-    const ablationSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'results', 'AblationStudyTable.tsx'), 'utf-8');
+    const ablationSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'results', 'AblationStudyTable.tsx'), 'utf-8');
     assert(
       ablationSrc.includes('Ablation Study (4 Architectural Configurations') &&
       ablationSrc.includes('Worst Window'),
@@ -175,7 +177,7 @@ async function runTests() {
   // FT-54: Feasible and overload tabs with overload text
   // -------------------------------------------------------------
   try {
-    const chartSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'results', 'ScenarioGroupedBarChart.tsx'), 'utf-8');
+    const chartSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'results', 'ScenarioGroupedBarChart.tsx'), 'utf-8');
     assert(
       chartSrc.includes('Feasible Scenarios') &&
       chartSrc.includes('Overload Stress') &&
@@ -209,7 +211,7 @@ async function runTests() {
   // FT-56: Footnotes visible
   // -------------------------------------------------------------
   try {
-    const ablationSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'results', 'AblationStudyTable.tsx'), 'utf-8');
+    const ablationSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'results', 'AblationStudyTable.tsx'), 'utf-8');
     assert(
       ablationSrc.includes('Slice-level simulator, not a radio-level model') &&
       ablationSrc.includes('Delay values are model estimates'),

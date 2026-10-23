@@ -1,5 +1,11 @@
 """Phase F1 Acceptance Tests (FT-5 to FT-9) per FRONTEND_GUIDE.md."""
 
+import sys, os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+os.chdir(_ROOT)
+
 import unittest
 import os
 import yaml

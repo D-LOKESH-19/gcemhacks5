@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+const ROOT_DIR = path.resolve(__dirname, '..');
 const http = require('http');
 
 console.log('====================================================');
@@ -32,7 +34,7 @@ async function runTests() {
   // FT-39: Stacked shares chart sums to 100% and has toggles
   // -------------------------------------------------------------
   try {
-    const sharesSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'agent', 'SharesStackedChart.tsx'), 'utf-8');
+    const sharesSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'agent', 'SharesStackedChart.tsx'), 'utf-8');
     assert(
       sharesSrc.includes('Math.max(0, 100 - embbPct - urllcPct)') &&
       sharesSrc.includes('setResourceType("prb")') &&
@@ -47,7 +49,7 @@ async function runTests() {
   // FT-40: Shield statement matches stream wording
   // -------------------------------------------------------------
   try {
-    const shieldSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'agent', 'ShieldInterventionCard.tsx'), 'utf-8');
+    const shieldSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'agent', 'ShieldInterventionCard.tsx'), 'utf-8');
     assert(
       shieldSrc.includes("The shield changed the agent's decision in") &&
       shieldSrc.includes("percent of the last") &&
@@ -62,7 +64,7 @@ async function runTests() {
   // FT-41: Decision table parses 20 rows and real reasons
   // -------------------------------------------------------------
   try {
-    const tableSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'agent', 'DecisionAuditTable.tsx'), 'utf-8');
+    const tableSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'agent', 'DecisionAuditTable.tsx'), 'utf-8');
     assert(
       tableSrc.includes('.slice(0, 20)') &&
       tableSrc.includes('row.reason') &&
@@ -77,7 +79,7 @@ async function runTests() {
   // FT-42: Coupling bars: effective capacity = min(radio, compute)
   // -------------------------------------------------------------
   try {
-    const couplingSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'agent', 'CouplingBars.tsx'), 'utf-8');
+    const couplingSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'agent', 'CouplingBars.tsx'), 'utf-8');
     assert(
       couplingSrc.includes('Math.min(prbPct, vcpuPct)') &&
       couplingSrc.includes('Bottleneck:'),
@@ -91,7 +93,7 @@ async function runTests() {
   // FT-43: Heuristic overlay toggle
   // -------------------------------------------------------------
   try {
-    const sharesSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'agent', 'SharesStackedChart.tsx'), 'utf-8');
+    const sharesSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'agent', 'SharesStackedChart.tsx'), 'utf-8');
     assert(
       sharesSrc.includes('showHeuristicOverlay') &&
       sharesSrc.includes('setShowHeuristicOverlay(!showHeuristicOverlay)') &&
@@ -106,7 +108,7 @@ async function runTests() {
   // FT-44: Scientific honesty: shield is not claimed as policy
   // -------------------------------------------------------------
   try {
-    const shieldSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'agent', 'ShieldInterventionCard.tsx'), 'utf-8');
+    const shieldSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'agent', 'ShieldInterventionCard.tsx'), 'utf-8');
     assert(
       shieldSrc.includes('Algorithmic Separation') &&
       shieldSrc.includes('deterministic') &&

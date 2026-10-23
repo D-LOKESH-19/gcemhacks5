@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 console.log('====================================================');
 console.log('PHASE R1 ACCEPTANCE TESTS (AT-39 & Allocation Types)');
@@ -20,7 +22,7 @@ function assert(condition, message) {
 // Test 1: Real stream_sample.json contains valid allocation blocks
 // -------------------------------------------------------------
 try {
-  const fixturesPath = path.join(__dirname, 'fixtures', 'stream_sample.json');
+  const fixturesPath = path.join(FRONTEND_DIR, 'fixtures', 'stream_sample.json');
   assert(fs.existsSync(fixturesPath), 'stream_sample.json exists in frontend/fixtures/');
 
   const rawData = fs.readFileSync(fixturesPath, 'utf-8');

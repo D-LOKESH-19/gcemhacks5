@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+const ROOT_DIR = path.resolve(__dirname, '..');
 const http = require('http');
 
 console.log('====================================================');
@@ -58,7 +60,7 @@ async function runTests() {
   // FT-31: Presets trigger spikes and bot changes
   // -------------------------------------------------------------
   try {
-    const presetsSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'traffic', 'TrafficPresets.tsx'), 'utf-8');
+    const presetsSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'traffic', 'TrafficPresets.tsx'), 'utf-8');
     assert(
       presetsSrc.includes('steady') &&
       presetsSrc.includes('embb_surge') &&
@@ -111,7 +113,7 @@ async function runTests() {
   // FT-35: Dot scaling: 500 bots show <= 60 dots with scale label
   // -------------------------------------------------------------
   try {
-    const canvasSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'traffic', 'DeviceCanvas.tsx'), 'utf-8');
+    const canvasSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'traffic', 'DeviceCanvas.tsx'), 'utf-8');
     assert(
       canvasSrc.includes('Math.ceil(count / 60)') && canvasSrc.includes('1 dot ='),
       'FT-35: DeviceCanvas implements dynamic dot scaling (max 60 dots) with explicit "1 dot = X bots" legend'
@@ -124,7 +126,7 @@ async function runTests() {
   // FT-36: Hidden when absent
   // -------------------------------------------------------------
   try {
-    const panelSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'traffic', 'BotsControlPanel.tsx'), 'utf-8');
+    const panelSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'traffic', 'BotsControlPanel.tsx'), 'utf-8');
     assert(
       panelSrc.includes('capabilities.bots === false') && panelSrc.includes('Synthetic UE Generator Offline'),
       'FT-36: BotsControlPanel gracefully displays fallback note if capabilities.bots is false'
@@ -137,7 +139,7 @@ async function runTests() {
   // FT-37: Input validation rejects decimals, negatives, text
   // -------------------------------------------------------------
   try {
-    const panelSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'traffic', 'BotsControlPanel.tsx'), 'utf-8');
+    const panelSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'traffic', 'BotsControlPanel.tsx'), 'utf-8');
     assert(
       panelSrc.includes('!/^\\d+$/.test(trimmed)') && panelSrc.includes('Bot count must be greater than zero'),
       'FT-37: Client validation rejects decimals, negatives, and non-numeric characters before dispatch'

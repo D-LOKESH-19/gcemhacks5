@@ -7,6 +7,12 @@ BT-17: Fake-work check (zero Math.random used in index.html for data/telemetry)
 BT-18: Stress testing (rapid requests handle safely without server crash)
 """
 
+import sys, os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+os.chdir(_ROOT)
+
 import sys
 import re
 from fastapi.testclient import TestClient

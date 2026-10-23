@@ -4,6 +4,12 @@ Tests E2E-14 (Location demo story), E2E-15 (Repeatability), E2E-17 (Rollback dri
 E2E-18 (SLA consistency), and E2E-19 (Dynamic limit change).
 """
 
+import sys, os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+os.chdir(_ROOT)
+
 import os
 import unittest
 import subprocess

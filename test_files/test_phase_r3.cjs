@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 console.log('====================================================');
 console.log('PHASE R3 ACCEPTANCE TESTS (AT-28: Flow Strip)');
@@ -20,7 +22,7 @@ function assert(condition, message) {
 // AT-28: FlowStrip component structure & constraints
 // -------------------------------------------------------------
 try {
-  const flowSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'allocation', 'FlowStrip.tsx'), 'utf-8');
+  const flowSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'allocation', 'FlowStrip.tsx'), 'utf-8');
 
   // Five nodes
   assert(
@@ -71,7 +73,7 @@ try {
 // AT-28: Integration in ResourceAllocationPage
 // -------------------------------------------------------------
 try {
-  const pageSrc = fs.readFileSync(path.join(__dirname, 'src', 'pages', 'ResourceAllocationPage.tsx'), 'utf-8');
+  const pageSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'pages', 'ResourceAllocationPage.tsx'), 'utf-8');
   assert(
     pageSrc.includes('<FlowStrip') && pageSrc.includes('bottlenecks={alloc?.bottleneck}'),
     'AT-28: FlowStrip actively integrated into ResourceAllocationPage with live stream bottlenecks'

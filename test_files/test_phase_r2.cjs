@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 console.log('====================================================');
 console.log('PHASE R2 ACCEPTANCE TESTS (AT-21 to AT-25, AT-42)');
@@ -20,7 +22,7 @@ function assert(condition, message) {
 // AT-21: Unit totals across all 30 fixture frames
 // -------------------------------------------------------------
 try {
-  const fixturesPath = path.join(__dirname, 'fixtures', 'stream_sample.json');
+  const fixturesPath = path.join(FRONTEND_DIR, 'fixtures', 'stream_sample.json');
   const messages = JSON.parse(fs.readFileSync(fixturesPath, 'utf-8'));
 
   let allTotalsValid = true;
@@ -47,7 +49,7 @@ try {
 // AT-22: Blocks and stability in fixed order (eMBB, URLLC, mURLLC)
 // -------------------------------------------------------------
 try {
-  const poolsSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'allocation', 'ResourcePools.tsx'), 'utf-8');
+  const poolsSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'allocation', 'ResourcePools.tsx'), 'utf-8');
   assert(
     poolsSrc.includes("const SLICE_ORDER: SliceType[] = ['embb', 'urllc', 'murllc']"),
     'AT-22: ResourcePools orders slices strictly in fixed order [eMBB, URLLC, mURLLC]'
@@ -64,7 +66,7 @@ try {
 // AT-23: Flash accuracy & 600ms timer
 // -------------------------------------------------------------
 try {
-  const poolsSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'allocation', 'ResourcePools.tsx'), 'utf-8');
+  const poolsSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'allocation', 'ResourcePools.tsx'), 'utf-8');
   assert(
     poolsSrc.includes('flashingIndices') && poolsSrc.includes('600'),
     'AT-23: Flash state updates on count diffs and resets precisely after 600ms'
@@ -81,7 +83,7 @@ try {
 // AT-25: Locks on floor cells
 // -------------------------------------------------------------
 try {
-  const poolsSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'allocation', 'ResourcePools.tsx'), 'utf-8');
+  const poolsSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'allocation', 'ResourcePools.tsx'), 'utf-8');
   assert(
     poolsSrc.includes('cell.isFloor') && poolsSrc.includes('<Lock'),
     'AT-25: Lock icons rendered on protected SLA floor cells'
@@ -98,8 +100,8 @@ try {
 // AT-42: Legend ('How to read this page') and honesty text
 // -------------------------------------------------------------
 try {
-  const legendSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'allocation', 'AllocationLegend.tsx'), 'utf-8');
-  const poolsSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'allocation', 'ResourcePools.tsx'), 'utf-8');
+  const legendSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'allocation', 'AllocationLegend.tsx'), 'utf-8');
+  const poolsSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'allocation', 'ResourcePools.tsx'), 'utf-8');
 
   assert(
     legendSrc.includes('#22D3EE') && legendSrc.includes('#F59E0B') && legendSrc.includes('#A78BFA'),

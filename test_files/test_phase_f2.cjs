@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 console.log('====================================================');
 console.log('PHASE F2 ACCEPTANCE TESTS (FT-10 to FT-16)');
@@ -20,7 +22,7 @@ function assert(condition, message) {
 // FT-10: Types match reality (parses all 30 captured stream messages)
 // -------------------------------------------------------------
 try {
-  const fixturesPath = path.join(__dirname, 'fixtures', 'stream_sample.json');
+  const fixturesPath = path.join(FRONTEND_DIR, 'fixtures', 'stream_sample.json');
   assert(fs.existsSync(fixturesPath), 'stream_sample.json exists in frontend/fixtures/');
 
   const rawData = fs.readFileSync(fixturesPath, 'utf-8');
@@ -92,7 +94,7 @@ try {
 // FT-14: No mock or random data in production code
 // -------------------------------------------------------------
 try {
-  const srcDir = path.join(__dirname, 'src');
+  const srcDir = path.join(FRONTEND_DIR, 'src');
   const forbiddenPatterns = [
     { pattern: /Math\.random\(/, name: 'Math.random()' },
     { pattern: /faker\./i, name: 'faker' },

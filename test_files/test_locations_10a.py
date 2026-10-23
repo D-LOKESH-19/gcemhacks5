@@ -20,6 +20,12 @@ LT-35: Delay is not an SLA input (delay_model changes do not affect SLAs)
 LT-36: Model untouched (models/agent.zip hash verified)
 """
 
+import sys, os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+os.chdir(_ROOT)
+
 import hashlib
 import math
 import os

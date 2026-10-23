@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+const ROOT_DIR = path.resolve(__dirname, '..');
 
 console.log('====================================================');
 console.log('PHASE R5 ACCEPTANCE TESTS (AT-30 to AT-38)');
@@ -20,8 +22,8 @@ function assert(condition, message) {
 // AT-30: Replay Scrubber (banner, Live return, buffer reset)
 // -------------------------------------------------------------
 try {
-  const scrubSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'allocation', 'ReplayScrubber.tsx'), 'utf-8');
-  const pageSrc = fs.readFileSync(path.join(__dirname, 'src', 'pages', 'ResourceAllocationPage.tsx'), 'utf-8');
+  const scrubSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'allocation', 'ReplayScrubber.tsx'), 'utf-8');
+  const pageSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'pages', 'ResourceAllocationPage.tsx'), 'utf-8');
 
   assert(
     scrubSrc.includes('type="range"') && scrubSrc.includes('onSelectStep') && scrubSrc.includes('onReturnToLive'),
@@ -43,7 +45,7 @@ try {
 // AT-31: Compare Mode (3 panels on identical step)
 // -------------------------------------------------------------
 try {
-  const pageSrc = fs.readFileSync(path.join(__dirname, 'src', 'pages', 'ResourceAllocationPage.tsx'), 'utf-8');
+  const pageSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'pages', 'ResourceAllocationPage.tsx'), 'utf-8');
 
   assert(
     pageSrc.includes('isCompareMode') && pageSrc.includes("['static', 'heuristic', 'agent']"),
@@ -61,7 +63,7 @@ try {
 // AT-34: Zero mock data or Math.random in entire src/ codebase
 // -------------------------------------------------------------
 try {
-  const srcDir = path.join(__dirname, 'src');
+  const srcDir = path.join(FRONTEND_DIR, 'src');
   function scan(dir) {
     let files = fs.readdirSync(dir);
     let violations = [];
@@ -93,9 +95,9 @@ try {
 // AT-35: Honesty labels and accurate terminology
 // -------------------------------------------------------------
 try {
-  const legendSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'allocation', 'AllocationLegend.tsx'), 'utf-8');
-  const poolsSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'allocation', 'ResourcePools.tsx'), 'utf-8');
-  const flowSrc = fs.readFileSync(path.join(__dirname, 'src', 'components', 'allocation', 'FlowStrip.tsx'), 'utf-8');
+  const legendSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'allocation', 'AllocationLegend.tsx'), 'utf-8');
+  const poolsSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'allocation', 'ResourcePools.tsx'), 'utf-8');
+  const flowSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'components', 'allocation', 'FlowStrip.tsx'), 'utf-8');
 
   assert(
     legendSrc.includes('resource controller') && flowSrc.includes('Resource Controller'),
@@ -117,7 +119,7 @@ try {
 // AT-37: Disabled state handling
 // -------------------------------------------------------------
 try {
-  const pageSrc = fs.readFileSync(path.join(__dirname, 'src', 'pages', 'ResourceAllocationPage.tsx'), 'utf-8');
+  const pageSrc = fs.readFileSync(path.join(FRONTEND_DIR, 'src', 'pages', 'ResourceAllocationPage.tsx'), 'utf-8');
   assert(
     pageSrc.includes('capabilities?.allocation === false') && pageSrc.includes('Resource Allocation Inactive'),
     'AT-37: Disabled capability flag renders friendly notification banner instead of crashing'

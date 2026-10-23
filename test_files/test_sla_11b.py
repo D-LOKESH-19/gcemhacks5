@@ -13,6 +13,12 @@ Verifies Section 10.2 of SLA_RL_SPEC.md:
 - SM-24: PID mode runs cleanly without divergence
 """
 
+import sys, os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+os.chdir(_ROOT)
+
 import math
 import os
 import sys

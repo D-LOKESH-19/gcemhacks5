@@ -12,6 +12,12 @@ Verifies Section 10.3 of SLA_RL_SPEC.md:
 - SM-33: Headline numbers recomputed directly from CSVs match reported statistics
 """
 
+import sys, os
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+os.chdir(_ROOT)
+
 import os
 import re
 import math
