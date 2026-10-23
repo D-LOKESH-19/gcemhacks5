@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>5G SliceOS: Constrained RL & Safety Shield Orchestrator</title>
+  <title>5G SliceOS: Constrained RL & Safety Shield Orchestrator with Bots</title>
   <script src="/static/chart.min.js"></script>
   <style>
     :root {
@@ -42,12 +42,12 @@
       background: rgba(17, 24, 39, 0.95);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
-      padding: 12px 24px;
+      padding: 10px 20px;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -56,11 +56,11 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .brand h1 {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       font-weight: 700;
       letter-spacing: -0.02em;
       background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
@@ -69,7 +69,7 @@
     }
 
     .badge {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       padding: 3px 8px;
       border-radius: 9999px;
       font-weight: 600;
@@ -82,8 +82,8 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.75rem;
-      padding: 4px 10px;
+      font-size: 0.72rem;
+      padding: 3px 9px;
       border-radius: 9999px;
       background: #064e3b;
       color: #6ee7b7;
@@ -91,17 +91,17 @@
     }
 
     .status-dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: #10b981;
-      box-shadow: 0 0 8px #10b981;
+      box-shadow: 0 0 6px #10b981;
     }
 
     .controls-group {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
     }
 
@@ -109,14 +109,14 @@
       background: #1e293b;
       color: var(--text);
       border: 1px solid var(--border);
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-size: 0.82rem;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       transition: all 0.2s ease;
     }
 
@@ -138,19 +138,154 @@
     button.primary { background: #2563eb; border-color: #3b82f6; }
     button.primary:hover { background: #1d4ed8; }
 
-    /* Main Grid */
+    /* Main Container */
     main {
-      padding: 20px;
+      padding: 14px 20px;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 14px;
     }
 
+    /* Phase 9: Bots Control Panel & Animation Canvas */
+    .bots-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+
+    .bots-ctrl-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .bots-selector-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .bots-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .bot-select, .bot-input {
+      background: #1e293b;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      outline: none;
+    }
+
+    .bot-input {
+      width: 65px;
+      text-align: center;
+    }
+
+    .bots-quick-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .bots-counters-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .bot-counter-pill {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .bot-counter-pill.embb { border-color: rgba(6, 182, 212, 0.4); color: #38bdf8; }
+    .bot-counter-pill.urllc { border-color: rgba(245, 158, 11, 0.4); color: #fbbf24; }
+    .bot-counter-pill.murllc { border-color: rgba(168, 85, 247, 0.4); color: #c084fc; }
+
+    .bot-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .bot-dot.embb { background: var(--embb); box-shadow: 0 0 5px var(--embb); }
+    .bot-dot.urllc { background: var(--urllc); box-shadow: 0 0 5px var(--urllc); }
+    .bot-dot.murllc { background: var(--murllc); box-shadow: 0 0 5px var(--murllc); }
+
+    .max-badge {
+      display: none;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid #f59e0b;
+      animation: pulse 1s infinite alternate;
+    }
+
+    .bot-canvas-wrap {
+      position: relative;
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      height: 75px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #botCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .canvas-scale-label {
+      position: absolute;
+      bottom: 3px;
+      right: 8px;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-family: monospace;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 1px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Policy Grid */
     .columns-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+      gap: 16px;
     }
 
     @media (max-width: 1024px) {
@@ -160,11 +295,11 @@
     .policy-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 10px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       position: relative;
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
@@ -176,7 +311,7 @@
 
     .policy-card.agent-card {
       border-color: #3b82f6;
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.12);
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.12);
     }
 
     .policy-header {
@@ -184,23 +319,23 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      padding-bottom: 10px;
+      padding-bottom: 8px;
     }
 
     .policy-title {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
     }
 
     .policy-subtitle {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
     }
 
     .sla-chip {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      padding: 4px 10px;
+      padding: 3px 8px;
       border-radius: 6px;
       letter-spacing: 0.05em;
     }
@@ -215,15 +350,15 @@
 
     .chart-container {
       position: relative;
-      height: 140px;
+      height: 125px;
       width: 100%;
     }
 
     .chart-label {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 600;
       color: var(--text-muted);
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       display: flex;
       justify-content: space-between;
     }
@@ -232,19 +367,19 @@
     .resource-section {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .bar-label-row {
       display: flex;
       justify-content: space-between;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
     }
 
     .stacked-bar {
-      height: 18px;
-      border-radius: 6px;
+      height: 16px;
+      border-radius: 5px;
       overflow: hidden;
       display: flex;
       background: #0f172a;
@@ -257,7 +392,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 700;
       color: #000;
     }
@@ -268,7 +403,7 @@
 
     /* Queue Meter */
     .queue-meter {
-      height: 8px;
+      height: 7px;
       background: #0f172a;
       border-radius: 4px;
       overflow: hidden;
@@ -287,27 +422,27 @@
       background: rgba(15, 23, 42, 0.6);
       border: 1px solid rgba(59, 130, 246, 0.25);
       border-radius: 8px;
-      padding: 10px;
+      padding: 8px 10px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .extras-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
     }
 
     .shield-badge {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 3px 8px;
-      border-radius: 6px;
+      padding: 2px 7px;
+      border-radius: 5px;
       font-weight: 700;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       background: #1e293b;
       color: var(--text-muted);
       border: 1px solid var(--border);
@@ -318,26 +453,26 @@
       background: rgba(245, 158, 11, 0.2);
       color: #fbbf24;
       border-color: #f59e0b;
-      box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
     }
 
     /* Event Log Terminal */
     .terminal-box {
       background: #090d16;
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 12px;
+      border-radius: 6px;
+      padding: 6px 10px;
       font-family: monospace;
-      font-size: 0.75rem;
-      height: 80px;
+      font-size: 0.72rem;
+      height: 70px;
       overflow-y: auto;
       color: #cbd5e1;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
     }
 
-    .terminal-line { line-height: 1.3; }
+    .terminal-line { line-height: 1.25; }
     .terminal-line.highlight { color: #38bdf8; font-weight: 600; }
     .terminal-line.warning { color: #fbbf24; }
 
@@ -345,57 +480,57 @@
     .scoreboard {
       background: var(--bg-surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px 20px;
+      border-radius: 10px;
+      padding: 12px 18px;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 20px;
+      gap: 16px;
     }
 
     .score-item {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
     }
 
     .score-title {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
 
     .score-val {
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       font-weight: 700;
     }
 
     .headline-banner {
       flex: 1;
-      min-width: 300px;
+      min-width: 280px;
       background: linear-gradient(90deg, rgba(37, 99, 235, 0.15), rgba(168, 85, 247, 0.15));
       border: 1px solid rgba(99, 102, 241, 0.3);
       border-radius: 8px;
-      padding: 10px 16px;
+      padding: 8px 14px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 0.88rem;
+      gap: 8px;
+      font-size: 0.82rem;
       font-weight: 600;
       color: #e0e7ff;
     }
 
     .legend-bar {
       display: flex;
-      gap: 16px;
-      font-size: 0.75rem;
+      gap: 12px;
+      font-size: 0.72rem;
       align-items: center;
     }
 
-    .legend-item { display: flex; align-items: center; gap: 6px; }
-    .legend-color { width: 10px; height: 10px; border-radius: 2px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-color { width: 9px; height: 9px; border-radius: 2px; }
   </style>
 </head>
 <body>
@@ -421,6 +556,45 @@
   </header>
 
   <main>
+
+    <!-- Phase 9: Bots Control Panel & Animation Field -->
+    <section class="bots-container">
+      <div class="bots-ctrl-row">
+        <div class="bots-selector-group">
+          <span class="bots-title">🤖 5G Slice Bots:</span>
+          <select id="botSliceSelect" class="bot-select">
+            <option value="embb">eMBB (Video Devices)</option>
+            <option value="urllc" selected>URLLC (Robots/Sensors)</option>
+            <option value="murllc">mURLLC (IoT Network)</option>
+          </select>
+          <input type="number" id="botCountInput" class="bot-input" min="1" max="1000" value="20" />
+          <button class="primary" onclick="submitBotAction('add')">+ Add</button>
+          <button onclick="submitBotAction('remove')">- Remove</button>
+          <button onclick="submitBotAction('set')">= Set</button>
+        </div>
+
+        <div class="bots-quick-group">
+          <button onclick="quickAddBots(10)">+10</button>
+          <button onclick="quickAddBots(50)">+50</button>
+          <button onclick="quickAddBots(100)">+100</button>
+        </div>
+
+        <div class="bots-counters-group">
+          <div class="bot-counter-pill embb"><span class="bot-dot embb"></span>eMBB: <strong id="botCntEmbb">40</strong>/200</div>
+          <div class="bot-counter-pill urllc"><span class="bot-dot urllc"></span>URLLC: <strong id="botCntUrllc">30</strong>/150</div>
+          <div class="bot-counter-pill murllc"><span class="bot-dot murllc"></span>mURLLC: <strong id="botCntMurllc">100</strong>/1000</div>
+          <span class="max-badge" id="botMaxAlert">⚠️ Max reached</span>
+        </div>
+      </div>
+
+      <!-- Real-Time Bot Pulse Field Canvas -->
+      <div class="bot-canvas-wrap">
+        <canvas id="botCanvas" height="75"></canvas>
+        <div class="canvas-scale-label" id="canvasScaleLabel">1 dot = 1 bot (Active Transmitters)</div>
+      </div>
+    </section>
+
+    <!-- 3 Side-by-Side Policy Columns -->
     <div class="columns-grid">
 
       <!-- Column 1: Static Baseline -->
@@ -534,7 +708,7 @@
         <div class="agent-extras">
           <div class="extras-row">
             <span>Lagrangian Multiplier λ: <strong id="lambdaVal" style="color: #38bdf8;">0.00</strong></span>
-            <span class="shield-badge" id="shieldBadge">🛡️ Shield Active</span>
+            <span class="shield-badge" id="shieldBadge">🛡️ Shield Standby</span>
           </div>
           <div class="bar-label-row"><span>eMBB Queue Buffer</span><span id="queueLblAgent">0 / 2000</span></div>
           <div class="queue-meter"><div class="queue-fill" id="queueBarAgent"></div></div>
@@ -584,23 +758,13 @@
   <script>
     let ws = null;
     const MAX_POINTS = 30;
-
-    // Charts storage
     const charts = {};
+
+    let botCounts = { embb: 40, urllc: 30, murllc: 100 };
+    let botMax = { embb: 200, urllc: 150, murllc: 1000 };
 
     function initChart(canvasId, label, color, yMax = null, drawLimitLine = false) {
       const ctx = document.getElementById(canvasId).getContext('2d');
-      const annotations = drawLimitLine ? {
-        limit: {
-          type: 'line',
-          yMin: 0.01,
-          yMax: 0.01,
-          borderColor: '#ef4444',
-          borderWidth: 1.5,
-          borderDash: [4, 4]
-        }
-      } : {};
-
       return new Chart(ctx, {
         type: 'line',
         data: {
@@ -638,12 +802,10 @@
     }
 
     function setupCharts() {
-      // Violation rate charts (0 to 0.10)
       charts.violStatic = initChart('chartViolStatic', 'Static Violations', '#ef4444', 0.10, true);
       charts.violHeuristic = initChart('chartViolHeuristic', 'Heuristic Violations', '#fbbf24', 0.10, true);
       charts.violAgent = initChart('chartViolAgent', 'Agent Violations', '#10b981', 0.10, true);
 
-      // Throughput charts (0 to 1200)
       charts.thruStatic = initChart('chartThruStatic', 'Static Throughput', '#06b6d4', 1200);
       charts.thruHeuristic = initChart('chartThruHeuristic', 'Heuristic Throughput', '#06b6d4', 1200);
       charts.thruAgent = initChart('chartThruAgent', 'Agent Throughput', '#06b6d4', 1200);
@@ -653,6 +815,48 @@
       chart.data.datasets[0].data.shift();
       chart.data.datasets[0].data.push(newValue);
       chart.update('none');
+    }
+
+    async function submitBotAction(mode) {
+      const slice = document.getElementById('botSliceSelect').value;
+      const count = parseInt(document.getElementById('botCountInput').value, 10);
+      if (isNaN(count) || count < 0) return;
+
+      try {
+        const res = await fetch('/bots', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slice: slice, count: count, mode: mode })
+        });
+        const data = await res.json();
+        if (data.counts) {
+          updateBotCounters(data.counts);
+          if (data.clipped) {
+            showMaxAlert();
+          }
+        }
+      } catch (err) {
+        console.error('Error submitting bot action:', err);
+      }
+    }
+
+    function quickAddBots(n) {
+      document.getElementById('botCountInput').value = n;
+      submitBotAction('add');
+    }
+
+    function showMaxAlert() {
+      const badge = document.getElementById('botMaxAlert');
+      badge.style.display = 'inline-block';
+      setTimeout(() => { badge.style.display = 'none'; }, 3000);
+    }
+
+    function updateBotCounters(counts) {
+      if (!counts) return;
+      botCounts = counts;
+      if (document.getElementById('botCntEmbb')) document.getElementById('botCntEmbb').innerText = counts.embb;
+      if (document.getElementById('botCntUrllc')) document.getElementById('botCntUrllc').innerText = counts.urllc;
+      if (document.getElementById('botCntMurllc')) document.getElementById('botCntMurllc').innerText = counts.murllc;
     }
 
     function connectWebSocket() {
@@ -683,9 +887,11 @@
     function handleTelemetry(data) {
       document.getElementById('scenarioBadge').innerText = data.scenario || 'Nominal';
       document.getElementById('stepBadge').innerText = `Step ${data.step}`;
-
-      // Update Pause button state
       document.getElementById('pauseBtn').innerText = data.paused ? '▶ Resume' : '⏸ Pause';
+
+      if (data.bots) {
+        updateBotCounters(data.bots);
+      }
 
       const pols = data.policies;
 
@@ -720,7 +926,7 @@
         const terminal = document.getElementById('eventTerminal');
         terminal.innerHTML = data.event_logs.map(line => {
           let cls = 'terminal-line';
-          if (line.includes('ACTIVE') || line.includes('spike')) cls += ' warning';
+          if (line.includes('ACTIVE') || line.includes('spike') || line.includes('bots')) cls += ' warning';
           if (line.includes('dynamically allocated')) cls += ' highlight';
           return `<div class="${cls}">${line}</div>`;
         }).join('');
@@ -760,7 +966,6 @@
         card.classList.add('sla-breach');
       }
 
-      // Resource Bars
       const prb = pol.shares.prb;
       const embbPct = (prb.embb * 100).toFixed(0);
       const urllcPct = (prb.urllc * 100).toFixed(0);
@@ -817,8 +1022,101 @@
       }
     }
 
+    // Bot Transmission Field Canvas Animation
+    let canvas, ctx;
+    let animFrame = 0;
+
+    function initBotCanvas() {
+      canvas = document.getElementById('botCanvas');
+      if (!canvas) return;
+      ctx = canvas.getContext('2d');
+      resizeBotCanvas();
+      window.addEventListener('resize', resizeBotCanvas);
+      requestAnimationFrame(animateBotCanvas);
+    }
+
+    function resizeBotCanvas() {
+      if (!canvas) return;
+      canvas.width = canvas.parentElement.clientWidth || 900;
+      canvas.height = canvas.parentElement.clientHeight || 75;
+    }
+
+    function animateBotCanvas() {
+      if (!canvas || !ctx) return;
+      animFrame++;
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const towerX = w / 2;
+      const towerY = h / 2;
+
+      // Draw Central 5G Tower Icon
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(towerX, towerY, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Radiating Signal Wave
+      const pulseRadius = (animFrame % 50) * 1.5;
+      ctx.strokeStyle = `rgba(56, 189, 248, ${Math.max(0, 1 - pulseRadius / 75)})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(towerX, towerY, pulseRadius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      const maxRenderDots = 60;
+      const slices = [
+        { name: 'embb', count: botCounts.embb, color: '#06b6d4', baseAngle: Math.PI },        // Left arc
+        { name: 'urllc', count: botCounts.urllc, color: '#f59e0b', baseAngle: -Math.PI / 2 },  // Top arc
+        { name: 'murllc', count: botCounts.murllc, color: '#a855f7', baseAngle: 0 },           // Right arc
+      ];
+
+      let maxScale = 1;
+      slices.forEach(sl => {
+        const scale = Math.ceil(sl.count / maxRenderDots);
+        if (scale > maxScale) maxScale = scale;
+      });
+
+      const labelElem = document.getElementById('canvasScaleLabel');
+      if (labelElem) {
+        labelElem.innerText = maxScale > 1 ? `1 dot = ${maxScale} bots` : `1 dot = 1 bot`;
+      }
+
+      slices.forEach(sl => {
+        const renderCount = Math.min(maxRenderDots, Math.ceil(sl.count / maxScale));
+        const radius = Math.min(w * 0.40, 240);
+
+        for (let i = 0; i < renderCount; i++) {
+          const spread = 0.85;
+          const angle = sl.baseAngle + ((i - (renderCount - 1) / 2) * (spread / Math.max(1, renderCount)));
+          const botX = towerX + radius * Math.cos(angle);
+          const botY = towerY + (h * 0.36) * Math.sin(angle);
+
+          // Draw Bot Transmitter Dot
+          ctx.fillStyle = sl.color;
+          ctx.beginPath();
+          ctx.arc(botX, botY, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Draw Moving Packet Bead Traveling toward 5G Tower
+          const progress = ((animFrame * 0.02 + (i * 0.15)) % 1.0);
+          const packetX = botX + (towerX - botX) * progress;
+          const packetY = botY + (towerY - botY) * progress;
+
+          ctx.fillStyle = sl.color;
+          ctx.beginPath();
+          ctx.arc(packetX, packetY, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+
+      requestAnimationFrame(animateBotCanvas);
+    }
+
     window.onload = () => {
       setupCharts();
+      initBotCanvas();
       connectWebSocket();
     };
   </script>
