@@ -21,3 +21,33 @@ shield_floor:
   murllc: 0.15
 cost_limit: 0.01            # max allowed average violation rate for urllc+murllc
 lagrange_lr: 0.05
+
+# Phase 9: Bots Feature Configuration
+traffic_mode: bots          # aggregate | bots
+bots:
+  default_count:
+    embb: 40
+    urllc: 30
+    murllc: 100
+  max_count:
+    embb: 200
+    urllc: 150
+    murllc: 1000
+  per_bot_mean:
+    embb: 10.0
+    urllc: 1.0
+    murllc: 0.2
+  embb:
+    p_on: 0.20
+    p_off: 0.30
+    rate_on: 25.0
+  urllc:
+    period_steps: 10
+    jitter: 0.10
+  murllc:
+    p_burst: 0.02
+    burst_len: 3
+    rate_burst: 3.33
+train_bot_range:
+  low: 0.3
+  high: 3.0

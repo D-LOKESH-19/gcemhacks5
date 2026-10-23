@@ -1,7 +1,7 @@
-"""5G Slice-Level Network Simulator Environment (SliceEnv).
+"""5G Slice-Level Network Simulator Environment (SliceEnv) with Phase 9 Bots Support.
 
 Simulates joint radio (PRB) and compute (vCPU) allocation across eMBB,
-URLLC, and mURLLC slices under dynamic traffic and surges.
+URLLC, and mURLLC slices under aggregate traffic or dynamic bot populations.
 """
 
 from typing import Any, Dict, List, Optional, Tuple
@@ -51,13 +51,26 @@ class SliceEnv(gym.Env):
         self.cost_limit: float = float(self.cfg.get("cost_limit", 0.01))
         self.lagrange_lr: float = float(self.cfg.get("lagrange_lr", 0.05))
 
+        # Traffic mode: "aggregate" or "bots"
+        self.traffic_mode: str = str(self.cfg.get("traffic_mode", "bots"))
+
+        # Bot model configuration
+        self.bots_cfg: Dict[str, Any] = self.cfg.get("bots", {})
+        self.default_bot_counts: Dict[str, int] = {
+            s: int(self.bots_cfg.get("default_count", {}).get(s, 40 if s == "embb" else (30 if s == "urllc" else 100)))
+            for s in self.slices
+        }
+        self.max_bot_counts: Dict[str, int] = {
+            s: int(self.bots_cfg.get("max_count", {}).get(s, 200 if s == "embb" else (150 if s == "urllc" else 1000)))
+            for s in self.slices
+        }
+
         # Action space: 6 floats in [-1, 1] (3 PRB logits, 3 vCPU logits)
         self.action_space = spaces.Box(
             low=-1.0, high=1.0, shape=(6,), dtype=np.float32
         )
 
         # Observation space: 12 floats in [0, 1]
-        # For each slice: [queue/queue_max, smoothed_load, prb_share, vcpu_share]
         self.observation_space = spaces.Box(
             low=0.0, high=1.0, shape=(12,), dtype=np.float32
         )
@@ -65,6 +78,13 @@ class SliceEnv(gym.Env):
         # RNG
         self._seed = seed
         self.np_random, _ = gym.utils.seeding.np_random(seed)
+
+        # Vectorized Bot States
+        self.bot_counts: Dict[str, int] = dict(self.default_bot_counts)
+        self.embb_bot_on: np.ndarray = np.zeros(0, dtype=bool)
+        self.urllc_bot_phase: np.ndarray = np.zeros(0, dtype=np.float32)
+        self.murllc_bot_burst_left: np.ndarray = np.zeros(0, dtype=np.int32)
+        self._init_bot_states()
 
         # Internal state tracking
         self.current_step: int = 0
@@ -76,7 +96,7 @@ class SliceEnv(gym.Env):
         # Active spike control: {slice: (multiplier, remaining_steps)}
         self.active_spikes: Dict[str, Tuple[float, int]] = {}
 
-        # Burst states for stochastic background bursts
+        # Burst states for stochastic background bursts (aggregate mode)
         self.embb_burst_remaining: int = 0
         self.murllc_burst_remaining: int = 0
 
@@ -84,6 +104,77 @@ class SliceEnv(gym.Env):
         self.lambda_param: float = 0.0
         self.episode_costs: List[float] = []
         self.episode_rewards: List[float] = []
+
+    def _init_bot_states(self) -> None:
+        """Initialize vectorized internal states for all active bots."""
+        # eMBB: ON/OFF state (steady state probability ~0.4 ON)
+        n_embb = self.bot_counts["embb"]
+        if n_embb > 0:
+            p_on_init = self.bots_cfg.get("embb", {}).get("p_on", 0.2) / max(
+                1e-4,
+                self.bots_cfg.get("embb", {}).get("p_on", 0.2) + self.bots_cfg.get("embb", {}).get("p_off", 0.3)
+            )
+            self.embb_bot_on = self.np_random.random(size=n_embb) < p_on_init
+        else:
+            self.embb_bot_on = np.zeros(0, dtype=bool)
+
+        # URLLC: Random phase in [0, 2*pi]
+        n_urllc = self.bot_counts["urllc"]
+        if n_urllc > 0:
+            self.urllc_bot_phase = self.np_random.uniform(0.0, 2.0 * np.pi, size=n_urllc).astype(np.float32)
+        else:
+            self.urllc_bot_phase = np.zeros(0, dtype=np.float32)
+
+        # mURLLC: Burst remaining steps
+        n_murllc = self.bot_counts["murllc"]
+        if n_murllc > 0:
+            self.murllc_bot_burst_left = np.zeros(n_murllc, dtype=np.int32)
+        else:
+            self.murllc_bot_burst_left = np.zeros(0, dtype=np.int32)
+
+    def set_bots(self, slice_name: str, count: int) -> int:
+        """Set bot count for a slice, clipping to [0, max_count]. Returns updated count."""
+        if slice_name not in self.slices:
+            return 0
+
+        max_c = self.max_bot_counts[slice_name]
+        new_count = int(np.clip(int(count), 0, max_c))
+        old_count = self.bot_counts[slice_name]
+        self.bot_counts[slice_name] = new_count
+
+        diff = new_count - old_count
+        if slice_name == "embb":
+            if diff > 0:
+                new_states = self.np_random.random(size=diff) < 0.40
+                self.embb_bot_on = np.concatenate([self.embb_bot_on, new_states])
+            elif diff < 0:
+                self.embb_bot_on = self.embb_bot_on[:new_count]
+        elif slice_name == "urllc":
+            if diff > 0:
+                new_phases = self.np_random.uniform(0.0, 2.0 * np.pi, size=diff).astype(np.float32)
+                self.urllc_bot_phase = np.concatenate([self.urllc_bot_phase, new_phases])
+            elif diff < 0:
+                self.urllc_bot_phase = self.urllc_bot_phase[:new_count]
+        elif slice_name == "murllc":
+            if diff > 0:
+                new_bursts = np.zeros(diff, dtype=np.int32)
+                self.murllc_bot_burst_left = np.concatenate([self.murllc_bot_burst_left, new_bursts])
+            elif diff < 0:
+                self.murllc_bot_burst_left = self.murllc_bot_burst_left[:new_count]
+
+        return new_count
+
+    def add_bots(self, slice_name: str, n: int) -> int:
+        """Add n bots to a slice. Returns updated count."""
+        return self.set_bots(slice_name, self.bot_counts.get(slice_name, 0) + int(n))
+
+    def remove_bots(self, slice_name: str, n: int) -> int:
+        """Remove n bots from a slice. Returns updated count."""
+        return self.set_bots(slice_name, max(0, self.bot_counts.get(slice_name, 0) - int(n)))
+
+    def get_bot_counts(self) -> Dict[str, int]:
+        """Return current bot count dictionary."""
+        return dict(self.bot_counts)
 
     def set_spike(self, slice_name: str, factor: float, duration_steps: int) -> None:
         """Trigger an external traffic spike on a specific slice."""
@@ -108,6 +199,10 @@ class SliceEnv(gym.Env):
         self.episode_costs.clear()
         self.episode_rewards.clear()
 
+        # Reset bot counts to defaults
+        self.bot_counts = dict(self.default_bot_counts)
+        self._init_bot_states()
+
         # Initial equal shares
         self.current_prb_shares = np.array([1.0 / self.num_slices] * self.num_slices, dtype=np.float32)
         self.current_vcpu_shares = np.array([1.0 / self.num_slices] * self.num_slices, dtype=np.float32)
@@ -115,6 +210,7 @@ class SliceEnv(gym.Env):
         obs = self._get_observation()
         info = self._get_info(
             arrivals={s: 0.0 for s in self.slices},
+            bot_packets={s: 0.0 for s in self.slices},
             served={s: 0.0 for s in self.slices},
             violations={s: 0.0 for s in self.slices},
             step_cost=0.0,
@@ -127,11 +223,90 @@ class SliceEnv(gym.Env):
         e_x = np.exp(x - np.max(x))
         return e_x / np.sum(e_x)
 
-    def _generate_arrivals(self) -> Dict[str, float]:
-        """Generate stochastic traffic arrivals for the current step."""
+    def _generate_bot_arrivals(self) -> Tuple[Dict[str, float], Dict[str, float]]:
+        """Generate vectorized arrivals from individual bot populations."""
+        bot_pkts: Dict[str, float] = {}
+
+        # 1. eMBB bots: Two-state Markov ON/OFF model
+        n_embb = self.bot_counts["embb"]
+        if n_embb > 0:
+            embb_cfg = self.bots_cfg.get("embb", {})
+            p_on = embb_cfg.get("p_on", 0.20)
+            p_off = embb_cfg.get("p_off", 0.30)
+            rate_on = embb_cfg.get("rate_on", 25.0)
+
+            # State transition
+            sw_on = (~self.embb_bot_on) & (self.np_random.random(size=n_embb) < p_on)
+            sw_off = self.embb_bot_on & (self.np_random.random(size=n_embb) < p_off)
+            self.embb_bot_on[sw_on] = True
+            self.embb_bot_on[sw_off] = False
+
+            # Active bots generate Poisson packets
+            active_count = int(np.count_nonzero(self.embb_bot_on))
+            if active_count > 0:
+                pkts = self.np_random.poisson(lam=rate_on, size=active_count)
+                bot_pkts["embb"] = float(np.sum(pkts))
+            else:
+                bot_pkts["embb"] = 0.0
+        else:
+            bot_pkts["embb"] = 0.0
+
+        # 2. URLLC bots: Periodic timing with jitter
+        n_urllc = self.bot_counts["urllc"]
+        if n_urllc > 0:
+            urllc_cfg = self.bots_cfg.get("urllc", {})
+            period = urllc_cfg.get("period_steps", 10)
+            # Periodic modulation: rate = 1.0 * (1 + 0.3*sin(2*pi*t/period + phase))
+            rates = 1.0 + 0.3 * np.sin(2.0 * np.pi * self.current_step / period + self.urllc_bot_phase)
+            rates = np.clip(rates, 0.1, 2.0)
+            pkts_urllc = self.np_random.poisson(lam=rates)
+            bot_pkts["urllc"] = float(np.sum(pkts_urllc))
+        else:
+            bot_pkts["urllc"] = 0.0
+
+        # 3. mURLLC bots: Rare storm bursts
+        n_murllc = self.bot_counts["murllc"]
+        if n_murllc > 0:
+            murllc_cfg = self.bots_cfg.get("murllc", {})
+            p_burst = murllc_cfg.get("p_burst", 0.02)
+            burst_len = murllc_cfg.get("burst_len", 3)
+            rate_burst = murllc_cfg.get("rate_burst", 3.33)
+
+            # Trigger new bursts for quiet bots
+            new_bursts = (self.murllc_bot_burst_left == 0) & (self.np_random.random(size=n_murllc) < p_burst)
+            self.murllc_bot_burst_left[new_bursts] = burst_len
+
+            # Active bursting bots
+            bursting = self.murllc_bot_burst_left > 0
+            burst_count = int(np.count_nonzero(bursting))
+            if burst_count > 0:
+                pkts_m = self.np_random.poisson(lam=rate_burst, size=burst_count)
+                bot_pkts["murllc"] = float(np.sum(pkts_m))
+            else:
+                bot_pkts["murllc"] = 0.0
+
+            # Decrement burst remaining
+            self.murllc_bot_burst_left[bursting] -= 1
+        else:
+            bot_pkts["murllc"] = 0.0
+
+        # Apply active slice spikes
+        final_arrivals: Dict[str, float] = {}
+        for s in self.slices:
+            mult = 1.0
+            if s in self.active_spikes and self.active_spikes[s][1] > 0:
+                factor, remaining = self.active_spikes[s]
+                mult = factor
+                self.active_spikes[s] = (factor, remaining - 1)
+            final_arrivals[s] = float(int(round(bot_pkts[s] * mult)))
+
+        return final_arrivals, bot_pkts
+
+    def _generate_aggregate_arrivals(self) -> Tuple[Dict[str, float], Dict[str, float]]:
+        """Generate baseline aggregate Poisson arrivals (Phases 0-8 backward compatibility)."""
         arrivals: Dict[str, float] = {}
 
-        # 1. eMBB: Poisson(mean * spike_multiplier) + 5% chance of 1.5x burst for 5 steps
+        # 1. eMBB
         embb_mult = 1.0
         if "embb" in self.active_spikes and self.active_spikes["embb"][1] > 0:
             factor, remaining = self.active_spikes["embb"]
@@ -147,7 +322,7 @@ class SliceEnv(gym.Env):
         embb_lam = max(1.0, self.arrival_mean["embb"] * embb_mult)
         arrivals["embb"] = float(self.np_random.poisson(lam=embb_lam))
 
-        # 2. URLLC: Poisson with periodic sinusoid (period 20, amp 30%) + active spike
+        # 2. URLLC
         urllc_periodic = 1.0 + 0.3 * np.sin(2.0 * np.pi * self.current_step / 20.0)
         urllc_mult = urllc_periodic
         if "urllc" in self.active_spikes and self.active_spikes["urllc"][1] > 0:
@@ -158,7 +333,7 @@ class SliceEnv(gym.Env):
         urllc_lam = max(1.0, self.arrival_mean["urllc"] * urllc_mult)
         arrivals["urllc"] = float(self.np_random.poisson(lam=urllc_lam))
 
-        # 3. mURLLC: Poisson baseline + 2% chance of 7x burst for 3 steps + active spike
+        # 3. mURLLC
         murllc_mult = 1.0
         if "murllc" in self.active_spikes and self.active_spikes["murllc"][1] > 0:
             factor, remaining = self.active_spikes["murllc"]
@@ -174,7 +349,7 @@ class SliceEnv(gym.Env):
         murllc_lam = max(1.0, self.arrival_mean["murllc"] * murllc_mult)
         arrivals["murllc"] = float(self.np_random.poisson(lam=murllc_lam))
 
-        return arrivals
+        return arrivals, dict(arrivals)
 
     def step(
         self, action: np.ndarray
@@ -182,7 +357,6 @@ class SliceEnv(gym.Env):
         """Advance simulation by 1 step (100 ms)."""
         self.current_step += 1
 
-        # Parse action logits or direct share vectors
         action = np.asarray(action, dtype=np.float32)
         if len(action) == 6:
             prb_shares = self._softmax(action[:3])
@@ -193,14 +367,17 @@ class SliceEnv(gym.Env):
         self.current_prb_shares = prb_shares
         self.current_vcpu_shares = vcpu_shares
 
-        # 1. Arrivals
-        arrivals = self._generate_arrivals()
+        # Generate arrivals according to active mode
+        if self.traffic_mode == "bots":
+            arrivals, bot_packets = self._generate_bot_arrivals()
+        else:
+            arrivals, bot_packets = self._generate_aggregate_arrivals()
 
-        # Update EMA smoothed arrivals (alpha = 0.3)
+        # Update EMA smoothed arrivals
         for s in self.slices:
             self.smoothed_arrivals[s] = 0.7 * self.smoothed_arrivals[s] + 0.3 * arrivals[s]
 
-        # 2. Capacities (Radio & Compute coupling)
+        # Capacities & Service
         served: Dict[str, float] = {}
         violations: Dict[str, float] = {}
         dropped: Dict[str, float] = {}
@@ -215,40 +392,33 @@ class SliceEnv(gym.Env):
             served[s] = float(served_packets)
 
             if s == "embb":
-                # Queue carryover up to queue_max
                 leftover = demand - served_packets
                 max_q = self.queue_max["embb"]
                 self.queues["embb"] = min(max_q, leftover)
                 dropped["embb"] = max(0.0, leftover - max_q)
                 violations["embb"] = dropped["embb"]
             else:
-                # URLLC & mURLLC: strict deadline, no queue carryover
                 self.queues[s] = 0.0
                 unserved = max(0.0, arrivals[s] - served_packets)
                 violations[s] = float(unserved)
                 dropped[s] = float(unserved)
 
-        # 3. Reward & Cost calculation
+        # Reward & Cost
         embb_demand = arrivals["embb"] + self.queues["embb"]
-        step_reward = served["embb"] / max(1.0, embb_demand)
+        step_reward = (served["embb"] / embb_demand) if embb_demand > 0 else 1.0
         step_reward = float(np.clip(step_reward, 0.0, 1.0))
 
-        urllc_murllc_arrivals = arrivals["urllc"] + arrivals["murllc"]
-        urllc_murllc_violations = violations["urllc"] + violations["murllc"]
-        if urllc_murllc_arrivals > 0:
-            step_cost = urllc_murllc_violations / urllc_murllc_arrivals
-        else:
-            step_cost = 0.0
+        urllc_murllc_arr = arrivals["urllc"] + arrivals["murllc"]
+        urllc_murllc_viol = violations["urllc"] + violations["murllc"]
+        step_cost = (urllc_murllc_viol / urllc_murllc_arr) if urllc_murllc_arr > 0 else 0.0
         step_cost = float(np.clip(step_cost, 0.0, 1.0))
 
         self.episode_rewards.append(step_reward)
         self.episode_costs.append(step_cost)
 
-        # Gymnasium termination / truncation
         terminated = self.current_step >= self.steps_per_episode
         truncated = False
 
-        # Lagrangian update at episode end
         if terminated:
             mean_cost = float(np.mean(self.episode_costs)) if self.episode_costs else 0.0
             self.lambda_param = max(
@@ -258,6 +428,7 @@ class SliceEnv(gym.Env):
         obs = self._get_observation()
         info = self._get_info(
             arrivals=arrivals,
+            bot_packets=bot_packets,
             served=served,
             violations=violations,
             step_cost=step_cost,
@@ -270,21 +441,16 @@ class SliceEnv(gym.Env):
         """Construct the 12-dimensional normalized observation vector."""
         obs = []
         for idx, s in enumerate(self.slices):
-            # 1. Queue ratio (0 for slices with queue_max == 0)
             q_max = self.queue_max[s]
             q_ratio = (self.queues[s] / q_max) if q_max > 0 else 0.0
             q_ratio = float(np.clip(q_ratio, 0.0, 1.0))
 
-            # 2. Smoothed load (EMA arrivals / slice capacity)
             radio_cap = self.current_prb_shares[idx] * self.prb_total * self.prb_rate
             cpu_cap = self.current_vcpu_shares[idx] * self.vcpu_total * self.cpu_rate
             eff_cap = max(1.0, min(radio_cap, cpu_cap))
             smoothed_load = float(np.clip(self.smoothed_arrivals[s] / eff_cap, 0.0, 1.0))
 
-            # 3. Current PRB share
             prb_s = float(np.clip(self.current_prb_shares[idx], 0.0, 1.0))
-
-            # 4. Current vCPU share
             vcpu_s = float(np.clip(self.current_vcpu_shares[idx], 0.0, 1.0))
 
             obs.extend([q_ratio, smoothed_load, prb_s, vcpu_s])
@@ -294,6 +460,7 @@ class SliceEnv(gym.Env):
     def _get_info(
         self,
         arrivals: Dict[str, float],
+        bot_packets: Dict[str, float],
         served: Dict[str, float],
         violations: Dict[str, float],
         step_cost: float,
@@ -318,4 +485,6 @@ class SliceEnv(gym.Env):
                 "vcpu": {s: float(self.current_vcpu_shares[i]) for i, s in enumerate(self.slices)},
             },
             "queue": {s: float(self.queues[s]) for s in self.slices},
+            "bots": self.get_bot_counts(),
+            "bot_packets": {s: float(bot_packets[s]) for s in self.slices},
         }
