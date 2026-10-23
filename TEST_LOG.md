@@ -349,3 +349,22 @@ This document records the automated verification logs across development phases,
 | **FT-56** | Scientific footnotes | Mandatory footnote visibly notes slice-level simulator and queuing-theory delay model estimates | **PASSED** | P0 |
 
 ---
+
+## Phase F7: Page 7 — Presenter Mode & Quality Polish (FT-57 to FT-62)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f7.cjs` + `npm run typecheck` + `npm run build`
+- **Result**: **6/6 PASSED (P0/P1/P2)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-57** | 2-meter readable typography | Scoreboard and key headline metrics formatted in >= 24px–48px typography (`text-4xl`/`text-5xl font-mono font-black`) for large projection display | **PASSED** | P0 |
+| **FT-58** | Keyboard shortcuts & help | Presenter mode binds `1`, `2`, `3` (spikes), `Space` (pause), `R` (reset), `P`/`Esc` (toggle), `?` (interactive shortcuts modal overlay) | **PASSED** | P1 |
+| **FT-59** | Fault-tolerant error handling | Error boundary displays structured error stack with 1-click user 'Retry Component' action; skeletons show pulsing placeholders | **PASSED** | P0 |
+| **FT-60** | Multi-resolution responsiveness | Layouts scale smoothly between 1920x1080 and 1366x768 projection displays without clipping, horizontal scrollbars, or text collisions | **PASSED** | P1 |
+| **FT-61** | Background tab throttling | WebSocket stream throttles to 1Hz on hidden tab (`!isDocumentVisibleRef.current`) and ring buffer caps at 300 points to prevent memory leaks | **PASSED** | P0 |
+| **FT-62** | Accessible multi-channel badges | All status indicators simultaneously present semantic color, Lucide icon (`CheckCircle2`/`AlertTriangle`/`XCircle`), and explicit text label | **PASSED** | P1 |
+
+---
