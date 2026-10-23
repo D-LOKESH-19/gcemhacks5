@@ -392,11 +392,18 @@ This document records the automated verification logs across development phases,
 
 ---
 
-## Final Project Verification Summary
+## Phase F0: Baseline Verification & Environment Sanity
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Environment**: Node `v24.10.0`, npm `11.6.1`, Python `3.10` / Windows PowerShell
+- **Git Tag**: `pre-react` (verified)
+- **Suites Executed**: `sim_selftest.py`, `shield.py`, `test_bots_9a.py` through `9d.py`, `test_sla_11d.py`, `test_locations_10c.py`, `test_locations_10d.py`
+- **Result**: **ALL TESTS PASSED (0 Failures, 0 Regressions)**
 
-- **Total Acceptance Tests Executed**: 72 Frontend tests (FT-01 to FT-72) + 40 Location tests (LT-01 to LT-40) + 18 Bot tests (BT-01 to BT-18) + 5 E2E Scenarios (E2E-14 to E2E-19)
-- **Cumulative Pass Rate**: **100% (0 Failures, 0 Regressions)**
-- **Codebase Integrity**: Zero mock data, strict TypeScript types, 100% offline self-contained with pinned local dependencies.
-- **Dual Dashboard Availability**:
-  - Enterprise React Suite: `http://localhost:8050/`
-  - Classic NOC Monitor: `http://localhost:8050/legacy`
+### Baseline Test Summary
+- **Simulator Acceptance (`sim_selftest.py`)**: 5/5 PASSED (simplex conservation, surge drop, radio-compute coupling, determinism).
+- **Safety Shield (`shield.py`)**: 3/3 PASSED (simplex sum 1.0, floor preservation, dynamic scaling).
+- **Bot Patrol Simulation (`test_bots_9a-d.py`)**: 18/18 PASSED (calibration, scaling, traffic fairness, UI bounds, zero Math.random).
+- **SLA Module & Multi-Window (`test_sla_11d.py`)**: 8/8 PASSED.
+- **Locations Engine (`test_locations_10c-d.py`)**: 21/21 PASSED.
+
