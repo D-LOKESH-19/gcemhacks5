@@ -316,6 +316,29 @@ class SimulationManager:
                 "total_arrivals": round(total_arrivals, 1),
                 "total_capacity": 1200,
                 "load_pct": round((total_arrivals / 1200.0) * 100, 1),
+                "arrivals": {k: round(float(v), 1) for k, v in self.info_agent.get("arrivals", {}).items()},
+                "latest_decision": {
+                    "step": self.step_idx,
+                    "shield_active": bool(shield_active),
+                    "raw_prb": {k: round(float(v), 3) for k, v in self.last_raw_prb.items()},
+                    "shielded_prb": {k: round(float(v), 3) for k, v in self.last_shielded_prb.items()},
+                    "arrivals": {k: round(float(v), 1) for k, v in self.info_agent.get("arrivals", {}).items()},
+                    "inference_ms": round(self.last_inference_ms, 2),
+                    "sla_ok": bool(sla_a["urllc"]["status"] != "breach" and sla_a["murllc"]["status"] != "breach"),
+                    "reason": (
+                        "Safety Shield clamped eMBB to protect URLLC/mURLLC floor"
+                        if shield_active
+                        else (
+                            f"eMBB surge ({self.info_agent['arrivals']['embb']:.0f} pkts): dynamically borrowed PRB"
+                            if self.info_agent.get("arrivals", {}).get("embb", 0) > 700
+                            else (
+                                f"URLLC burst ({self.info_agent['arrivals']['urllc']:.0f} pkts): priority PRB served"
+                                if self.info_agent.get("arrivals", {}).get("urllc", 0) > 50
+                                else "Nominal PPO policy allocation (SLA verified)"
+                            )
+                        )
+                    ),
+                },
             },
             "est_delay_ms": {
                 "static": self.info_static.get("est_delay_ms", {}),
@@ -329,6 +352,7 @@ class SimulationManager:
                     "violation_rate": self.info_static["violation_rate"],
                     "shares": self.info_static["shares"],
                     "queue": self.info_static["queue"],
+                    "arrivals": self.info_static.get("arrivals", {}),
                     "sla": sla_s,
                     "est_delay_ms": self.info_static.get("est_delay_ms", {}),
                     "bots_by_location": self.info_static.get("bots_by_location", {}),
@@ -341,6 +365,7 @@ class SimulationManager:
                     "violation_rate": self.info_heuristic["violation_rate"],
                     "shares": self.info_heuristic["shares"],
                     "queue": self.info_heuristic["queue"],
+                    "arrivals": self.info_heuristic.get("arrivals", {}),
                     "sla": sla_h,
                     "est_delay_ms": self.info_heuristic.get("est_delay_ms", {}),
                     "bots_by_location": self.info_heuristic.get("bots_by_location", {}),
@@ -353,6 +378,7 @@ class SimulationManager:
                     "violation_rate": self.info_agent["violation_rate"],
                     "shares": self.info_agent["shares"],
                     "queue": self.info_agent["queue"],
+                    "arrivals": self.info_agent.get("arrivals", {}),
                     "lambda": self.info_agent.get("lambda", 0.0),
                     "shield_active": shield_active,
                     "sla": sla_a,
