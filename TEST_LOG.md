@@ -582,3 +582,24 @@ This document records the automated verification logs across development phases,
 | **AT-35** | Honest Terminology | Controller named 'Resource Controller'; whole-units and overload priority rules visible | **PASSED** | P0 |
 | **AT-37** | Disabled State Handling | Inactive capability flag renders friendly notification banner without crashing | **PASSED** | P1 |
 
+---
+
+## Phase F4: Traffic Profiles, Virtual Bots & Canvas Map (FT-31 to FT-38)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f4.cjs` + `npm --prefix frontend run build`
+- **Result**: **8/8 PASSED (P0/P1)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-31** | Profile Presets | All 5 profiles (Steady, eMBB surge, URLLC burst, mURLLC storm, Mixed) verified | **PASSED** | P0 |
+| **FT-32** | Bot Addition | `POST /bots` with mode `add` correctly increases bot population | **PASSED** | P0 |
+| **FT-33** | Bot Set & Remove | `POST /bots` supports exact count setting and decrementing | **PASSED** | P0 |
+| **FT-34** | Boundary Clipping | Requests beyond slice maximum return `clipped: true` with capped counts | **PASSED** | P1 |
+| **FT-35** | Canvas Dot Scaling | High bot counts scale dynamically (<= 60 dots) with explicit calibration label | **PASSED** | P0 |
+| **FT-36** | Capabilities Guard | Inactive bot generator displays graceful offline notification without crash | **PASSED** | P1 |
+| **FT-37** | Input Sanitization | Client input rejects non-numeric, negative, and decimal strings before API call | **PASSED** | P1 |
+| **FT-38** | Rapid Concurrency | 30 rapid back-to-back bot modifications processed with 100% HTTP 200 OK | **PASSED** | P0 |
+
