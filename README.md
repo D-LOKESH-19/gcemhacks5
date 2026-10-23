@@ -125,11 +125,25 @@ Open **[http://localhost:8050](http://localhost:8050)** in your browser.
 
 ---
 
-## 5. Live Demo Flow (3 Minutes)
+## 5. Phase 9: Interactive Bots Feature
+
+Instead of treating traffic as an opaque statistical number, the **Bots Feature** allows audience members and presenters to simulate real-world device populations on the fly:
+- **eMBB Bots (Video Streaming Devices):** 2-state Markov ON/OFF model generating Poisson packet streams when active.
+- **URLLC Bots (Mission-Critical Industrial Robots):** Periodic transmitters with phase-jitter synchronization ($1.0$ pkt/step average).
+- **mURLLC Bots (Dense IoT Sensors):** Quiet sensors that intermittently trigger correlated storm events ($3.33$ pkts/step bursts).
+
+### Live Telemetry & Field Visualization:
+- Real-time HTML5 Canvas displays active devices transmitting packets towards the central 5G gNodeB tower with dynamic dot scaling (`1 dot = N bots`).
+- Synchronous multi-policy broadcast: every bot addition or removal takes effect on Static, Heuristic, and the Safe RL Agent at the **exact same simulation step**.
+
+---
+
+## 6. Live Demo Flow (3 Minutes)
 
 1. **0:00 - 0:20 (The Real Problem):** Explain why fixed 60/25/15 partitions strand spectrum and why compute (vCPU) limits bottleneck radio throughput.
 2. **0:20 - 0:40 (The Architecture):** Show the 3-part design: joint radio+compute control, Lagrangian PPO, and deterministic safety shielding.
-3. **0:40 - 2:10 (Live Dashboard Demo):**
+3. **0:40 - 2:10 (Live Dashboard & Bots Demo):**
+   - **Interactive Bots:** Type 20 bots and watch the load arrive in real time. Notice how URLLC packets surge across all three panels simultaneously.
    - Click **⚡ eMBB Surge (x2.5)**: Observe Static eMBB queue buffer rapidly filling towards 2000 packets; the Agent dynamically borrows idle capacity while keeping URLLC at its floor.
    - Click **⚡ URLLC Burst (x3.0)** or **⚡ mURLLC Storm (x7.0)**: Observe the amber **Shield Active** badge light up on the Agent panel, maintaining 0.00% violations.
    - Show the dynamic explainability event log terminal explaining allocations in real time.
@@ -138,24 +152,30 @@ Open **[http://localhost:8050](http://localhost:8050)** in your browser.
 
 ---
 
-## 6. Project Structure
+## 7. Project Structure
 
 ```
 gcmehack5/
-├── config.yaml          # Master configuration (rates, arrival means, SLA limits)
-├── sim.py               # Gymnasium 5G SliceEnv with radio-compute coupling
+├── config.yaml          # Master configuration (rates, arrival means, SLA limits, bot parameters)
+├── sim.py               # Gymnasium 5G SliceEnv with vectorized bot population support
 ├── sim_selftest.py      # Simulator acceptance test suite
 ├── shield.py            # Deterministic safety shield + unit tests
 ├── baselines.py         # Static and Demand-Proportional Heuristic policies
-├── train.py             # Constrained RL (Lagrangian PPO) training loop
+├── train.py             # Constrained RL (Lagrangian PPO) training loop with bot scaling
 ├── evaluate.py          # Benchmark scenario evaluation harness
-├── api.py               # FastAPI backend with WebSockets & spike triggers
+├── api.py               # FastAPI backend with WebSockets, spike injection, and /bots API
 ├── plot_results.py      # Publication-quality benchmark chart generator
+├── test_bots_9a.py      # Phase 9a Bot simulator acceptance tests (BT-1 to BT-5, BT-8 to BT-11)
+├── test_bots_9b.py      # Phase 9b Model fairness & scaling tests (BT-6, BT-7, BT-16)
+├── test_bots_9c.py      # Phase 9c Bot API & WebSocket telemetry tests (BT-12, BT-13)
+├── test_bots_9d.py      # Phase 9d UI, bounds clipping, and stress tests (BT-14, BT-15, BT-17, BT-18)
+├── TESTING_GUIDE.md     # Master testing verification matrix and execution guide
 ├── static/
-│   ├── index.html       # High-performance glassmorphic live dashboard
+│   ├── index.html       # High-performance live dashboard with interactive bot controls & canvas
 │   └── chart.min.js     # Bundled Chart.js for 100% offline support
 ├── models/
-│   └── agent.zip        # Pre-trained Lagrangian PPO policy
+│   ├── agent.zip            # Retrained bot-aware Lagrangian PPO policy
+│   └── agent_pre_bots.zip   # Pre-bots baseline checkpoint (rollback safety)
 ├── results/
 │   ├── evaluation_table.csv    # Benchmark metrics across seeds
 │   ├── training.png            # Convergence curves (Reward, Cost, Lambda)
