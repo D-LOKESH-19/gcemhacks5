@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppShell } from "./components/layout/AppShell";
 import { LiveDemoPage } from "./pages/LiveDemoPage";
+import { ResourceAllocationPage } from "./pages/ResourceAllocationPage";
 import { TrafficBotsPage } from "./pages/TrafficBotsPage";
 import { AgentInsightsPage } from "./pages/AgentInsightsPage";
 import { SlaCompliancePage } from "./pages/SlaCompliancePage";
@@ -17,6 +18,7 @@ export const App: React.FC = () => {
       <Routes>
         <Route element={<AppShell />}>
           <Route path="/" element={<LiveDemoPage />} />
+          <Route path="/allocation" element={<ResourceAllocationPage />} />
           <Route path="/traffic" element={<TrafficBotsPage />} />
           <Route path="/agent" element={<AgentInsightsPage />} />
           <Route path="/sla" element={<SlaCompliancePage />} />

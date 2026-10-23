@@ -511,3 +511,21 @@ This document records the automated verification logs across development phases,
 | **AT-39c** | Transfer Ledger Burst Merging | `mergeBurstTransfers` merges consecutive identical transfers into multiplier count tags (`xN`) while keeping distinct items intact | **PASSED** | P0 |
 | **AT-39d** | Replay Scrub Buffer | `extractScrubBuffer` safely truncates telemetry history ring buffer strictly to 60 steps | **PASSED** | P0 |
 
+---
+
+## Phase R2: Resource Pools, Locks, Flashes & Legend (AT-21 to AT-25, AT-42)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_r2.cjs` + `npm --prefix frontend run build`
+- **Result**: **5/5 PASSED (P0/P1)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **AT-21** | Unit Totals Invariant | PRB cells strictly total 100 and vCPU chips total 8 across all frames | **PASSED** | P0 |
+| **AT-22** | Contiguous Slice Blocks | Slices ordered strictly in fixed order [eMBB, URLLC, mURLLC] without interleaving | **PASSED** | P0 |
+| **AT-23** | Flash Animation Bounds | Unit reallocations trigger 600ms boundary flashes capped at 12 simultaneous units | **PASSED** | P0 |
+| **AT-25** | SLA Floor Locks | Protected SLA floor cells display lock icon matching `floor(floor_share * total)` | **PASSED** | P0 |
+| **AT-42** | Legend & Honesty Text | Collapsible legend explains tokens, locks, and flashes; whole-units disclaimer visible | **PASSED** | P1 |
+

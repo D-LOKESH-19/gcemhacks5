@@ -2,6 +2,7 @@ import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { 
   Activity, 
+  Boxes,
   Sliders, 
   Cpu, 
   ShieldCheck, 
@@ -23,6 +24,7 @@ export const Header: React.FC = () => {
 
   const navItems = [
     { to: "/", label: "Live Demo", icon: Activity },
+    ...(capabilities?.allocation !== false ? [{ to: "/allocation", label: "Allocation", icon: Boxes }] : []),
     ...(capabilities?.bots !== false ? [{ to: "/traffic", label: "Traffic & Bots", icon: Sliders }] : []),
     { to: "/agent", label: "Agent Insights", icon: Cpu },
     ...(capabilities?.sla !== false ? [{ to: "/sla", label: "SLA Matrix", icon: ShieldCheck }] : []),
