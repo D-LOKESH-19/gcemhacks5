@@ -425,3 +425,21 @@ This document records the automated verification logs across development phases,
 | **FT-8** | Shield Stats Stream | `shield` block includes `active`, `changed`, `delta_pct`, `intervention_rate_20` | **PASSED** | P0 |
 | **FT-9** | Legacy & SPA Integrity | `/health`, `/summary`, `/spike`, `/reset`, `/bots`, `/legacy`, and SPA `/` intact | **PASSED** | P0 |
 
+---
+
+## Phase F2: Live Dashboard, Scoreboard & Charts (FT-10 to FT-16)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f2.cjs` + `npm --prefix frontend run build`
+- **Result**: **5/5 PASSED (P0/P1)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-10** | TypeScript Type Reality | All 30 captured stream sample messages parse with zero type/schema mismatches | **PASSED** | P0 |
+| **FT-12** | Ring Buffer Bounds | Telemetry buffers cap at 300 items with deterministic FIFO eviction | **PASSED** | P0 |
+| **FT-14** | Production Code Integrity | Zero `Math.random()`, `faker`, or fixture imports in `frontend/src/` | **PASSED** | P0 |
+| **FT-16** | Color Palette Invariant | Strict separation of slice colors (eMBB `#22D3EE`, URLLC `#F59E0B`, mURLLC `#A78BFA`) and policy colors (Static `#F87171`, Heuristic `#CBD5E1`, Agent `#34D399`) | **PASSED** | P0 |
+| **FT-Live** | Spike Injection & Control | Real-time spike injection, pause toggle, and nominal banner pulse integrated | **PASSED** | P1 |
+
