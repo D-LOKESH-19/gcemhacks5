@@ -166,6 +166,7 @@ The **Locations Feature** organizes simulated user populations into 3 distinct l
    - **Maximum Load Everywhere:** Set maximum bot populations in all zones to push total offered traffic into overload. The **⚠️ OVERLOAD: URLLC and mURLLC protected first** banner appears, honestly communicating that mission-critical slices take absolute priority.
    - **Recovery:** Click **🔄 Reset** or remove added users to watch all zone chips and buffers recover to green.
 3. **2:00 - 2:35 (Scoreboard & SLA Contract):**
+   - Lead with the core thesis: *"Here are our SLAs, and here they hold while Static fails."*
    - Compare cumulative violation rates on the scoreboard: Static fails URLLC/mURLLC SLAs under dynamic load, whereas the Agent achieves 0.00% critical violations while maximizing eMBB throughput.
 4. **2:35 - 3:00 (Honest Claims & Scope):**
    - Deliver clear, honest technical takeaways and outline future ns-3 full-stack validation.
