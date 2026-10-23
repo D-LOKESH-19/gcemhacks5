@@ -305,3 +305,22 @@ This document records the automated verification logs across development phases,
 | **FT-38** | Stress test reliability | 30 rapid concurrent bot adjustments execute with 100% HTTP 200 responses and consistent state | **PASSED** | P1 |
 
 ---
+
+## Phase F5: Page 3 — Agent Insights Page (FT-39 to FT-44)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f5.cjs` + `npm run typecheck` + `npm run build`
+- **Result**: **6/6 PASSED (P0/P1/P2)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-39** | Stacked shares chart | Stacked areas sum to 100%; PRB vs vCPU toggle switches axes without distortion | **PASSED** | P1 |
+| **FT-40** | Shield telemetry text | 'The shield changed the agent's decision in X percent of the last 20 steps.' strictly matches stream telemetry | **PASSED** | P0 |
+| **FT-41** | 20-step decision table | Displays last 20 actuation rows with real numbers, ingress arrivals, and synthesized reasons | **PASSED** | P1 |
+| **FT-42** | Radio-compute coupling | Per-slice effective capacity equals `min(PRB, vCPU)` and identifies bottleneck domain | **PASSED** | P1 |
+| **FT-43** | Heuristic overlay line | Interactive toggle adds and removes the Heuristic URLLC reference baseline overlay | **PASSED** | P2 |
+| **FT-44** | Scientific honesty | Copy strictly delineates algorithmic safety shield supervisor from learned neural RL policy | **PASSED** | P0 |
+
+---
