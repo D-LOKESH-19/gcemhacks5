@@ -603,3 +603,23 @@ This document records the automated verification logs across development phases,
 | **FT-37** | Input Sanitization | Client input rejects non-numeric, negative, and decimal strings before API call | **PASSED** | P1 |
 | **FT-38** | Rapid Concurrency | 30 rapid back-to-back bot modifications processed with 100% HTTP 200 OK | **PASSED** | P0 |
 
+---
+
+## Phase F5: Agent Deep Dive & CMDP Convergence (FT-39 to FT-44)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f5.cjs` + `npm --prefix frontend run build`
+- **Result**: **6/6 PASSED (P0/P1/P2)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-39** | Stacked Shares Chart | Stacked areas sum to 100% simplex; PRB vs vCPU toggle switches axes without distortion | **PASSED** | P1 |
+| **FT-40** | Shield Text Stream | "The shield changed the agent's decision in X percent of the last Y steps" matches live stream | **PASSED** | P0 |
+| **FT-41** | Decision Audit Table | 20-row ring buffer displays live decision values and numeric reason breakdown | **PASSED** | P1 |
+| **FT-42** | Coupling Capacity Bars | Effective capacity strictly equals min(radio PRB, compute vCPU) | **PASSED** | P1 |
+| **FT-43** | Heuristic Overlay | Interactive toggle overlays/removes Heuristic reference baseline without reload | **PASSED** | P2 |
+| **FT-44** | Scientific Honesty | Explanatory copy cleanly delineates algorithmic supervisor from neural RL policy without overclaiming | **PASSED** | P0 |
+
+
