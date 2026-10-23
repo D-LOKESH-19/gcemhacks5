@@ -690,3 +690,27 @@ This document records the automated verification logs across development phases,
 | **FT-72** | Architecture Documentation | `README.md` documents both Enterprise React Suite and Classic NOC view with honest terminology | **PASSED** | P1 |
 
 
+
+---
+
+## Phase L0: Lending Gate and Safety (LL-12 baseline)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Tag / backup**: `git tag pre-lending` (on 2b3d8ea); `models/agent_pre_lending.zip` is byte-identical to `models/agent.zip` (SHA256 `3cd0a7e66847f16a...26314e1`)
+- **Result**: whole old suite passes (21 Python suites + 12 Node suites F2-F8, R1-R5)
+
+### Findings
+- First run: `test_locations_10c.py` and `test_phase_f2.cjs` failed with file-not-found. Cause: the repo reorganisation (2b3d8ea) moved tests into `test_files/`, and these two built paths from their own folder. Test-harness paths only, no product regression. Fixed by pointing them at the repo root (`_ROOT`) / `FRONTEND_DIR`. No product code changed.
+- Run commands in TESTING_GUIDE.md use old root paths; use `PYTHONPATH=. python test_files/<name>.py` and `node test_files/<name>.cjs`.
+
+### Suite results (real output summary)
+| Suite | Result |
+| :--- | :---: |
+| sim_selftest.py (5 tests), shield.py (3 unit tests) | PASSED |
+| test_api, test_allocation_r0, test_bots_9a-9d | PASSED |
+| test_locations_10a-10d (10c: 16/16 after path fix), test_phase10_gate | PASSED |
+| test_phase_f1, test_sla_11a-11d | PASSED |
+| test_phase_f2-f8.cjs, test_phase_r1-r5.cjs | PASSED |
+
+### LL-12 baseline recorded
+`test_files/lending_baseline_l0.py` fingerprints the original Agent + Shield (`agent_pre_lending.zip`) per-step trace (shares, violations, throughput, queue, arrivals) as SHA256 for 7 scenarios x seeds [9001, 9002, 9003] = 21 runs, saved to `results/lending_baseline_pre.json`. Re-run with `--check` reproduced all 21 hashes (0 mismatches), so the baseline is deterministic. These seeds are for the `mode: off` equality check only, not for tuning or evaluation. LL-12 will compare Enhanced (`mode: off`) against this file in L2/L3.

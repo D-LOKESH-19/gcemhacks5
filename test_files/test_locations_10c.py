@@ -23,7 +23,7 @@ class TestSubPhase10c(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.client = TestClient(app)
-        html_path = os.path.join(os.path.dirname(__file__), "static", "index.html")
+        html_path = os.path.join(_ROOT, "static", "index.html")
         with open(html_path, "r", encoding="utf-8") as f:
             cls.html = f.read()
 
@@ -72,7 +72,7 @@ class TestSubPhase10c(unittest.TestCase):
         for href in link_hrefs:
             self.assertFalse(href.startswith("http://") or href.startswith("https://"), f"External link found: {href}")
         # Chart.js local file exists
-        self.assertTrue(os.path.exists(os.path.join(os.path.dirname(__file__), "static", "chart.min.js")))
+        self.assertTrue(os.path.exists(os.path.join(_ROOT, "static", "chart.min.js")))
 
     def test_lt20_location_prefill_in_code(self):
         """LT-20: Location selection pre-fills slice dropdown."""

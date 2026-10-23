@@ -136,7 +136,7 @@ try {
 // FT-16: Tokens: colors & palettes never swapped
 // -------------------------------------------------------------
 try {
-  const tailwindPath = path.join(__dirname, 'tailwind.config.js');
+  const tailwindPath = path.join(FRONTEND_DIR, 'tailwind.config.js');
   const tailwindContent = fs.readFileSync(tailwindPath, 'utf-8');
 
   // Verify slice colors
