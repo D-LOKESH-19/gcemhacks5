@@ -13,7 +13,7 @@ import json
 import os
 import time
 from typing import Any, Dict, List, Optional, Tuple
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -577,8 +577,13 @@ def get_summary():
 
 
 @app.get("/sla")
-def get_sla():
-    """Returns SLA table limits and current episode status per policy from sla.py."""
+def get_sla(request: Request):
+    """Returns SLA table limits and current episode status per policy from sla.py, or serves SPA on browser navigation."""
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept:
+        dist_index = os.path.join("frontend", "dist", "index.html")
+        if os.path.exists(dist_index):
+            return FileResponse(dist_index)
     return sim_manager.get_sla_status()
 
 

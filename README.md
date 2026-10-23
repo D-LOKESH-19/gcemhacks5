@@ -209,8 +209,12 @@ gcmehack5/
 ├── test_locations_10d.py # Phase 10d End-to-End Scenarios & Regression (E2E-14, E2E-15, E2E-17, E2E-18, E2E-19)
 ├── TESTING_GUIDE.md     # Master testing verification matrix and execution guide
 ├── TEST_LOG.md          # Cumulative Phase test execution logbook
+├── frontend/            # Enterprise React 18 + TypeScript + Vite + Tailwind CSS Suite
+│   ├── src/             # Multi-page suite (Live Demo, Traffic & Bots, Agent Insights, SLA Matrix, Training, Results, Presenter)
+│   ├── dist/            # Production bundle with local @fontsource/inter (100% offline self-contained)
+│   └── package.json     # Pinned dependency manifest
 ├── static/
-│   ├── index.html       # Live dashboard with interactive bots, 3-zone pulse canvas, and SLA monitoring
+│   ├── index.html       # Classic NOC single-page monitor (preserved at http://localhost:8050/legacy)
 │   └── chart.min.js     # Bundled Chart.js for 100% offline support
 ├── models/
 │   ├── agent.zip            # Retrained bot-aware Lagrangian PPO policy (SHA256 verified)
@@ -221,4 +225,20 @@ gcmehack5/
 │   └── scenarios_comparison.png # Comparison bar charts
 └── requirements.txt     # Pinned Python dependencies
 ```
+
+---
+
+## 10. Dashboard Access & Dual-View Coexistence
+
+5G SliceOS provides two complementary operational interfaces with seamless 1-click reciprocal switching:
+
+1. **Enterprise React Suite (`http://localhost:8050/`)**:
+   - Production-grade multi-page React 18 + TypeScript + Tailwind CSS application.
+   - Comprehensive telemetry views: Hero Live Scoreboard, Traffic & Bots Orchestrator, Agent Insights & Shield Inspector, SLA Matrix Grid, Training Diagnostics, Scientific Benchmarking Results, and High-Contrast 2-Meter Presenter Mode.
+   - Zero external CDNs: Bundled local `@fontsource/inter` fonts enable 100% offline operation.
+
+2. **Classic NOC Monitor (`http://localhost:8050/legacy`)**:
+   - High-density single-page NOC dashboard with canvas bot visualizations, live SLA promise badges, and real-time Chart.js telemetry.
+   - Direct button `[🚀 Enterprise React Suite]` enables instant switching to the React suite.
+
 

@@ -368,3 +368,35 @@ This document records the automated verification logs across development phases,
 | **FT-62** | Accessible multi-channel badges | All status indicators simultaneously present semantic color, Lucide icon (`CheckCircle2`/`AlertTriangle`/`XCircle`), and explicit text label | **PASSED** | P1 |
 
 ---
+
+## Phase F8: Production Cutover & Offline Verification (FT-63 to FT-72)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f8.cjs` + full backend regression test suite
+- **Result**: **10/10 PASSED (P0/P1/P2)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-63** | Root SPA delivery | Root route `GET /` serves built React SPA `index.html` with HTTP 200 | **PASSED** | P0 |
+| **FT-64** | Direct SPA deep-linking | Direct navigation to `/traffic`, `/agent`, `/sla`, `/training`, `/results`, `/present`, `/about` returns HTTP 200 without 404 | **PASSED** | P0 |
+| **FT-65** | Classic dashboard preservation | Classic NOC monitor served cleanly at `http://localhost:8050/legacy` with full functionality intact | **PASSED** | P0 |
+| **FT-66** | Reciprocal navigation | 1-click button navigation enables two-way jumping between Classic NOC (`/legacy`) and Enterprise React Suite (`/`) | **PASSED** | P0 |
+| **FT-67** | Multi-tier fallback | Server implements robust fallback hierarchy: React `dist/index.html` -> Classic `static/index.html` -> Status JSON | **PASSED** | P1 |
+| **FT-68** | 100% offline self-contained | Production bundle contains zero external CDN links; 56 `@fontsource/inter` local font files bundled in `dist/assets/` | **PASSED** | P0 |
+| **FT-69** | Bundled asset delivery | Production hashed `.js`, `.css`, and `.woff2` assets served with HTTP 200 from `/assets/` | **PASSED** | P1 |
+| **FT-70** | Model weights integrity | `models/agent.zip` SHA256 verified identical (`3cd0a7e66847...`) to original checkpoint | **PASSED** | P0 |
+| **FT-71** | Simulator & Shield intact | Core environment (`sim.py`), safety shield (`shield.py`), and SLA module (`sla.py`) strictly preserved without logic changes | **PASSED** | P0 |
+| **FT-72** | Architecture documentation | `README.md` and `FRONTEND_GUIDE.md` updated with comprehensive dual-dashboard operational documentation | **PASSED** | P1 |
+
+---
+
+## Final Project Verification Summary
+
+- **Total Acceptance Tests Executed**: 72 Frontend tests (FT-01 to FT-72) + 40 Location tests (LT-01 to LT-40) + 18 Bot tests (BT-01 to BT-18) + 5 E2E Scenarios (E2E-14 to E2E-19)
+- **Cumulative Pass Rate**: **100% (0 Failures, 0 Regressions)**
+- **Codebase Integrity**: Zero mock data, strict TypeScript types, 100% offline self-contained with pinned local dependencies.
+- **Dual Dashboard Availability**:
+  - Enterprise React Suite: `http://localhost:8050/`
+  - Classic NOC Monitor: `http://localhost:8050/legacy`
