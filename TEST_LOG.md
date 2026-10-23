@@ -30,3 +30,27 @@ This document records the automated verification logs across development phases,
 | **SM-14** | Single source | sla.py and sim.py have zero hardcoded SLA target literals | **PASSED** | P1 |
 
 ---
+
+## Sub-Phase 11b: Multi-Constraint CMDP RL Training (SM-15 to SM-24)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `test_sla_11b.py`
+- **Seeds**: Training `[42, 43, 44]`, Validation `[51, 52, 53, 54, 55]`, Evaluation `[100, ..., 119]` (strictly disjoint)
+- **Result**: **10/10 PASSED**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **SM-15** | Training runs | 3 seed checkpoints generated (>50 KB), no crash | **PASSED** | P0 |
+| **SM-16** | Log content | `runs/log.csv` has reward, 3 costs, 3 lambdas, feasible fraction (501 eps) | **PASSED** | P0 |
+| **SM-17** | Lambda behavior | Multipliers bounded in [0, 20.0], zero NaNs/Infs | **PASSED** | P0 |
+| **SM-18** | Constraint control | Last 20% feasible: URLLC=0.0001 (<=0.005), mURLLC=0.0001 (<=0.01), eMBB=0.0134 (<=0.05) | **PASSED** | P0 |
+| **SM-19** | Held-out seeds | Training, validation, and evaluation seed sets strictly disjoint | **PASSED** | P0 |
+| **SM-20** | Training traffic | Randomized spikes, bot counts (0.3x-3.0x), and mid-episode disturbances | **PASSED** | P1 |
+| **SM-21** | Model selection | Best checkpoint selected based on SLA feasibility + max eMBB ratio | **PASSED** | P1 |
+| **SM-22** | Model backup | `models/agent_prev.zip` intact; new `models/agent.zip` verified | **PASSED** | P1 |
+| **SM-23** | Inference test | Model loads and predicts reliably across 1,000 random observations | **PASSED** | P0 |
+| **SM-24** | PID dual mode | PID dual mode executes without numerical divergence | **PASSED** | P2 |
+
+---
