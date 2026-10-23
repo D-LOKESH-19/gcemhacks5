@@ -494,3 +494,20 @@ This document records the automated verification logs across development phases,
 | **AT-15** | No Regression | All legacy and existing API endpoints (`/health`, `/summary`, `/bots`) remain functional | **PASSED** | P0 |
 | **AT-16** | Traffic Fairness | Static, Heuristic, and Agent policies receive bit-for-bit identical arrivals and events | **PASSED** | P0 |
 
+---
+
+## Phase R1: Allocation Types, Selectors & Data Utilities (AT-39)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_r1.cjs` + `npm --prefix frontend run build`
+- **Result**: **4/4 PASSED (P0)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **AT-39a** | Fixtures Schema Reality | All 30 captured `stream_sample.json` frames validate against `AllocationBlock` TypeScript definitions | **PASSED** | P0 |
+| **AT-39b** | Cell Diff Selector | `computeCountDiffs` detects steady-state zero deltas and identifies donor/receiver slices with exact unit deltas | **PASSED** | P0 |
+| **AT-39c** | Transfer Ledger Burst Merging | `mergeBurstTransfers` merges consecutive identical transfers into multiplier count tags (`xN`) while keeping distinct items intact | **PASSED** | P0 |
+| **AT-39d** | Replay Scrub Buffer | `extractScrubBuffer` safely truncates telemetry history ring buffer strictly to 60 steps | **PASSED** | P0 |
+

@@ -70,6 +70,42 @@ export interface PolicyTelemetry {
   bots_by_location?: LocationBotMatrix;
   feasible?: boolean;
   sla_ok?: boolean;
+  allocation?: AllocationBlock;
+}
+
+export type BottleneckType = 'none' | 'radio' | 'compute' | 'both' | 'idle';
+export type TransferReasonCode = 'surge' | 'idle_harvest' | 'floor_restore' | 'rebalance';
+
+export interface ResourcePoolAllocation {
+  raw: [number, number, number];
+  final: [number, number, number];
+  prev: [number, number, number];
+  counts: [number, number, number];
+  capacity: [number, number, number];
+  util: [number, number, number];
+  floor: [number, number, number];
+}
+
+export interface ResourceTransfer {
+  resource: 'prb' | 'cpu';
+  from: SliceType;
+  to: SliceType;
+  amount: number;
+  reason_code: TransferReasonCode;
+  donor_util: number;
+  receiver_util: number;
+}
+
+export interface AllocationBlock {
+  prb: ResourcePoolAllocation;
+  cpu: ResourcePoolAllocation;
+  effective_capacity: [number, number, number];
+  bottleneck: [BottleneckType, BottleneckType, BottleneckType];
+  shield: {
+    changed: boolean;
+    delta_pct: [number, number, number];
+  };
+  transfers: ResourceTransfer[];
 }
 
 export interface DecisionRecord {
@@ -143,6 +179,7 @@ export interface Capabilities {
   training_log: boolean;
   results: boolean;
   delay: boolean;
+  allocation?: boolean;
 }
 
 export interface PublicConfig {
