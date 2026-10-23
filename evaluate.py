@@ -124,6 +124,56 @@ class PolicyWrapper:
             return shares_to_action_logits(sh_prb, sh_cpu)
 
 
+def load_agent_policy(model_path: str = "models/agent.zip") -> Optional[PPO]:
+    """Load SB3 PPO model or return None if not found (backward compatibility)."""
+    if os.path.exists(model_path):
+        return PPO.load(model_path)
+    return None
+
+
+def run_scenario_episode(env: SliceEnv, policy: Any, scenario_cfg: Dict[str, Any], seed: Optional[int] = None) -> Dict[str, Any]:
+    """Execute one simulation episode and return summary metrics (backward compatibility)."""
+    if seed is not None:
+        obs, info = env.reset(seed=seed)
+    else:
+        obs, info = env.reset()
+
+    spike = scenario_cfg.get("spike")
+    if spike:
+        slice_name, factor, dur = spike
+        env.set_spike(slice_name, factor=factor, duration_steps=dur)
+
+    total_viol = 0.0
+    total_arr = 0.0
+    embb_ratios = []
+
+    for _ in range(env.steps_per_episode):
+        if hasattr(policy, "policy"):  # SB3 model
+            action, _ = policy.predict(obs, deterministic=True)
+        elif hasattr(policy, "predict"):
+            action = policy.predict(obs, info)
+        else:
+            action = np.zeros(6, dtype=np.float32)
+
+        obs, reward, term, trunc, info = env.step(action)
+        v_step = info["violations"]["urllc"] + info["violations"]["murllc"]
+        a_step = info["arrivals"]["urllc"] + info["arrivals"]["murllc"]
+        total_viol += v_step
+        total_arr += a_step
+
+        embb_dem = info["arrivals"]["embb"] + info["queue"]["embb"]
+        r = (info["throughput"]["embb"] / embb_dem) if embb_dem > 0 else 1.0
+        embb_ratios.append(r)
+
+        if term or trunc:
+            break
+
+    return {
+        "cum_violation_rate": (total_viol / total_arr) if total_arr > 0 else 0.0,
+        "mean_embb_ratio": float(np.mean(embb_ratios)) if embb_ratios else 1.0,
+    }
+
+
 def run_single_episode(
     env: SliceEnv,
     policy: PolicyWrapper,

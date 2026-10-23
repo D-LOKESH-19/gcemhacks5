@@ -45,7 +45,10 @@ def test_bt6_same_traffic_for_all_policies():
 
         act_s = pol_static.predict(obs_s, info_s)
         act_h = pol_heur.predict(obs_h, info_h)
-        act_a = agent.predict(obs_a, info_a)
+        if hasattr(agent, "policy"):
+            act_a, _ = agent.predict(obs_a, deterministic=True)
+        else:
+            act_a = agent.predict(obs_a, info_a)
 
         obs_s, _, _, _, info_s = env_static.step(act_s)
         obs_h, _, _, _, info_h = env_heuristic.step(act_h)
