@@ -177,3 +177,21 @@ This document records the automated verification logs across development phases,
 | **LT-39** | No traffic state | Slices with zero active users in a zone display 'no traffic' chip (sla-none) | **PASSED** | P1 |
 
 ---
+
+## Sub-Phase 10d: Locations Documentation, E2E Scenarios & Regression (E2E-14, E2E-15, E2E-17, E2E-18, E2E-19)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `test_locations_10d.py`
+- **Result**: **5/5 PASSED** (Full locations suite: 45/45 PASSED)
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **E2E-14** | Location demo story | Cold start, Campus surge, Factory burst, Smart City storm, Overload badge, Recovery | **PASSED** | P0 |
+| **E2E-15** | Repeatability | Replaying identical location-tagged sequence yields bit-for-bit identical stats | **PASSED** | P0 |
+| **E2E-17** | Rollback drill | Git tag `pre-locations` verified intact as safe fallback checkpoint | **PASSED** | P0 |
+| **E2E-18** | SLA consistency | Strict agreement across `GET /sla`, WebSocket stream, and scoreboard at 3 moments | **PASSED** | P0 |
+| **E2E-19** | Dynamic limit change | Modifying SLA thresholds in config propagates to status chips without code changes | **PASSED** | P1 |
+
+---

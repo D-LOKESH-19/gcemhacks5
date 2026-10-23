@@ -343,17 +343,23 @@ class SimulationManager:
 
     def get_sla_status(self) -> Dict[str, Any]:
         """Compute full SLA table limits, current episode status, and window status."""
+        win_s = {s: sla.window_status(self.history_static, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
+        win_h = {s: sla.window_status(self.history_heuristic, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
+        win_a = {s: sla.window_status(self.history_agent, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
         return {
             "limits": self.cfg.get("sla", {}),
+            "static": win_s,
+            "heuristic": win_h,
+            "agent": win_a,
             "current_status": {
                 "static": sla.episode_status(self.history_static, self.cfg),
                 "heuristic": sla.episode_status(self.history_heuristic, self.cfg),
                 "agent": sla.episode_status(self.history_agent, self.cfg),
             },
             "window_status": {
-                "static": {s: sla.window_status(self.history_static, s, self.cfg) for s in ["urllc", "murllc", "embb"]},
-                "heuristic": {s: sla.window_status(self.history_heuristic, s, self.cfg) for s in ["urllc", "murllc", "embb"]},
-                "agent": {s: sla.window_status(self.history_agent, s, self.cfg) for s in ["urllc", "murllc", "embb"]},
+                "static": win_s,
+                "heuristic": win_h,
+                "agent": win_a,
             },
             "feasible": bool(self.info_agent.get("feasible", True)),
         }
