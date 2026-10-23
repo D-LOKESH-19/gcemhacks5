@@ -257,3 +257,30 @@ This document records the automated verification logs across development phases,
 | **FT-16** | Design tokens | Strict separation of slice colors (cyan/amber/violet) and policy colors (red/grey/emerald); radii 12px | **PASSED** | P2 |
 
 ---
+
+## Phase F3: Page 1 — Live Demo Hero Screen (FT-17 to FT-30)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f3.cjs` + `npm run typecheck` + `npm run build`
+- **Result**: **14/14 PASSED (P0/P1/P2)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-17** | Real data verification | All metrics, throughputs, and queues driven directly from live simulator WebSocket stream | **PASSED** | P0 |
+| **FT-18** | Side-by-side overlay charts | Static (red), Heuristic (grey), Agent (emerald) with dashed SLA limit and legend | **PASSED** | P0 |
+| **FT-19** | Dynamic Y-axis rule | `max(2 x SLA limit, 1.2 x highest value)` guarantees zero visibility and prevents spike clipping | **PASSED** | P0 |
+| **FT-20** | Spike injection triggers | eMBB surge, URLLC burst, and mURLLC storm generate shaded reference bands on both charts | **PASSED** | P0 |
+| **FT-21** | Policy story contrast | During surges, Static breaches SLA (red/amber status) while RL Agent holds sub-ms latency | **PASSED** | P0 |
+| **FT-22** | SLA scoreboard strip | Static, Heuristic, and Agent tiles show violation %, eMBB served %, and window compliance | **PASSED** | P0 |
+| **FT-23** | Shield meter & feed | Agent card shows real 20-step intervention meter; consecutive repeated feed events collapse to 'xN' | **PASSED** | P0 |
+| **FT-24** | Nominal load banner | Calm guidance banner visible under baseline arrivals; auto-dismisses when surges occur | **PASSED** | P1 |
+| **FT-25** | Simulator control loop | Pause freezes updates cleanly; Resume continues; Reset clears ring buffers and resets seeds | **PASSED** | P0 |
+| **FT-26** | Feed category filtering | Explainability feed filters by All, Spikes, Bots, Shield, and SLA | **PASSED** | P1 |
+| **FT-27** | Policy resource cards | PRB and vCPU share bars sum to 100% in slice colors (cyan/amber/violet) with queue gauges | **PASSED** | P1 |
+| **FT-28** | Responsive layout | Compact viewport fits 1920x1080 without full page scrolling; elements never clip at 1366x768 | **PASSED** | P0 |
+| **FT-29** | Console integrity | Zero console warnings or runtime unhandled errors during active multi-surge runs | **PASSED** | P0 |
+| **FT-30** | Performance & 5 Hz rate | Smooth 5 steps/sec rendering with throttled store updates and zero UI jank | **PASSED** | P1 |
+
+---

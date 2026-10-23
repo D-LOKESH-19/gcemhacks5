@@ -1,81 +1,52 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useSliceStore } from "../store/useSliceStore";
-import { Activity, Zap } from "lucide-react";
+import { ControlBar } from "../components/live/ControlBar";
+import { NominalBanner } from "../components/live/NominalBanner";
+import { SlaScoreboard } from "../components/live/SlaScoreboard";
+import { LiveChartsOverlay } from "../components/live/LiveChartsOverlay";
+import { PolicyResourceCards } from "../components/live/PolicyResourceCards";
+import { ExplainabilityFeed } from "../components/live/ExplainabilityFeed";
 
 export const LiveDemoPage: React.FC = () => {
-  const { latestPayload, connectionStatus } = useSliceStore();
+  const { latestPayload, spikeMarkers } = useSliceStore();
+
+  // Nominal condition: all policies have 0 violations and no active spike
+  const isNominal = useMemo(() => {
+    if (!latestPayload || !latestPayload.policies) return true;
+    const staticVR = latestPayload.policies.static?.violation_rate ?? 0;
+    const heurVR = latestPayload.policies.heuristic?.violation_rate ?? 0;
+    const agentVR = latestPayload.policies.agent?.violation_rate ?? 0;
+    const currentStep = latestPayload.step ?? 0;
+    
+    // Check if any spike is currently active
+    const hasActiveSpike = spikeMarkers.some(
+      (m) => currentStep >= m.step && currentStep <= m.step + m.duration + 5
+    );
+
+    return staticVR === 0 && heurVR === 0 && agentVR === 0 && !hasActiveSpike;
+  }, [latestPayload, spikeMarkers]);
 
   return (
-    <div className="flex flex-col gap-6 w-full">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-bg-card border border-border-subtle shadow-sm">
-        <div>
-          <div className="flex items-center gap-2">
-            <Activity className="text-emerald-400" size={20} />
-            <h1 className="text-lg font-bold text-text-primary tracking-tight">
-              Live Closed-Loop Network Slicing Demo
-            </h1>
-          </div>
-          <p className="text-xs text-text-muted mt-1">
-            Real-time comparative evaluation: Static Baseline vs Heuristic vs Constrained RL Agent with Shield.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <span className="text-xs text-text-muted block">Status</span>
-            <span className="text-xs font-semibold text-emerald-400 capitalize">
-              {connectionStatus}
-            </span>
-          </div>
-          <div className="text-right pl-3 border-l border-border-subtle">
-            <span className="text-xs text-text-muted block">Current Step</span>
-            <span className="text-xs font-mono font-bold text-text-primary">
-              #{latestPayload?.step ?? 0}
-            </span>
-          </div>
-        </div>
-      </div>
+    <div className="flex flex-col gap-3.5 w-full max-w-[1920px] mx-auto pb-4">
+      {/* 1. Simulator Control Bar */}
+      <ControlBar isNominal={isNominal} />
 
-      {/* Main Grid Placeholder */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="p-6 rounded-xl bg-bg-card border border-border-subtle">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-semibold text-rose-400">STATIC ALLOCATION</span>
-            <span className="text-xs px-2 py-0.5 rounded bg-rose-950/60 border border-rose-800/80 text-rose-400">
-              Fixed 33%
-            </span>
-          </div>
-          <p className="text-xs text-text-muted">
-            Rigid partition baseline vulnerable to burst packet drops.
-          </p>
-        </div>
+      {/* 2. Nominal Load Banner (FT-24) */}
+      <NominalBanner visible={isNominal} />
 
-        <div className="p-6 rounded-xl bg-bg-card border border-border-subtle">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-semibold text-slate-300">HEURISTIC PROPORTIONAL</span>
-            <span className="text-xs px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">
-              Reactive
-            </span>
-          </div>
-          <p className="text-xs text-text-muted">
-            Instantaneous demand matching prone to latency lag and queue blowup.
-          </p>
-        </div>
+      {/* 3. SLA Scoreboard Strip (FT-22) */}
+      <SlaScoreboard />
 
-        <div className="p-6 rounded-xl bg-bg-card border border-border-subtle">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
-              <Zap size={14} /> RL AGENT + SAFETY SHIELD
-            </span>
-            <span className="text-xs px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-800/80 text-emerald-400">
-              Active Shield
-            </span>
-          </div>
-          <p className="text-xs text-text-muted">
-            Safe Lagrangian policy guaranteeing sub-millisecond URLLC latency.
-          </p>
-        </div>
-      </div>
+      {/* 4. Side-by-Side Hero Charts (FT-18, FT-19, FT-20) */}
+      <LiveChartsOverlay />
+
+      {/* 5. Compact Policy Cards & Shield Telemetry (FT-23, FT-27) */}
+      <PolicyResourceCards />
+
+      {/* 6. Explainability & Decision Feed Drawer (FT-23, FT-26) */}
+      <ExplainabilityFeed />
     </div>
   );
 };
+
+export default LiveDemoPage;
