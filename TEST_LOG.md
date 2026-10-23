@@ -407,3 +407,21 @@ This document records the automated verification logs across development phases,
 - **SLA Module & Multi-Window (`test_sla_11d.py`)**: 8/8 PASSED.
 - **Locations Engine (`test_locations_10c-d.py`)**: 21/21 PASSED.
 
+---
+
+## Phase F1: Data Layer, App Shell & Endpoints Contract (FT-5 to FT-9)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `python test_phase_f1.py` + `npm --prefix frontend run build`
+- **Result**: **5/5 PASSED (P0/P1)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-5** | Capabilities Endpoint | `/api/capabilities` returns all 6 booleans matching real filesystem state | **PASSED** | P0 |
+| **FT-6** | Public Config | `/api/config/public` accurately mirrors `config.yaml` parameters | **PASSED** | P0 |
+| **FT-7** | Training & Results API | `/api/training/log` (downsampled <=500 pts) and `/api/results` return real data | **PASSED** | P0 |
+| **FT-8** | Shield Stats Stream | `shield` block includes `active`, `changed`, `delta_pct`, `intervention_rate_20` | **PASSED** | P0 |
+| **FT-9** | Legacy & SPA Integrity | `/health`, `/summary`, `/spike`, `/reset`, `/bots`, `/legacy`, and SPA `/` intact | **PASSED** | P0 |
+
