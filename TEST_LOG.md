@@ -98,3 +98,33 @@ This document records the automated verification logs across development phases,
 | **SM-41** | Console & offline | No console errors; operates completely offline with local `static/chart.min.js` | **PASSED** | P0 |
 
 ---
+
+## Sub-Phase 10a: Locations Config & Simulator (LT-1 to LT-12, LT-18, LT-31, LT-34 to LT-36)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `test_locations_10a.py`
+- **Result**: **17/17 PASSED**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **LT-1** | Location is label | Users in different locations produce identical arrivals, queues, rewards, costs | **PASSED** | P0 |
+| **LT-2** | Defaults | At reset, Campus=40 eMBB, Factory=30 URLLC, Smart City=100 mURLLC | **PASSED** | P0 |
+| **LT-3** | Slice override | Adding URLLC bots at Campus updates Campus matrix and URLLC slice total | **PASSED** | P0 |
+| **LT-4** | Matrix correctness | Sequence of add/remove/set events matches matrix; row sums equal slice totals | **PASSED** | P0 |
+| **LT-5** | Clipping | Adding beyond `max_count` caps safely at slice max and returns `clipped=True` | **PASSED** | P0 |
+| **LT-6** | Remove more | Removing from empty location removes 0, does not touch others, count non-negative | **PASSED** | P0 |
+| **LT-7** | Determinism | Replaying identical location events with same seed produces identical traffic | **PASSED** | P0 |
+| **LT-8** | Fair comparison | Static, Heuristic, and Agent receive bit-for-bit identical arrivals across steps | **PASSED** | P0 |
+| **LT-9** | Contract intact | 12-dim observation, 6-dim action, scalar info['cost'] intact | **PASSED** | P0 |
+| **LT-10** | Old suite | All original simulator self-tests and shield unit tests pass cleanly | **PASSED** | P0 |
+| **LT-11** | Delay is display-only | Observation, cost, and reward are identical regardless of delay model values | **PASSED** | P0 |
+| **LT-12** | Delay behavior | `est_delay_ms` is finite, matches `base_ms` at low load, equals `overload_ms` on overload | **PASSED** | P1 |
+| **LT-18** | High speed | 1,000 bots across locations runs 200-step episode in < 0.25 s | **PASSED** | P1 |
+| **LT-31** | SLA invariance | `info['costs']`, `info['feasible']`, and `sla.py` status identical across location assignments | **PASSED** | P0 |
+| **LT-34** | No SLA logic | Audit confirmed zero hardcoded SLA numbers or custom logic in location code | **PASSED** | P0 |
+| **LT-35** | Delay not SLA input | Modifying `delay_model` does not alter SLA compliance or violation costs | **PASSED** | P0 |
+| **LT-36** | Model untouched | `models/agent.zip` SHA256 verified unchanged (`3cd0a7e66847...`) | **PASSED** | P0 |
+
+---

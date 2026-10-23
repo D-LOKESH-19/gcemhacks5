@@ -89,11 +89,19 @@ class SliceEnv(gym.Env):
         self._seed = seed
         self.np_random, _ = gym.utils.seeding.np_random(seed)
 
-        # Vectorized Bot States
+        # Vectorized Bot States & Locations (Phase 9 & Phase 10)
+        self.LOC_TO_IDX = {"campus": 0, "factory": 1, "smart_city": 2}
+        self.IDX_TO_LOC = {0: "campus", 1: "factory", 2: "smart_city"}
+        self.DEFAULT_SLICE_LOC = {"embb": "campus", "urllc": "factory", "murllc": "smart_city"}
+        self.DEFAULT_LOC_SLICE = {"campus": "embb", "factory": "urllc", "smart_city": "murllc"}
+
         self.bot_counts: Dict[str, int] = dict(self.default_bot_counts)
         self.embb_bot_on: np.ndarray = np.zeros(0, dtype=bool)
         self.urllc_bot_phase: np.ndarray = np.zeros(0, dtype=np.float32)
         self.murllc_bot_burst_left: np.ndarray = np.zeros(0, dtype=np.int32)
+        self.embb_bot_loc: np.ndarray = np.zeros(0, dtype=np.int32)
+        self.urllc_bot_loc: np.ndarray = np.zeros(0, dtype=np.int32)
+        self.murllc_bot_loc: np.ndarray = np.zeros(0, dtype=np.int32)
         self._init_bot_states()
 
         # Internal state tracking
@@ -116,7 +124,7 @@ class SliceEnv(gym.Env):
         self.episode_rewards: List[float] = []
 
     def _init_bot_states(self) -> None:
-        """Initialize vectorized internal states for all active bots."""
+        """Initialize vectorized internal states and location tags for all active bots."""
         # eMBB: ON/OFF state (steady state probability ~0.4 ON)
         n_embb = self.bot_counts["embb"]
         if n_embb > 0:
@@ -125,22 +133,182 @@ class SliceEnv(gym.Env):
                 self.bots_cfg.get("embb", {}).get("p_on", 0.2) + self.bots_cfg.get("embb", {}).get("p_off", 0.3)
             )
             self.embb_bot_on = self.np_random.random(size=n_embb) < p_on_init
+            self.embb_bot_loc = np.full(n_embb, self.LOC_TO_IDX["campus"], dtype=np.int32)
         else:
             self.embb_bot_on = np.zeros(0, dtype=bool)
+            self.embb_bot_loc = np.zeros(0, dtype=np.int32)
 
         # URLLC: Random phase in [0, 2*pi]
         n_urllc = self.bot_counts["urllc"]
         if n_urllc > 0:
             self.urllc_bot_phase = self.np_random.uniform(0.0, 2.0 * np.pi, size=n_urllc).astype(np.float32)
+            self.urllc_bot_loc = np.full(n_urllc, self.LOC_TO_IDX["factory"], dtype=np.int32)
         else:
             self.urllc_bot_phase = np.zeros(0, dtype=np.float32)
+            self.urllc_bot_loc = np.zeros(0, dtype=np.int32)
 
         # mURLLC: Burst remaining steps
         n_murllc = self.bot_counts["murllc"]
         if n_murllc > 0:
             self.murllc_bot_burst_left = np.zeros(n_murllc, dtype=np.int32)
+            self.murllc_bot_loc = np.full(n_murllc, self.LOC_TO_IDX["smart_city"], dtype=np.int32)
         else:
             self.murllc_bot_burst_left = np.zeros(0, dtype=np.int32)
+            self.murllc_bot_loc = np.zeros(0, dtype=np.int32)
+
+    def apply_bot_event(
+        self,
+        slice_name: Optional[str] = None,
+        location: Optional[str] = None,
+        mode: str = "add",
+        n: int = 0,
+    ) -> Tuple[Dict[str, Dict[str, int]], bool]:
+        """Apply a location-tagged bot event to a slice (Phase 10).
+        
+        mode: 'add', 'remove', or 'set'.
+        Returns: (bot_matrix, clipped)
+        """
+        # Resolve slice and location defaults
+        if slice_name is None and location is None:
+            raise ValueError("Either slice_name or location must be provided.")
+        if slice_name is None:
+            location = location.lower()
+            if location not in self.LOC_TO_IDX:
+                raise ValueError(f"Unknown location: {location}")
+            slice_name = self.DEFAULT_LOC_SLICE[location]
+        elif location is None:
+            slice_name = slice_name.lower()
+            if slice_name not in self.slices:
+                raise ValueError(f"Unknown slice: {slice_name}")
+            location = self.DEFAULT_SLICE_LOC[slice_name]
+        else:
+            slice_name = slice_name.lower()
+            location = location.lower()
+
+        if slice_name not in self.slices:
+            raise ValueError(f"Unknown slice: {slice_name}")
+        if location not in self.LOC_TO_IDX:
+            raise ValueError(f"Unknown location: {location}")
+
+        mode = mode.lower()
+        if mode not in ["add", "remove", "set"]:
+            raise ValueError(f"Unknown mode: {mode}")
+
+        try:
+            n = int(n)
+        except (ValueError, TypeError):
+            raise ValueError(f"Count n must be integer, got {n}")
+        if n < 0:
+            raise ValueError(f"Count n must be non-negative, got {n}")
+
+        loc_idx = self.LOC_TO_IDX[location]
+        max_c = self.max_bot_counts[slice_name]
+        loc_array: np.ndarray = getattr(self, f"{slice_name}_bot_loc")
+        current_total = len(loc_array)
+        matching_indices = np.where(loc_array == loc_idx)[0]
+        count_in_loc = len(matching_indices)
+
+        clipped = False
+
+        if mode == "add":
+            can_add = max(0, max_c - current_total)
+            add_count = min(n, can_add)
+            clipped = (add_count < n)
+            if add_count > 0:
+                if slice_name == "embb":
+                    new_states = self.np_random.random(size=add_count) < 0.40
+                    self.embb_bot_on = np.concatenate([self.embb_bot_on, new_states])
+                elif slice_name == "urllc":
+                    new_phases = self.np_random.uniform(0.0, 2.0 * np.pi, size=add_count).astype(np.float32)
+                    self.urllc_bot_phase = np.concatenate([self.urllc_bot_phase, new_phases])
+                elif slice_name == "murllc":
+                    new_bursts = np.zeros(add_count, dtype=np.int32)
+                    self.murllc_bot_burst_left = np.concatenate([self.murllc_bot_burst_left, new_bursts])
+
+                new_locs = np.full(add_count, loc_idx, dtype=np.int32)
+                loc_array = np.concatenate([loc_array, new_locs])
+                setattr(self, f"{slice_name}_bot_loc", loc_array)
+                self.bot_counts[slice_name] = len(loc_array)
+
+        elif mode == "remove":
+            if count_in_loc < n:
+                clipped = True
+                indices_to_remove = matching_indices
+            else:
+                clipped = False
+                indices_to_remove = matching_indices[-n:]  # highest index first (deterministic)
+
+            if len(indices_to_remove) > 0:
+                loc_array = np.delete(loc_array, indices_to_remove)
+                setattr(self, f"{slice_name}_bot_loc", loc_array)
+                if slice_name == "embb":
+                    self.embb_bot_on = np.delete(self.embb_bot_on, indices_to_remove)
+                elif slice_name == "urllc":
+                    self.urllc_bot_phase = np.delete(self.urllc_bot_phase, indices_to_remove)
+                elif slice_name == "murllc":
+                    self.murllc_bot_burst_left = np.delete(self.murllc_bot_burst_left, indices_to_remove)
+                self.bot_counts[slice_name] = len(loc_array)
+
+        elif mode == "set":
+            if n > count_in_loc:
+                desired_add = n - count_in_loc
+                can_add = max(0, max_c - current_total)
+                add_count = min(desired_add, can_add)
+                clipped = (add_count < desired_add)
+                if add_count > 0:
+                    if slice_name == "embb":
+                        new_states = self.np_random.random(size=add_count) < 0.40
+                        self.embb_bot_on = np.concatenate([self.embb_bot_on, new_states])
+                    elif slice_name == "urllc":
+                        new_phases = self.np_random.uniform(0.0, 2.0 * np.pi, size=add_count).astype(np.float32)
+                        self.urllc_bot_phase = np.concatenate([self.urllc_bot_phase, new_phases])
+                    elif slice_name == "murllc":
+                        new_bursts = np.zeros(add_count, dtype=np.int32)
+                        self.murllc_bot_burst_left = np.concatenate([self.murllc_bot_burst_left, new_bursts])
+
+                    new_locs = np.full(add_count, loc_idx, dtype=np.int32)
+                    loc_array = np.concatenate([loc_array, new_locs])
+                    setattr(self, f"{slice_name}_bot_loc", loc_array)
+                    self.bot_counts[slice_name] = len(loc_array)
+
+            elif n < count_in_loc:
+                remove_count = count_in_loc - n
+                indices_to_remove = matching_indices[-remove_count:]  # highest index first
+                loc_array = np.delete(loc_array, indices_to_remove)
+                setattr(self, f"{slice_name}_bot_loc", loc_array)
+                if slice_name == "embb":
+                    self.embb_bot_on = np.delete(self.embb_bot_on, indices_to_remove)
+                elif slice_name == "urllc":
+                    self.urllc_bot_phase = np.delete(self.urllc_bot_phase, indices_to_remove)
+                elif slice_name == "murllc":
+                    self.murllc_bot_burst_left = np.delete(self.murllc_bot_burst_left, indices_to_remove)
+                self.bot_counts[slice_name] = len(loc_array)
+
+        return self.get_bot_matrix(), clipped
+
+    def get_bot_matrix(self) -> Dict[str, Dict[str, int]]:
+        """Return matrix of bot counts per location and slice."""
+        embb_loc = getattr(self, "embb_bot_loc", np.zeros(0, dtype=np.int32))
+        urllc_loc = getattr(self, "urllc_bot_loc", np.zeros(0, dtype=np.int32))
+        murllc_loc = getattr(self, "murllc_bot_loc", np.zeros(0, dtype=np.int32))
+
+        return {
+            "campus": {
+                "embb": int(np.sum(embb_loc == self.LOC_TO_IDX["campus"])),
+                "urllc": int(np.sum(urllc_loc == self.LOC_TO_IDX["campus"])),
+                "murllc": int(np.sum(murllc_loc == self.LOC_TO_IDX["campus"])),
+            },
+            "factory": {
+                "embb": int(np.sum(embb_loc == self.LOC_TO_IDX["factory"])),
+                "urllc": int(np.sum(urllc_loc == self.LOC_TO_IDX["factory"])),
+                "murllc": int(np.sum(murllc_loc == self.LOC_TO_IDX["factory"])),
+            },
+            "smart_city": {
+                "embb": int(np.sum(embb_loc == self.LOC_TO_IDX["smart_city"])),
+                "urllc": int(np.sum(urllc_loc == self.LOC_TO_IDX["smart_city"])),
+                "murllc": int(np.sum(murllc_loc == self.LOC_TO_IDX["smart_city"])),
+            },
+        }
 
     def set_bots(self, slice_name: str, count: int) -> int:
         """Set bot count for a slice, clipping to [0, max_count]. Returns updated count."""
@@ -150,37 +318,38 @@ class SliceEnv(gym.Env):
         max_c = self.max_bot_counts[slice_name]
         new_count = int(np.clip(int(count), 0, max_c))
         old_count = self.bot_counts[slice_name]
-        self.bot_counts[slice_name] = new_count
-
         diff = new_count - old_count
-        if slice_name == "embb":
-            if diff > 0:
-                new_states = self.np_random.random(size=diff) < 0.40
-                self.embb_bot_on = np.concatenate([self.embb_bot_on, new_states])
-            elif diff < 0:
+
+        if diff > 0:
+            def_loc = self.DEFAULT_SLICE_LOC[slice_name]
+            self.apply_bot_event(slice_name=slice_name, location=def_loc, mode="add", n=diff)
+        elif diff < 0:
+            remove_count = abs(diff)
+            loc_array = getattr(self, f"{slice_name}_bot_loc")
+            indices_to_remove = np.arange(len(loc_array) - remove_count, len(loc_array))
+            loc_array = np.delete(loc_array, indices_to_remove)
+            setattr(self, f"{slice_name}_bot_loc", loc_array)
+            if slice_name == "embb":
                 self.embb_bot_on = self.embb_bot_on[:new_count]
-        elif slice_name == "urllc":
-            if diff > 0:
-                new_phases = self.np_random.uniform(0.0, 2.0 * np.pi, size=diff).astype(np.float32)
-                self.urllc_bot_phase = np.concatenate([self.urllc_bot_phase, new_phases])
-            elif diff < 0:
+            elif slice_name == "urllc":
                 self.urllc_bot_phase = self.urllc_bot_phase[:new_count]
-        elif slice_name == "murllc":
-            if diff > 0:
-                new_bursts = np.zeros(diff, dtype=np.int32)
-                self.murllc_bot_burst_left = np.concatenate([self.murllc_bot_burst_left, new_bursts])
-            elif diff < 0:
+            elif slice_name == "murllc":
                 self.murllc_bot_burst_left = self.murllc_bot_burst_left[:new_count]
+            self.bot_counts[slice_name] = new_count
 
         return new_count
 
     def add_bots(self, slice_name: str, n: int) -> int:
         """Add n bots to a slice. Returns updated count."""
-        return self.set_bots(slice_name, self.bot_counts.get(slice_name, 0) + int(n))
+        def_loc = self.DEFAULT_SLICE_LOC[slice_name]
+        self.apply_bot_event(slice_name=slice_name, location=def_loc, mode="add", n=n)
+        return self.bot_counts[slice_name]
 
     def remove_bots(self, slice_name: str, n: int) -> int:
         """Remove n bots from a slice. Returns updated count."""
-        return self.set_bots(slice_name, max(0, self.bot_counts.get(slice_name, 0) - int(n)))
+        def_loc = self.DEFAULT_SLICE_LOC[slice_name]
+        self.apply_bot_event(slice_name=slice_name, location=def_loc, mode="remove", n=n)
+        return self.bot_counts[slice_name]
 
     def get_bot_counts(self) -> Dict[str, int]:
         """Return current bot count dictionary."""
@@ -505,6 +674,24 @@ class SliceEnv(gym.Env):
         if step_costs is None:
             step_costs = {s: 0.0 for s in self.slices}
 
+        # Phase 10: Estimated Delay Model (display-only; never used in reward/cost/obs/shield)
+        delay_cfg = self.cfg.get("delay_model", {})
+        base_ms = delay_cfg.get("base_ms", {"embb": 10.0, "urllc": 0.3, "murllc": 2.0})
+        rho_cap = float(delay_cfg.get("rho_cap", 0.99))
+        overload_ms = float(delay_cfg.get("overload_ms", 100.0))
+
+        est_delay_ms: Dict[str, float] = {}
+        for idx, s in enumerate(self.slices):
+            radio_cap = self.current_prb_shares[idx] * self.prb_total * self.prb_rate
+            cpu_cap = self.current_vcpu_shares[idx] * self.vcpu_total * self.cpu_rate
+            service_capacity = max(1.0, min(radio_cap, cpu_cap))
+            demand = float(self.queues[s] + arrivals.get(s, 0.0))
+            if demand > service_capacity:
+                est_delay_ms[s] = float(overload_ms)
+            else:
+                rho = min(demand / service_capacity, rho_cap)
+                est_delay_ms[s] = float(base_ms.get(s, 1.0) / max(1e-4, 1.0 - rho))
+
         return {
             "step": self.current_step,
             "cost": float(step_cost),
@@ -523,4 +710,6 @@ class SliceEnv(gym.Env):
             "queue": {s: float(self.queues[s]) for s in self.slices},
             "bots": self.get_bot_counts(),
             "bot_packets": {s: float(bot_packets[s]) for s in self.slices},
+            "bots_by_location": self.get_bot_matrix(),
+            "est_delay_ms": est_delay_ms,
         }

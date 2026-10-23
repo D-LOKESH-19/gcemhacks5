@@ -66,3 +66,14 @@ bots:
 train_bot_range:
   low: 0.3
   high: 3.0
+
+# Phase 10: Locations Feature Configuration
+locations:
+  campus:     {label: Campus,              default_slice: embb}
+  factory:    {label: Factory,             default_slice: urllc}
+  smart_city: {label: Smart City / IoT Zone, default_slice: murllc}
+delay_model:                  # display only, never used in reward or cost
+  base_ms: {embb: 10.0, urllc: 0.3, murllc: 2.0}
+  rho_cap: 0.99
+  overload_ms: 100.0
+
