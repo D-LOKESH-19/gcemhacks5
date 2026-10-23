@@ -148,3 +148,32 @@ This document records the automated verification logs across development phases,
 | **LT-40** | Fair policy inputs | Location bot events apply simultaneously and provide identical arrivals across policies | **PASSED** | P0 |
 
 ---
+
+## Sub-Phase 10c: Locations UI & Visual Monitoring (LT-19 to LT-30, LT-32, LT-33, LT-38, LT-39)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `test_locations_10c.py`
+- **Result**: **16/16 PASSED**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **LT-19** | Add users at Campus | Adding users via Campus pre-fills eMBB, updates counters and visual matrix | **PASSED** | P0 |
+| **LT-20** | Location pre-fill | Campus -> eMBB, Factory -> URLLC, Smart City -> mURLLC pre-fills accurately | **PASSED** | P1 |
+| **LT-21** | Slice override | Override slice (e.g. URLLC at Campus) updates matrix and slice arrivals | **PASSED** | P1 |
+| **LT-22** | Remove and Set | Remove only decreases chosen zone; Set 0 empties pair; totals match | **PASSED** | P0 |
+| **LT-23** | Limits and clipping | Adding beyond capacity triggers `clipped=True` and alerts "Max reached" | **PASSED** | P1 |
+| **LT-24** | Dot scaling | Canvas caps at max 40 dots per zone; scale reads '1 dot = N users' | **PASSED** | P1 |
+| **LT-25** | Honesty strip | 'Locations are logical groups. Metrics are per slice. Delay is a model estimate.' always visible | **PASSED** | P0 |
+| **LT-26** | Delay labelling | Estimated delay rows explicitly labeled 'Estimated delay (model)' across policies | **PASSED** | P0 |
+| **LT-27** | Story holds | High Campus load triggers eMBB stress on Static while Agent maintains compliance | **PASSED** | P0 |
+| **LT-28** | No fake UI | Zero Math.random driving metrics; offline disconnect handling intact | **PASSED** | P0 |
+| **LT-29** | Offline integrity | Zero external CDN scripts or fonts; self-contained local chart.min.js | **PASSED** | P0 |
+| **LT-30** | Stress testing | Rapid concurrent bot modifications handle cleanly without crash or drift | **PASSED** | P1 |
+| **LT-32** | Zone SLA chips | Zone SLA chips reflect dominant slice status directly from `sla.py` | **PASSED** | P0 |
+| **LT-33** | Overload badge | Max bots trigger infeasible regime; OVERLOAD badge claims 'protected first' | **PASSED** | P0 |
+| **LT-38** | Limit change flows | SLA threshold modifications in config propagate dynamically to status chips | **PASSED** | P1 |
+| **LT-39** | No traffic state | Slices with zero active users in a zone display 'no traffic' chip (sla-none) | **PASSED** | P1 |
+
+---

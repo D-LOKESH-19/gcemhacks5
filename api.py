@@ -189,6 +189,9 @@ class SimulationManager:
 
         return counts, matrix, clipped
 
+    def get_event_log(self) -> List[str]:
+        return list(self.event_logs)
+
     def step_simulation(self) -> Dict[str, Any]:
         """Advance all 3 policies by one synchronized 100 ms step."""
         self.step_idx += 1
@@ -440,6 +443,7 @@ def modify_bots_endpoint(req: BotRequest):
             location=req.location,
         )
         return {
+            "bots": counts,
             "counts": counts,
             "matrix": matrix,
             "bots_by_location": matrix,

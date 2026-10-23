@@ -360,6 +360,92 @@
       animation: pulse 1s infinite alternate;
     }
 
+    /* Phase 10: Honesty Strip */
+    .honesty-strip {
+      background: rgba(30, 41, 59, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 0.72rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    /* Phase 10: 3 Zones Bar */
+    .zones-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 6px;
+      margin-bottom: 4px;
+    }
+
+    .zone-card {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .zone-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .zone-name {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #f3f4f6;
+    }
+
+    .zone-sla-chip {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .zone-counts {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    .delay-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.68rem;
+      padding: 4px 8px;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      margin-top: 4px;
+    }
+
+    .delay-label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .delay-val {
+      font-family: monospace;
+      color: #38bdf8;
+      font-weight: 600;
+    }
+
+    .sla-none {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
     /* SLA Contract Info Card */
     .sla-info-card {
       background: var(--bg-surface);
@@ -620,7 +706,7 @@
         <div class="status-dot" id="connDot"></div>
         <span id="connText">Connecting...</span>
       </div>
-      <span class="overload-badge" id="overloadBadge" style="display: none;">⚠️ OVERLOAD: URLLC &amp; mURLLC protected first</span>
+      <span class="overload-badge" id="overloadBadge" style="display: none;">⚠️ OVERLOAD: URLLC and mURLLC protected first</span>
     </div>
 
     <div class="controls-group">
@@ -634,14 +720,24 @@
 
   <main>
 
-    <!-- Phase 9: Bots Control Panel & Animation Field -->
+    <!-- Phase 10: Honesty Strip (Always visible, small) -->
+    <div class="honesty-strip" id="honestyStrip">
+      ℹ️ Locations are logical groups. Metrics are per slice. Delay is a model estimate.
+    </div>
+
+    <!-- Phase 9 & 10: Bots & Locations Control Panel & Animation Field -->
     <section class="bots-container">
       <div class="bots-ctrl-row">
         <div class="bots-selector-group">
-          <span class="bots-title">🤖 5G Slice Bots:</span>
+          <span class="bots-title">📍 Add Virtual Users:</span>
+          <select id="botLocSelect" class="bot-select" onchange="onLocationChange()">
+            <option value="campus" selected>🏢 Campus</option>
+            <option value="factory">🏭 Factory</option>
+            <option value="smart_city">🏙️ Smart City / IoT Zone</option>
+          </select>
           <select id="botSliceSelect" class="bot-select">
-            <option value="embb">eMBB (Video Devices)</option>
-            <option value="urllc" selected>URLLC (Robots/Sensors)</option>
+            <option value="embb" selected>eMBB (Video Devices)</option>
+            <option value="urllc">URLLC (Robots/Sensors)</option>
             <option value="murllc">mURLLC (IoT Network)</option>
           </select>
           <input type="number" id="botCountInput" class="bot-input" min="1" max="1000" value="20" />
@@ -664,10 +760,43 @@
         </div>
       </div>
 
+      <!-- Phase 10: Three Logical Zones Status Cards -->
+      <div class="zones-bar" id="zonesBar">
+        <div class="zone-card" id="zoneCardCampus">
+          <div class="zone-header">
+            <span class="zone-name">🏢 Campus</span>
+            <span class="zone-sla-chip sla-ok" id="zoneSlaCampus">eMBB: SLA OK</span>
+          </div>
+          <div class="zone-counts">
+            eMBB: <strong id="cntCampusEmbb">40</strong> | URLLC: <strong id="cntCampusUrllc">0</strong> | mURLLC: <strong id="cntCampusMurllc">0</strong>
+          </div>
+        </div>
+
+        <div class="zone-card" id="zoneCardFactory">
+          <div class="zone-header">
+            <span class="zone-name">🏭 Factory</span>
+            <span class="zone-sla-chip sla-ok" id="zoneSlaFactory">URLLC: SLA OK</span>
+          </div>
+          <div class="zone-counts">
+            eMBB: <strong id="cntFactoryEmbb">0</strong> | URLLC: <strong id="cntFactoryUrllc">30</strong> | mURLLC: <strong id="cntFactoryMurllc">0</strong>
+          </div>
+        </div>
+
+        <div class="zone-card" id="zoneCardSmartCity">
+          <div class="zone-header">
+            <span class="zone-name">🏙️ Smart City / IoT Zone</span>
+            <span class="zone-sla-chip sla-ok" id="zoneSlaSmartCity">mURLLC: SLA OK</span>
+          </div>
+          <div class="zone-counts">
+            eMBB: <strong id="cntSmartCityEmbb">0</strong> | URLLC: <strong id="cntSmartCityUrllc">0</strong> | mURLLC: <strong id="cntSmartCityMurllc">100</strong>
+          </div>
+        </div>
+      </div>
+
       <!-- Real-Time Bot Pulse Field Canvas -->
       <div class="bot-canvas-wrap">
-        <canvas id="botCanvas" height="75"></canvas>
-        <div class="canvas-scale-label" id="canvasScaleLabel">1 dot = 1 bot (Active Transmitters)</div>
+        <canvas id="botCanvas" height="85"></canvas>
+        <div class="canvas-scale-label" id="canvasScaleLabel">1 dot = 1 user (Active Transmitters)</div>
       </div>
     </section>
 
@@ -735,6 +864,11 @@
           <div class="bar-label-row"><span>eMBB Queue Buffer</span><span id="queueLblStatic">0 / 2000</span></div>
           <div class="queue-meter"><div class="queue-fill" id="queueBarStatic"></div></div>
         </div>
+
+        <div class="delay-row">
+          <span class="delay-label">Estimated delay (model):</span>
+          <span class="delay-val" id="delayStatic">eMBB: -- | URLLC: -- | mURLLC: --</span>
+        </div>
       </div>
 
       <!-- Column 2: Heuristic Baseline -->
@@ -772,6 +906,11 @@
         <div>
           <div class="bar-label-row"><span>eMBB Queue Buffer</span><span id="queueLblHeuristic">0 / 2000</span></div>
           <div class="queue-meter"><div class="queue-fill" id="queueBarHeuristic"></div></div>
+        </div>
+
+        <div class="delay-row">
+          <span class="delay-label">Estimated delay (model):</span>
+          <span class="delay-val" id="delayHeuristic">eMBB: -- | URLLC: -- | mURLLC: --</span>
         </div>
       </div>
 
@@ -814,6 +953,11 @@
           </div>
           <div class="bar-label-row"><span>eMBB Queue Buffer</span><span id="queueLblAgent">0 / 2000</span></div>
           <div class="queue-meter"><div class="queue-fill" id="queueBarAgent"></div></div>
+        </div>
+
+        <div class="delay-row">
+          <span class="delay-label">Estimated delay (model):</span>
+          <span class="delay-val" id="delayAgent">eMBB: -- | URLLC: -- | mURLLC: --</span>
         </div>
 
         <div>
@@ -864,6 +1008,23 @@
 
     let botCounts = { embb: 40, urllc: 30, murllc: 100 };
     let botMax = { embb: 200, urllc: 150, murllc: 1000 };
+    let botMatrix = {
+      campus: { embb: 40, urllc: 0, murllc: 0 },
+      factory: { embb: 0, urllc: 30, murllc: 0 },
+      smart_city: { embb: 0, urllc: 0, murllc: 100 }
+    };
+
+    function onLocationChange() {
+      const loc = document.getElementById('botLocSelect').value;
+      const sliceSelect = document.getElementById('botSliceSelect');
+      if (loc === 'campus') {
+        sliceSelect.value = 'embb';
+      } else if (loc === 'factory') {
+        sliceSelect.value = 'urllc';
+      } else if (loc === 'smart_city') {
+        sliceSelect.value = 'murllc';
+      }
+    }
 
     function initChart(canvasId, label, color, yMax = null, drawLimitLine = false) {
       const ctx = document.getElementById(canvasId).getContext('2d');
@@ -920,6 +1081,7 @@
     }
 
     async function submitBotAction(mode) {
+      const loc = document.getElementById('botLocSelect') ? document.getElementById('botLocSelect').value : 'campus';
       const slice = document.getElementById('botSliceSelect').value;
       const count = parseInt(document.getElementById('botCountInput').value, 10);
       if (isNaN(count) || count < 0) return;
@@ -928,11 +1090,14 @@
         const res = await fetch('/bots', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slice: slice, count: count, mode: mode })
+          body: JSON.stringify({ location: loc, slice: slice, count: count, mode: mode })
         });
         const data = await res.json();
         if (data.counts) {
           updateBotCounters(data.counts);
+          if (data.matrix) {
+            updateBotMatrix(data.matrix);
+          }
           if (data.clipped) {
             showMaxAlert();
           }
@@ -961,6 +1126,65 @@
       if (document.getElementById('botCntMurllc')) document.getElementById('botCntMurllc').innerText = counts.murllc;
     }
 
+    function updateBotMatrix(matrix) {
+      if (!matrix) return;
+      botMatrix = matrix;
+      const zones = ['campus', 'factory', 'smart_city'];
+      zones.forEach(z => {
+        const zUpper = z === 'smart_city' ? 'SmartCity' : (z.charAt(0).toUpperCase() + z.slice(1));
+        const m = matrix[z] || { embb: 0, urllc: 0, murllc: 0 };
+        const eElem = document.getElementById(`cnt${zUpper}Embb`);
+        const uElem = document.getElementById(`cnt${zUpper}Urllc`);
+        const muElem = document.getElementById(`cnt${zUpper}Murllc`);
+        if (eElem) eElem.innerText = m.embb || 0;
+        if (uElem) uElem.innerText = m.urllc || 0;
+        if (muElem) muElem.innerText = m.murllc || 0;
+      });
+    }
+
+    function updateZoneSlaChips(slaObj) {
+      if (!slaObj) return;
+      const mapping = [
+        { zone: 'campus', defaultSlice: 'embb', elemId: 'zoneSlaCampus' },
+        { zone: 'factory', defaultSlice: 'urllc', elemId: 'zoneSlaFactory' },
+        { zone: 'smart_city', defaultSlice: 'murllc', elemId: 'zoneSlaSmartCity' }
+      ];
+
+      mapping.forEach(m => {
+        const chip = document.getElementById(m.elemId);
+        if (!chip) return;
+        const zCounts = botMatrix[m.zone] || {};
+        
+        // Find dominant slice in this zone
+        let activeSlice = null;
+        let maxCount = 0;
+        for (const s of ['embb', 'urllc', 'murllc']) {
+          if ((zCounts[s] || 0) > maxCount) {
+            maxCount = zCounts[s];
+            activeSlice = s;
+          }
+        }
+
+        if (maxCount === 0) {
+          chip.className = 'zone-sla-chip sla-none';
+          chip.innerText = 'no traffic';
+        } else {
+          const sStatus = slaObj[activeSlice] ? slaObj[activeSlice].status : 'ok';
+          const sliceLabel = activeSlice.toUpperCase();
+          if (sStatus === 'breach') {
+            chip.className = 'zone-sla-chip sla-bad';
+            chip.innerText = `${sliceLabel}: SLA BREACH`;
+          } else if (sStatus === 'amber') {
+            chip.className = 'zone-sla-chip sla-amber';
+            chip.innerText = `${sliceLabel}: AT RISK`;
+          } else {
+            chip.className = 'zone-sla-chip sla-ok';
+            chip.innerText = `${sliceLabel}: SLA OK`;
+          }
+        }
+      });
+    }
+
     function connectWebSocket() {
       const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const wsUrl = `${proto}//${window.location.host}/ws`;
@@ -976,7 +1200,7 @@
       ws.onclose = () => {
         document.getElementById('connPill').style.background = '#7f1d1d';
         document.getElementById('connDot').style.background = '#ef4444';
-        document.getElementById('connText').innerText = 'Reconnecting...';
+        document.getElementById('connText').innerText = 'Disconnected (Reconnecting...)';
         setTimeout(connectWebSocket, 1500);
       };
 
@@ -993,6 +1217,9 @@
 
       if (data.bots) {
         updateBotCounters(data.bots);
+      }
+      if (data.bots_by_location) {
+        updateBotMatrix(data.bots_by_location);
       }
 
       // Check overload / feasible badge
@@ -1011,6 +1238,25 @@
       }
 
       const pols = data.policies;
+
+      // Update Zone SLA chips from Agent SLA status
+      if (pols && pols.agent && pols.agent.sla) {
+        updateZoneSlaChips(pols.agent.sla);
+      }
+
+      // Update per-policy estimated delay model labels
+      ['Static', 'Heuristic', 'Agent'].forEach(pName => {
+        const pKey = pName.toLowerCase();
+        const pData = pols[pKey];
+        const delayElem = document.getElementById(`delay${pName}`);
+        if (delayElem && pData && pData.est_delay_ms) {
+          const d = pData.est_delay_ms;
+          const embbMs = d.embb !== undefined ? d.embb.toFixed(1) : '--';
+          const urllcMs = d.urllc !== undefined ? d.urllc.toFixed(2) : '--';
+          const murllcMs = d.murllc !== undefined ? d.murllc.toFixed(1) : '--';
+          delayElem.innerText = `eMBB: ${embbMs}ms | URLLC: ${urllcMs}ms | mURLLC: ${murllcMs}ms`;
+        }
+      });
 
       // Update Static
       updatePolicyPanel('Static', pols.static);
@@ -1159,6 +1405,65 @@
       }
     }
 
+    function onLocationChange() {
+      const loc = document.getElementById('botLocSelect').value;
+      const sliceSelect = document.getElementById('botSliceSelect');
+      if (loc === 'campus') {
+        sliceSelect.value = 'embb';
+      } else if (loc === 'factory') {
+        sliceSelect.value = 'urllc';
+      } else if (loc === 'smart_city') {
+        sliceSelect.value = 'murllc';
+      }
+    }
+
+    function quickAddBots(count) {
+      const input = document.getElementById('botCountInput');
+      if (input) input.value = count;
+      submitBotAction('add');
+    }
+
+    function submitBotAction(mode) {
+      const loc = document.getElementById('botLocSelect').value;
+      const slc = document.getElementById('botSliceSelect').value;
+      const countInput = document.getElementById('botCountInput');
+      const count = parseInt(countInput.value, 10);
+      if (isNaN(count) || count < 0) {
+        alert('Please enter a valid non-negative integer count');
+        return;
+      }
+      const payload = {
+        location: loc,
+        slice: slc,
+        count: count,
+        mode: mode
+      };
+      fetch('/bots', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.bots) {
+          updateBotCounters(data.bots);
+        }
+        if (data.bots_by_location) {
+          updateBotMatrix(data.bots_by_location);
+        }
+        const maxAlert = document.getElementById('botMaxAlert');
+        if (maxAlert) {
+          if (data.clipped) {
+            maxAlert.style.display = 'inline-block';
+            setTimeout(() => { maxAlert.style.display = 'none'; }, 4000);
+          } else {
+            maxAlert.style.display = 'none';
+          }
+        }
+      })
+      .catch(err => console.error('Error submitting bot action:', err));
+    }
+
     // Bot Transmission Field Canvas Animation
     let canvas, ctx;
     let animFrame = 0;
@@ -1202,50 +1507,72 @@
       ctx.arc(towerX, towerY, pulseRadius, 0, Math.PI * 2);
       ctx.stroke();
 
-      const maxRenderDots = 60;
-      const slices = [
-        { name: 'embb', count: botCounts.embb, color: '#06b6d4', baseAngle: Math.PI },        // Left arc
-        { name: 'urllc', count: botCounts.urllc, color: '#f59e0b', baseAngle: -Math.PI / 2 },  // Top arc
-        { name: 'murllc', count: botCounts.murllc, color: '#a855f7', baseAngle: 0 },           // Right arc
+      // 3 Locations: Campus (left), Factory (top), Smart City (right)
+      const locDefs = [
+        { key: 'campus', label: '🏢 Campus', baseAngle: Math.PI },
+        { key: 'factory', label: '🏭 Factory', baseAngle: -Math.PI / 2 },
+        { key: 'smart_city', label: '🏙️ Smart City', baseAngle: 0 }
       ];
 
+      const sliceColors = { embb: '#06b6d4', urllc: '#f59e0b', murllc: '#a855f7' };
+
+      // Calculate max scale across zones (at most 40 dots per zone)
       let maxScale = 1;
-      slices.forEach(sl => {
-        const scale = Math.ceil(sl.count / maxRenderDots);
-        if (scale > maxScale) maxScale = scale;
+      locDefs.forEach(ld => {
+        const zm = botMatrix[ld.key] || {};
+        const zTotal = (zm.embb || 0) + (zm.urllc || 0) + (zm.murllc || 0);
+        const s = Math.ceil(zTotal / 40);
+        if (s > maxScale) maxScale = s;
       });
 
       const labelElem = document.getElementById('canvasScaleLabel');
       if (labelElem) {
-        labelElem.innerText = maxScale > 1 ? `1 dot = ${maxScale} bots` : `1 dot = 1 bot`;
+        labelElem.innerText = maxScale > 1 ? `1 dot = ${maxScale} users` : `1 dot = 1 user`;
       }
 
-      slices.forEach(sl => {
-        const renderCount = Math.min(maxRenderDots, Math.ceil(sl.count / maxScale));
-        const radius = Math.min(w * 0.40, 240);
+      locDefs.forEach(ld => {
+        const zm = botMatrix[ld.key] || {};
+        const radius = Math.min(w * 0.38, 220);
+        const zoneCenterX = towerX + radius * Math.cos(ld.baseAngle);
+        const zoneCenterY = towerY + (h * 0.32) * Math.sin(ld.baseAngle);
 
-        for (let i = 0; i < renderCount; i++) {
-          const spread = 0.85;
-          const angle = sl.baseAngle + ((i - (renderCount - 1) / 2) * (spread / Math.max(1, renderCount)));
-          const botX = towerX + radius * Math.cos(angle);
-          const botY = towerY + (h * 0.36) * Math.sin(angle);
+        // Draw Zone Label
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(ld.label, zoneCenterX, zoneCenterY + (ld.baseAngle === -Math.PI / 2 ? -10 : 18));
 
-          // Draw Bot Transmitter Dot
-          ctx.fillStyle = sl.color;
-          ctx.beginPath();
-          ctx.arc(botX, botY, 2.5, 0, Math.PI * 2);
-          ctx.fill();
+        // Draw Dots for each slice in this zone
+        let dotIdx = 0;
+        ['embb', 'urllc', 'murllc'].forEach(s => {
+          const rawCount = zm[s] || 0;
+          const renderCount = Math.min(40, Math.ceil(rawCount / maxScale));
+          for (let i = 0; i < renderCount; i++) {
+            if (dotIdx >= 40) break;
+            const spread = 0.55;
+            const angle = ld.baseAngle + ((dotIdx - 10) * (spread / 20));
+            const botX = towerX + (radius * 0.95) * Math.cos(angle);
+            const botY = towerY + (h * 0.32) * Math.sin(angle);
 
-          // Draw Moving Packet Bead Traveling toward 5G Tower
-          const progress = ((animFrame * 0.02 + (i * 0.15)) % 1.0);
-          const packetX = botX + (towerX - botX) * progress;
-          const packetY = botY + (towerY - botY) * progress;
+            // Bot Dot
+            ctx.fillStyle = sliceColors[s];
+            ctx.beginPath();
+            ctx.arc(botX, botY, 2.5, 0, Math.PI * 2);
+            ctx.fill();
 
-          ctx.fillStyle = sl.color;
-          ctx.beginPath();
-          ctx.arc(packetX, packetY, 1.5, 0, Math.PI * 2);
-          ctx.fill();
-        }
+            // Moving Signal Bead
+            const progress = ((animFrame * 0.02 + (dotIdx * 0.12)) % 1.0);
+            const packetX = botX + (towerX - botX) * progress;
+            const packetY = botY + (towerY - botY) * progress;
+
+            ctx.fillStyle = sliceColors[s];
+            ctx.beginPath();
+            ctx.arc(packetX, packetY, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            dotIdx++;
+          }
+        });
       });
 
       requestAnimationFrame(animateBotCanvas);
