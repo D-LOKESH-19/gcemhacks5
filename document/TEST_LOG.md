@@ -820,3 +820,52 @@ The original Agent + Shield also has 0 violations in all of these, so no violati
 - `GET /api/lending` calibration: `live` = running (risk at the applied allocation, observed violation at the next step) pairs from the Enhanced copy, `offline` = the L1 validation-seed replay.
 - `lending.mode: off` keeps the `enhanced` stream (identical to Agent + Shield) and reports `capabilities.lending: false`.
 - Live WebSocket rate is 4.65 steps/s (sleep of 0.20 s plus step and send time); this loop was already in place before lending.
+
+---
+
+## Phase L4: Evaluation (LE-1 to LE-10)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Pipeline**: `python lending_tune.py` (validation seeds only) -> `python lending_run_eval.py` (held-out seeds) -> `python lending_report.py` -> `python test_files/test_lending_eval.py`
+- **Result**: **10/10 checks passed.** These tests verify that the evaluation is computed correctly, paired, honest and reproducible. **They do not say Enhanced wins; it does not (see below).** Re-run after the evaluation: `test_predictor` 22/22, `test_lender` 37/37, `test_lending_integration` 14/14, LL-12 fingerprints 21/21. No product code changed in L4 (`git diff pre-lending` empty for `sim.py, shield.py, sla.py, train.py, baselines.py, evaluate.py`; `config.yaml`, `api.py`, `lender.py`, `predictor.py` unchanged since L3).
+- **New files**: `lending_eval.py`, `lending_tune.py`, `lending_run_eval.py`, `lending_report.py`, `test_files/test_lending_eval.py`; outputs `results/lending_*.csv|json|png|md` (CSV and PNG are git-ignored by the repo convention and reproducible with the commands above; the JSON files and `lending_report.md` are committed).
+
+### Seeds (printed by the scripts and tests, LE-9)
+- Tuning / validation: `[7000 .. 7019]` (20 seeds). Evaluation (held-out): `[8000 .. 8019]` (20 seeds). Disjoint; also disjoint from train 42-44, old validation 51-55, old evaluation 100-119, baseline 9001-9003.
+- Tuning grid (fixed before running): `risk.high {0.2,0.3,0.5}` x `confirm_steps {1,2}` x `ewma_alpha {0.2,0.4}` = 12 configs, scored on validation seeds, feasible scenarios only: fewest URLLC+mURLLC violated packets, then highest eMBB ratio, then fewest loans, then closest to defaults.
+- **Tuning was flat**: all 12 configs gave the same violations (2.00003 packets) and the same eMBB ratio (0.9374950), so the shipped defaults were kept and `config.yaml` was not changed.
+
+### Scenarios and regimes
+steady, eMBB surge, URLLC burst, mURLLC storm, bots 0.3x, bots 1.0x (feasible); bots 3.0x and bots 5.0x (overload, reported separately). Bots 5.0x was added to the spec's list in advance (ES-5, spec mentions 5x) and before any result was seen. 7 policies x 8 scenarios x 20 seeds = 1,120 episodes, identical traffic asserted for every (scenario, seed) across all policies.
+
+### Test matrix
+| ID | Test | Result | Real output |
+| :---: | :--- | :---: | :--- |
+| LE-1 | Paired seeds | **PASSED** | Enhanced and original Agent+Shield on the same 20 held-out seeds; paired 95% bootstrap CI in all 8 scenarios. **Violations avoided = +0.0000 [0.0000, 0.0000] in every scenario; 0/20 seeds differ** |
+| LE-2 | Scenarios | **PASSED** | all 8 run; headline uses the 6 feasible only; overload (bots 3.0x, 5.0x) separate |
+| LE-3 | Predictive vs reactive | **PASSED (computed)** | onset-window violations identical on every seed in all 8 scenarios. Predictive opens loans in URLLC burst (0.55/episode) and mURLLC storm (1.95) where reactive opens 0 and 0.05; the only measurable difference is utilization in the storm, +0.00014 [0.00000, 0.00038] (negligible) |
+| LE-4 | No-return ablation | **PASSED (computed)** | utilization in the mURLLC storm is **lower without returns: -0.00287 [-0.00697, -0.00004]** (returning capacity does help, by under 0.3 points); nothing else differs |
+| LE-5 | Radio-only ablation | **PASSED (computed)** | utilization in the storm -0.00039 [-0.00078, -0.00006] (negligible); nothing else differs |
+| LE-6 | Metrics complete | **PASSED** | all section-9 metrics saved, no NaN |
+| LE-7 | Predictor evaluation (held-out seeds) | **PASSED** | Brier 0.00397 vs constant 0.07029 (skill 0.944), AUC 0.9989, ECE 0.0146; per slice Brier beats constant for eMBB, URLLC and mURLLC. Forecast MAE 29.13 vs naive last-value 28.96: **better only for URLLC (5.59 vs 6.65), not for eMBB (73.9 vs 72.6) or mURLLC (7.87 vs 7.68)** |
+| LE-8 | Overload honesty | **PASSED** | report has an Overload section with the 'protected first' wording and no 'all SLAs hold' / 'guarantee' claims |
+| LE-9 | No tuning on evaluation | **PASSED** | seed lists above; tuning used validation seeds only; config equals tuned choice |
+| LE-10 | Files and headline | **PASSED** | CSVs and 4 plots exist; headline recomputed by hand from the raw CSV matches; 3 random episodes re-simulated from scratch match the CSV exactly |
+
+### Honest headline (feasible scenarios, paired per seed)
+- **Violations: Enhanced = original Agent+Shield exactly** (0.112 violated packets per seed for both, identical on every seed). The only violation among the original agent's 160 episodes is 2.24 packets at step 2 of one storm episode (seed 8008), before the predictor has any history; Enhanced has the same violation.
+- eMBB served ratio 0.93803 vs 0.93803 (difference 7e-11); utilization +0.00002 (statistically above 0, negligible).
+- Versus **Static**: 111.7 -> 0.112 violated packets per seed, onset-window 21.1 -> 0.112, eMBB ratio +0.7 pts, utilization +0.18 pts, all with intervals above 0. This comes from the shielded RL agent, not from lending.
+- **Claim 1 ("fewer onset-window violations than the original agent and than reactive lending") is NOT supported by the data.** There is nothing left for lending to avoid: the original Agent + Shield is already at 0 violations in 159 of 160 episodes.
+- **Claim 2 ("capacity returned, utilization and eMBB throughput recover") is only weakly supported**: returns raise storm utilization by 0.29 points vs no-return, and eMBB ratio is unchanged. Effects are tiny.
+- **Claim 3 ("calibrated risk, honest overload")** is supported: Brier skill 0.944, ECE 0.015, and the lender reports overload instead of hiding it. Caveat: risk over-predicts in the mid bins (see `results/lending_reliability.png`).
+
+### Why Enhanced cannot improve on the original agent here (diagnosis, not an excuse)
+- The shipped agent's raw output is almost constant and the shield (floors 0.15 plus 1.2 x load) does the protecting, so URLLC and mURLLC already have ample capacity.
+- **eMBB is where the SLA is missed** (eMBB surge: served ratio 0.629 < 0.70, SLA met in 0% of episodes for both policies; bots 3.0x: 0.167; bots 5.0x: 0.086). The lender flags overload (16% of steps in the surge, 99% in 3x/5x) but cannot help: URLLC/mURLLC sit at their shield floors, the shield is the last word and was off limits, so there is no lendable capacity above the floors.
+- The standard scenarios start spikes at step 0, before any predictor history; no predictor can anticipate that. A mid-episode storm scenario was NOT added after seeing these results (it would be post-hoc); it is listed as an option below.
+
+### Plot and colour notes
+- Policy colours are the project's fixed ones (Static #F87171, Heuristic #CBD5E1, Agent #34D399, Enhanced #F472B6). `validate_palette.js` (dark) FAILs the lightness/chroma bands (the grey Heuristic is neutral by design) and WARNs on Agent vs Enhanced deutan separation (dE 6.6). Secondary encoding is used as that warning requires: hatching per policy, markers, a legend and direct row labels.
+- Paired chart axes are fixed to +/-0.5 so a zero effect is shown as zero (an auto-scaled axis made a 1e-7 effect look large and was fixed).
+- The report adds a 'negligible' verdict tier (|effect| < 0.001 for ratios, < 0.01 packets). It was added after seeing the numbers to avoid calling a 2e-5 utilization gain 'better'; it can only make verdicts more conservative.

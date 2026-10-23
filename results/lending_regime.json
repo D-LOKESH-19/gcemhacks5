@@ -1,0 +1,12 @@
+{
+ "regime": {
+  "steady": "feasible",
+  "embb_surge": "feasible",
+  "urllc_burst": "feasible",
+  "murllc_storm": "feasible",
+  "bots_0.3x": "feasible",
+  "bots_1.0x": "feasible",
+  "bots_3.0x": "overload",
+  "bots_5.0x": "overload"
+ }
+}

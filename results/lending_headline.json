@@ -1,0 +1,155 @@
+{
+ "feasible_scenarios": [
+  "steady",
+  "embb_surge",
+  "urllc_burst",
+  "murllc_storm",
+  "bots_0.3x",
+  "bots_1.0x"
+ ],
+ "overload_scenarios": [
+  "bots_3.0x",
+  "bots_5.0x"
+ ],
+ "n_seeds": 20,
+ "viol_total__enhanced_vs_agent_shield": {
+  "improvement": 0.0,
+  "ci_lo": 0.0,
+  "ci_hi": 0.0,
+  "enhanced": 0.1120025634765625,
+  "baseline": 0.1120025634765625
+ },
+ "viol_total__enhanced_vs_static": {
+  "improvement": 111.5879623413086,
+  "ci_lo": 63.5256651687622,
+  "ci_hi": 163.67750152587888,
+  "enhanced": 0.1120025634765625,
+  "baseline": 111.69996490478516
+ },
+ "viol_total__enhanced_vs_heuristic_shield": {
+  "improvement": 0.0,
+  "ci_lo": 0.0,
+  "ci_hi": 0.0,
+  "enhanced": 0.1120025634765625,
+  "baseline": 0.1120025634765625
+ },
+ "viol_total__enhanced_vs_enhanced_reactive": {
+  "improvement": 0.0,
+  "ci_lo": 0.0,
+  "ci_hi": 0.0,
+  "enhanced": 0.1120025634765625,
+  "baseline": 0.1120025634765625
+ },
+ "onset_viol_total__enhanced_vs_agent_shield": {
+  "improvement": 0.0,
+  "ci_lo": 0.0,
+  "ci_hi": 0.0,
+  "enhanced": 0.1120025634765625,
+  "baseline": 0.1120025634765625
+ },
+ "onset_viol_total__enhanced_vs_static": {
+  "improvement": 20.987991333007812,
+  "ci_lo": 5.149995422363281,
+  "ci_hi": 41.23828912734985,
+  "enhanced": 0.1120025634765625,
+  "baseline": 21.099993896484374
+ },
+ "onset_viol_total__enhanced_vs_heuristic_shield": {
+  "improvement": 0.0,
+  "ci_lo": 0.0,
+  "ci_hi": 0.0,
+  "enhanced": 0.1120025634765625,
+  "baseline": 0.1120025634765625
+ },
+ "onset_viol_total__enhanced_vs_enhanced_reactive": {
+  "improvement": 0.0,
+  "ci_lo": 0.0,
+  "ci_hi": 0.0,
+  "enhanced": 0.1120025634765625,
+  "baseline": 0.1120025634765625
+ },
+ "embb_ratio__enhanced_vs_agent_shield": {
+  "improvement": 6.84549694707215e-11,
+  "ci_lo": -6.245104433588722e-12,
+  "ci_hi": 2.0216536222861236e-10,
+  "enhanced": 0.9380292042046954,
+  "baseline": 0.9380292041362406
+ },
+ "embb_ratio__enhanced_vs_static": {
+  "improvement": 0.007020443718207914,
+  "ci_lo": 0.005884756048205254,
+  "ci_hi": 0.008344547818898861,
+  "enhanced": 0.9380292042046954,
+  "baseline": 0.9310087604864876
+ },
+ "embb_ratio__enhanced_vs_heuristic_shield": {
+  "improvement": -1.9977446380753384e-05,
+  "ci_lo": -4.8073421890432595e-05,
+  "ci_hi": -3.536443536622525e-10,
+  "enhanced": 0.9380292042046954,
+  "baseline": 0.9380491816510762
+ },
+ "embb_ratio__enhanced_vs_enhanced_reactive": {
+  "improvement": 6.84549694707215e-11,
+  "ci_lo": -6.245104433588722e-12,
+  "ci_hi": 2.0216536222861236e-10,
+  "enhanced": 0.9380292042046954,
+  "baseline": 0.9380292041362406
+ },
+ "util__enhanced_vs_agent_shield": {
+  "improvement": 2.385813790947988e-05,
+  "ci_lo": 1.4785940821639143e-07,
+  "ci_hi": 6.381664105690541e-05,
+  "enhanced": 0.3413672159400165,
+  "baseline": 0.341343357802107
+ },
+ "util__enhanced_vs_static": {
+  "improvement": 0.0018127801750346118,
+  "ci_lo": 0.0017500484056177405,
+  "ci_hi": 0.0018801547107553786,
+  "enhanced": 0.3413672159400165,
+  "baseline": 0.3395544357649819
+ },
+ "util__enhanced_vs_heuristic_shield": {
+  "improvement": 2.3864741615806096e-05,
+  "ci_lo": 1.5496904393459687e-07,
+  "ci_hi": 6.382387003536334e-05,
+  "enhanced": 0.3413672159400165,
+  "baseline": 0.34134335119840065
+ },
+ "util__enhanced_vs_enhanced_reactive": {
+  "improvement": 2.3858142443650145e-05,
+  "ci_lo": 1.478683390412211e-07,
+  "ci_hi": 6.381664521508144e-05,
+  "enhanced": 0.3413672159400165,
+  "baseline": 0.34134335779757286
+ },
+ "win_comp_um__enhanced_vs_agent_shield": {
+  "improvement": 0.0,
+  "ci_lo": 0.0,
+  "ci_hi": 0.0,
+  "enhanced": 1.0,
+  "baseline": 1.0
+ },
+ "win_comp_um__enhanced_vs_static": {
+  "improvement": 0.012499999999999956,
+  "ci_lo": 0.009166666666666634,
+  "ci_hi": 0.014999999999999947,
+  "enhanced": 1.0,
+  "baseline": 0.9875000000000002
+ },
+ "win_comp_um__enhanced_vs_heuristic_shield": {
+  "improvement": 0.0,
+  "ci_lo": 0.0,
+  "ci_hi": 0.0,
+  "enhanced": 1.0,
+  "baseline": 1.0
+ },
+ "win_comp_um__enhanced_vs_enhanced_reactive": {
+  "improvement": 0.0,
+  "ci_lo": 0.0,
+  "ci_hi": 0.0,
+  "enhanced": 1.0,
+  "baseline": 1.0
+ }
+}
