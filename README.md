@@ -153,6 +153,45 @@ The **Locations Feature** organizes simulated user populations into 3 distinct l
 
 ---
 
+## 6b. Phase L: SLA-aware predictive resource lending (our innovation)
+
+**Predict, Lend, Return, Admit overload.** On top of the unchanged RL agent and hard shield, a *lender* estimates the SLA risk of every slice from **past traffic only** (no simulator internals), lends the bottleneck resource (radio PRBs or edge vCPUs) from slices that can spare it while their own minimums stay protected, returns it step by step when the burst is over, and reports overload with exact numbers instead of hiding it.
+
+```
+Agent proposes  ->  Lender adjusts  ->  Shield enforces hard floors  ->  applied
+```
+
+- The RL model, observation (12 floats), action (6 floats), reward, old costs and the shield are **not changed**; `lending.mode: off` reproduces the original Agent + Shield bit for bit (tested on 21 fixed-seed runs and through the API).
+- A fourth policy, **Enhanced** (pink), runs on identical traffic next to Static, Heuristic and Agent. Allocation page: risk gauges with thresholds, forecast vs capacity, loan arrows, striped loaned cells, loan ledger, overload banner and a "Lender adjusts" pipeline stage. Results page: section "Innovation: predictive lending". API: `GET /api/lending`, `GET /api/lending/results`, `capabilities.lending`.
+
+### What the held-out evaluation shows (measured, not hoped for)
+
+20 held-out seeds (8000-8019) x 8 scenarios, paired per seed, 95% bootstrap intervals; thresholds were tuned only on separate validation seeds (7000-7019) and the 12-point tuning grid was flat, so the defaults were kept. Full numbers: `results/lending_report.md`.
+
+| Pitch claim | Evidence | Verdict |
+| --- | --- | --- |
+| **1. Fewer onset-window violations than the original agent and than reactive lending** | Enhanced and original Agent + Shield are identical on every seed (0.112 violated packets per seed for both, feasible scenarios). The original agent has one violation in 160 episodes (2.24 packets at step 2 of one storm run, before the predictor has history). Predictive vs reactive: identical on every seed. | **Not supported.** There is nothing left for lending to avoid in this simulator. |
+| **2. Capacity is returned, utilization and eMBB throughput recover** | Loans return step by step (storm: 23 steps mean duration, 12 steps return lag). With returns, utilization and eMBB ratio stay at the original agent's level (0.3785 vs 0.3784; 0.99983 vs 0.99983). | **The mechanism works; no improvement over the original agent is measured.** |
+| **3. The risk estimate is calibrated and overload is reported honestly** | Brier 0.00397 vs 0.07029 for a constant-rate predictor (skill 0.94), AUC 0.9989, calibration error 0.015 on held-out seeds. Overload is flagged on 99% of steps at 3x/5x bots and on 16% of steps in the eMBB surge, with the unfunded amount. | **Supported**, with caveats: risk is conservative (over-predicts in mid bins) and the demand forecast is only better than a naive last-value forecast for URLLC, not for eMBB or mURLLC. |
+
+Versus **Static**, Enhanced (like the shielded Agent) cuts URLLC+mURLLC violated packets from 111.7 to 0.112 per seed; that comes from the RL agent and the shield, not from lending.
+
+**Why lending cannot improve on the original agent here.** The shield's floors (15% plus 1.2 x load) already give URLLC and mURLLC ample capacity, so they have no violations to prevent, and they sit at their floors, so they have nothing to lend to eMBB. eMBB is where an SLA is missed (surge: served ratio 0.63 < 0.70; bots 3x: 0.17; bots 5x: 0.09), and no lendable capacity exists above the floors. The standard scenarios also start a spike at step 0, before any predictor history. Relaxing the shield floor for idle donors would be a separate, unapproved change.
+
+**Under overload we only claim that URLLC and mURLLC are protected first and eMBB degrades.** We never claim all SLAs hold.
+
+```bash
+python lending_tune.py            # tune on validation seeds 7000-7019 only
+python lending_run_eval.py        # held-out evaluation on seeds 8000-8019 -> results/lending_*.csv, plots
+python lending_report.py          # results/lending_report.md (verdict wording computed from the intervals)
+python test_files/test_predictor.py && python test_files/test_lender.py   && python test_files/test_lending_integration.py && python test_files/test_lending_eval.py   && python test_files/test_lending_e2e.py
+node test_files/test_lending_ui.cjs && node test_files/test_lending_e2e.cjs   # real Chromium, no extra dependency
+```
+
+Limits: slice-level simulator (not radio-level; ns-3 validation is future work), single cell, one trained agent, the lender is not trained in the loop (future work). Pitch notes, demo script and jury answers: `document/LENDING_PITCH.md`.
+
+---
+
 ## 7. Live Demo Flow (3 Minutes)
 
 1. **0:00 - 0:25 (The Real Problem & Architecture):**
@@ -207,6 +246,10 @@ gcmehack5/
 ├── test_locations_10b.py # Phase 10b Locations API, telemetry, and event log tests (LT-13 to LT-17, 37, 40)
 ├── test_locations_10c.py # Phase 10c UI, zone cards, dot scaling, and honesty strip tests (LT-19 to LT-30, 32, 33, 38, 39)
 ├── test_locations_10d.py # Phase 10d End-to-End Scenarios & Regression (E2E-14, E2E-15, E2E-17, E2E-18, E2E-19)
+├── predictor.py         # Phase L: per-slice forecast, burst detector and calibrated SLA-risk estimate (past traffic only)
+├── lender.py            # Phase L: loans, returns, recalls, overload admission; EnhancedPolicy = Agent + Lender + Shield
+├── lending_eval.py / lending_tune.py / lending_run_eval.py / lending_report.py / lending_calibration.py / lending_seeds.py
+│                        # Phase L: paired evaluation, validation-seed tuning, report, predictor calibration, seed lists
 ├── TESTING_GUIDE.md     # Master testing verification matrix and execution guide
 ├── TEST_LOG.md          # Cumulative Phase test execution logbook
 ├── frontend/            # Enterprise React 18 + TypeScript + Vite + Tailwind CSS Suite
@@ -222,6 +265,7 @@ gcmehack5/
 ├── results/
 │   ├── evaluation_table.csv    # Benchmark metrics across seeds
 │   ├── training.png            # Convergence curves (Reward, Cost, Lambda)
+│   ├── lending_*.csv|json|png|md # Phase L results (paired evaluation, ablations, calibration, report)
 │   └── scenarios_comparison.png # Comparison bar charts
 └── requirements.txt     # Pinned Python dependencies
 ```

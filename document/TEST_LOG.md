@@ -844,7 +844,7 @@ steady, eMBB surge, URLLC burst, mURLLC storm, bots 0.3x, bots 1.0x (feasible); 
 | LE-1 | Paired seeds | **PASSED** | Enhanced and original Agent+Shield on the same 20 held-out seeds; paired 95% bootstrap CI in all 8 scenarios. **Violations avoided = +0.0000 [0.0000, 0.0000] in every scenario; 0/20 seeds differ** |
 | LE-2 | Scenarios | **PASSED** | all 8 run; headline uses the 6 feasible only; overload (bots 3.0x, 5.0x) separate |
 | LE-3 | Predictive vs reactive | **PASSED (computed)** | onset-window violations identical on every seed in all 8 scenarios. Predictive opens loans in URLLC burst (0.55/episode) and mURLLC storm (1.95) where reactive opens 0 and 0.05; the only measurable difference is utilization in the storm, +0.00014 [0.00000, 0.00038] (negligible) |
-| LE-4 | No-return ablation | **PASSED (computed)** | utilization in the mURLLC storm is **lower without returns: -0.00287 [-0.00697, -0.00004]** (returning capacity does help, by under 0.3 points); nothing else differs |
+| LE-4 | No-return ablation | **PASSED (computed)** | Enhanced minus no-return utilization in the mURLLC storm is **-0.00287 [-0.00697, -0.00004]**, i.e. never returning gives HIGHER measured utilization (0.3814 vs 0.3785; original agent 0.3784). **CORRECTED in L6: the first version of this row and of the 'Claim 2' bullet below read the sign backwards.** Returning brings Enhanced back to the original agent's level (+0.00014); keeping the loan raises the utilization metric above it (+0.0030), most likely because capacity moved away from eMBB shrinks the 'effective capacity' denominator. That is a property of the metric, not evidence that returns help; eMBB ratio is the same (0.99983) in all three; nothing else differs |
 | LE-5 | Radio-only ablation | **PASSED (computed)** | utilization in the storm -0.00039 [-0.00078, -0.00006] (negligible); nothing else differs |
 | LE-6 | Metrics complete | **PASSED** | all section-9 metrics saved, no NaN |
 | LE-7 | Predictor evaluation (held-out seeds) | **PASSED** | Brier 0.00397 vs constant 0.07029 (skill 0.944), AUC 0.9989, ECE 0.0146; per slice Brier beats constant for eMBB, URLLC and mURLLC. Forecast MAE 29.13 vs naive last-value 28.96: **better only for URLLC (5.59 vs 6.65), not for eMBB (73.9 vs 72.6) or mURLLC (7.87 vs 7.68)** |
@@ -857,7 +857,7 @@ steady, eMBB surge, URLLC burst, mURLLC storm, bots 0.3x, bots 1.0x (feasible); 
 - eMBB served ratio 0.93803 vs 0.93803 (difference 7e-11); utilization +0.00002 (statistically above 0, negligible).
 - Versus **Static**: 111.7 -> 0.112 violated packets per seed, onset-window 21.1 -> 0.112, eMBB ratio +0.7 pts, utilization +0.18 pts, all with intervals above 0. This comes from the shielded RL agent, not from lending.
 - **Claim 1 ("fewer onset-window violations than the original agent and than reactive lending") is NOT supported by the data.** There is nothing left for lending to avoid: the original Agent + Shield is already at 0 violations in 159 of 160 episodes.
-- **Claim 2 ("capacity returned, utilization and eMBB throughput recover") is only weakly supported**: returns raise storm utilization by 0.29 points vs no-return, and eMBB ratio is unchanged. Effects are tiny.
+- **Claim 2 ("capacity returned, utilization and eMBB throughput recover"): the mechanism works, the benefit is NOT shown.** (Corrected in L6; this bullet first said returns raise utilization, which was the wrong sign.) Loans are returned step by step (mean duration 23.1 steps, return lag 11.7 steps in the storm), and with returns Enhanced's utilization and eMBB ratio stay at the original agent's level (0.3785 vs 0.3784; 0.99983 vs 0.99983). Not returning would make the utilization metric read 0.3 points higher, which says more about the metric than about returns. There is no measured improvement over the original agent.
 - **Claim 3 ("calibrated risk, honest overload")** is supported: Brier skill 0.944, ECE 0.015, and the lender reports overload instead of hiding it. Caveat: risk over-predicts in the mid bins (see `results/lending_reliability.png`).
 
 ### Why Enhanced cannot improve on the original agent here (diagnosis, not an excuse)
@@ -912,3 +912,55 @@ steady, eMBB surge, URLLC burst, mURLLC storm, bots 0.3x, bots 1.0x (feasible); 
 
 ### Colour accessibility note
 Enhanced pink `#F472B6` vs Agent green `#34D399` is a deutan-CVD WARN in the palette validator (dE 6.6, legal only with secondary encoding). In the UI the Enhanced line is dashed (agent solid), the tab, tile and card carry the text 'Enhanced', and loan cells are striped; the PNG plots use hatching.
+
+---
+
+## Phase L6: Docs, full regression and end-to-end (E2E-L1 to E2E-L5)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Documents**: `README.md` (section 6b, project tree), `document/LENDING_PITCH.md` (pitch, evidence table, safe and unsafe sentences, 90 s demo script, jury answers), `document/TESTING_GUIDE.md` (section 2b, corrected regression commands that now point at `test_files/`).
+- **New tests**: `test_files/test_lending_e2e.py` (Python), `test_files/test_lending_e2e.cjs` (real Chromium), `test_files/e2e_soak.cjs` (soak).
+
+### Full regression (final state, no code changes after this run)
+| Suite group | Result |
+| :--- | :---: |
+| Python: `sim_selftest`, `shield` and all 21 `test_files/test_*.py` (incl. `test_predictor` 22/22, `test_lender` 37/37, `test_lending_integration` 14/14, `test_lending_eval` 10/10, `test_lending_e2e` 4/4) | **23/23 pass** |
+| Node, earlier phases `test_phase_f2-f8`, `r1-r5` | **12/12 pass** |
+| Node, `test_lending_ui.cjs` (LU-1 to LU-10, real browser) | **44/44 pass** |
+| Node, `test_lending_e2e.cjs` (E2E-L1, E2E-L3, real browser) | **10/10 pass** |
+| LL-12 baseline `--check` (original Agent + Shield fingerprints) | **21/21 identical** |
+| Soak `e2e_soak.cjs` (30 minutes) | **6/6 pass** |
+| `models/agent.zip` | unchanged, SHA256 `3cd0a7e66847f16a...` equals `agent_pre_lending.zip` |
+| `sim.py, shield.py, sla.py, train.py, baselines.py, evaluate.py` | unchanged since `pre-lending` (git diff empty) |
+| `config.yaml` | only the additive `lending:` block |
+
+### End-to-end scenarios
+| ID | Scenario | Result | Real output |
+| :---: | :--- | :---: | :--- |
+| E2E-L1 | Storm story from a cold start (fresh server, 20 s steady, press mURLLC storm) | **PASSED, with one spec expectation NOT met** | risks low and no loans after 20 s; mURLLC risk rises to 99.0% (high threshold 30%); a loan opens eMBB to mURLLC (1.66 PRB, donor risk 1.0%); it returns step by step (2.24 > 1.68 > 1.26 > 0.91 > 0.68 > 0.51 PRB) until none remains. Cumulative URLLC+mURLLC violated packets: Static 74.0, Heuristic 37.0, Agent 0.0, Enhanced 0.0. **The spec expected the original agent to show onset violations and Enhanced to stay lower; the original agent shows none, so 'lower than the agent' is not demonstrated.** |
+| E2E-L2 | Repeatability | **PASSED** | reset and replay the same 6 spike/bot events twice: all 170 stream frames (all four policies, 41 loan events, 4 loans) identical, identical ledger and loan statistics |
+| E2E-L3 | Overload honesty (maximum bots on every slice) | **PASSED** | banner with exact numbers and 'URLLC and mURLLC protected first'; none of `/`, `/allocation`, `/sla`, `/agent`, `/results`, `/present` claims all SLAs hold or guarantees; `/sla` shows `[OVERLOAD ACTIVE]` and the protected-first wording; 0 console errors |
+| E2E-L4 | Regression, mode off | **PASSED** | `lending.mode: off`: Enhanced equals Agent + Shield on every field of 170 frames with spikes and bot events (0 differences, no loans, mode reported 'off'); predictive mode under steady load also equals the agent (0 differences in 120 frames); full earlier suite passes (table above) |
+| E2E-L5 | Soak, 30 minutes real time | **PASSED** | headless Chromium on `/allocation` (Enhanced tab) with 178 random spikes, 132 random bot changes and 6 resets, 89 samples: browser heap max 10.0 MB (middle third) vs 10.2 MB (last third), DOM 5455 vs 5746 nodes, server process tree 297.2 MB vs 297.8 MB, UI showed Live in every sample, 0 console errors |
+| E2E-L5b | Ledger cap | **PASSED** | in a 2,500-step stress run the lender produced 7,015 loan events and keeps exactly 200. In the soak the UI ledger never exceeded 91 entries, so the cap was not reached there; the cap is covered by this stress test and the store's `slice(-200)` |
+
+### Spec section 5.7 invariants, where each is tested
+1 protected minimum: LL-1. 2 conservation: LL-2. 3 no oracle: PL-1. 4 no risk, no loan: LL-3. 5 hysteresis, ramped return, recall: LL-6, LL-8. 6 overload flagged: LL-11, EP-8. 7 determinism: LL-13, E2E-L2. 8 mode off equals original: LL-12, E2E-L4. 9 shield last: LL-14, LI-3. 10 under 3 ms: LL-15 (0.30 ms).
+
+### Correction made in this phase
+The L4 log and the L4 hand-over said returns raise storm utilization. That read the sign of the paired difference backwards. Corrected above in L4 (LE-4 row and Claim 2 bullet): returning brings Enhanced back to the original agent's utilization (0.3785 vs 0.3784); never returning makes the utilization metric read 0.3 points HIGHER, which reflects how the metric treats capacity moved away from eMBB, not a benefit of returns.
+
+### Definition of done (LENDING_SPEC section 15), honest status
+- [x] Predictor, Lender and the Enhanced policy exist and run on identical traffic with the other three policies.
+- [x] All section 5.7 invariants are tested; `mode: off` equals the original exactly.
+- [x] The evaluation uses disjoint held-out seeds (tuning 7000-7019, evaluation 8000-8019), paired statistics and the predictive vs reactive ablation.
+- [x] The risk estimate has a calibration table (Brier skill 0.944, AUC 0.9989, ECE 0.0146) and overload is reported honestly.
+- [x] The Lending panel, loan visuals, ledger, overload banner and Results section work and show only backend data (verified in a real browser).
+- [x] All P0 tests pass and are logged; the earlier suite still passes.
+- [~] README, pitch notes and demo script updated. **The backup screen recording was NOT produced** (no screen-recording tool was used); screenshots are regenerated by `test_lending_ui.cjs`, and the pitch notes list the fallback.
+- **Outcome vs pitch claims:** claim 3 (calibrated risk, honest overload) is supported; claim 2 (returns) works as a mechanism but shows no benefit over the original agent; **claim 1 (fewer violations than the original agent and than reactive) is not supported**: identical on every held-out seed.
+
+### Open items for the owner
+- `README.md` section 3 still carries an older headline ("guarantees 0.00% URLLC/mURLLC SLA violations ... +1.05% eMBB") written before the SLA phase; it conflicts with the honest-claims list in `SLA_RL_SPEC.md` ('guaranteed under any load' must not be said). Not edited here.
+- `SlaScoreboard` / `SlaGridMatrix` compliance figures that are not backend values (see L5), and the broken `npm run lint` (missing parser).
+- Decisions listed in `document/LENDING_PITCH.md` section 6 (mid-episode storm scenario, relaxing a shield floor for idle donors, training with the lender in the loop).
