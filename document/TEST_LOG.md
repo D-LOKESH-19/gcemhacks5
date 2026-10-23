@@ -714,3 +714,32 @@ This document records the automated verification logs across development phases,
 
 ### LL-12 baseline recorded
 `test_files/lending_baseline_l0.py` fingerprints the original Agent + Shield (`agent_pre_lending.zip`) per-step trace (shares, violations, throughput, queue, arrivals) as SHA256 for 7 scenarios x seeds [9001, 9002, 9003] = 21 runs, saved to `results/lending_baseline_pre.json`. Re-run with `--check` reproduced all 21 hashes (0 mismatches), so the baseline is deterministic. These seeds are for the `mode: off` equality check only, not for tuning or evaluation. LL-12 will compare Enhanced (`mode: off`) against this file in L2/L3.
+
+---
+
+## Phase L1: Predictor (PL-1 to PL-8)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `python test_files/test_predictor.py` (also runs `lending_calibration.py` on the validation seeds)
+- **Result**: **22/22 checks passed**. Old-suite spot check after the `config.yaml` addition: `sim_selftest`, `shield`, `test_api`, `test_sla_11a/11d`, `test_bots_9a`, `test_locations_10d` pass; the LL-12 baseline `--check` reproduces 21/21 hashes.
+- **Files**: `predictor.py`, `lending_calibration.py`, `lending_seeds.py`, `lending:` section in `config.yaml` (pre-approved, additive).
+- **Seeds** (printed by the tests): validation/tuning `7000-7019`; held-out evaluation `8000-8019` (not used in L1); disjoint from train 42-44, old validation 51-55, old evaluation 100-119, baseline 9001-9003.
+
+### Test matrix
+| ID | Test | Result | Real output |
+| :---: | :--- | :---: | :--- |
+| PL-1 | No oracle | **PASSED** | outputs identical when all data after step t is replaced by garbage (849 comparisons); predictor reads only `arrivals, queue, shares.prb, shares.vcpu, violations`; source has no simulator references |
+| PL-2 | Forecast vs naive last-value | **PASSED (URLLC) / REPORTED (others)** | MAE forecast vs naive: URLLC 5.60 vs 6.54 (better); **eMBB 77.1 vs 74.7 (NOT better)**; **mURLLC 7.20 vs 7.00 (NOT better)** |
+| PL-3 | Risk behaves | **PASSED** | risk in (0,1), non-increasing in capacity, 0.010 with large headroom, 0.990 with large shortfall |
+| PL-4 | Calibration (20 val seeds, 4 policies x 7 scenarios) | **PASSED** | overall Brier 0.00425 vs constant 0.07026 (skill 0.94), AUC 0.998, ECE 0.0144; per slice Brier beats constant for eMBB, URLLC, mURLLC |
+| PL-5 | Burst detection | **PASSED** | 0.00% false alarms in steady Poisson load; x7 jump flagged in the same step; flag clears afterwards |
+| PL-6 | Zero traffic | **PASSED** | all outputs finite, risk 0.0098, zero share handled |
+| PL-7 | Speed | **PASSED** | 0.148 ms/step for 3 slices |
+| PL-8 | Warm-up | **PASSED** | first 10 steps `warming_up`, margin = 0.30 x forecast |
+
+### Honest findings
+- **Forecast is not better than naive last-value for eMBB and mURLLC** (PL-2). Only URLLC (periodic) benefits. Smoothing parameters stay at the spec defaults; any change would be tuned on validation seeds only.
+- **Risk definition for eMBB** (deviation from the spec wording, flagged): eMBB risk compares `min_served_ratio x demand` (0.70 read from `sla` config, not hard-coded) with capacity, because the eMBB SLA is violated at served ratio < 0.70, not at demand > capacity. With the plain definition, mid-range risks (0.3-0.7) were observed only 1-2% of the time.
+- **Calibration is conservative**: risk over-predicts in the 0.1-0.3 bins (predicted 0.135/0.244, observed 0.037/0.139) and in the 0.7-0.9 bins for eMBB/mURLLC; the 0.9-1.0 bin is accurate (0.983 vs 0.990). Persistent overload dominates the high bin; burst onset itself is not predictable (violation at the onset step has no warning).
+- **Calibration events come mostly from stress traces.** The original Agent+Shield and Heuristic+Shield have 0 URLLC/mURLLC violations in all 7 scenarios (seed 7000), so a clearly labelled `lean_static_stress` policy (tight URLLC/mURLLC compute, stress only, not an operator policy) was added to give those slices positive events.
+- **Important for L2-L4:** the shipped `agent.zip` raw output is almost constant (about 0.79/0.11/0.11 shares in every scenario); the shield (floors 0.15 + 1.2 x load) does the protecting, and Agent+Shield and Heuristic+Shield produce nearly identical shares (max difference 2e-7). With shield floors at 0.15, URLLC/mURLLC have little lendable share, and the original agent already has 0 violations in the standard scenarios. Expect little or no violation gain for Enhanced there; any gain is more likely in heavy-load/overload cases or eMBB served ratio. This will be reported as measured in L4.
