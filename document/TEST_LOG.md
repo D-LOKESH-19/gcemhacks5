@@ -862,7 +862,7 @@ steady, eMBB surge, URLLC burst, mURLLC storm, bots 0.3x, bots 1.0x (feasible); 
 
 ### Why Enhanced cannot improve on the original agent here (diagnosis, not an excuse)
 - The shipped agent's raw output is almost constant and the shield (floors 0.15 plus 1.2 x load) does the protecting, so URLLC and mURLLC already have ample capacity.
-- **eMBB is where the SLA is missed** (eMBB surge: served ratio 0.629 < 0.70, SLA met in 0% of episodes for both policies; bots 3.0x: 0.167; bots 5.0x: 0.086). The lender flags overload (16% of steps in the surge, 99% in 3x/5x) but cannot help: URLLC/mURLLC sit at their shield floors, the shield is the last word and was off limits, so there is no lendable capacity above the floors.
+- **eMBB is where the SLA is missed** (eMBB surge: served ratio 0.629 < 0.70, all-SLA met in 5% of episodes (1/20) for both policies; bots 3.0x: 0.167, 0%; bots 5.0x: 0.086, 0%; URLLC and mURLLC SLAs are met in 100% of episodes in all three, for both policies). The lender flags overload (16% of steps in the surge, 99% in 3x/5x) but cannot help: URLLC/mURLLC sit at their shield floors, the shield is the last word and was off limits, so there is no lendable capacity above the floors.
 - The standard scenarios start spikes at step 0, before any predictor history; no predictor can anticipate that. A mid-episode storm scenario was NOT added after seeing these results (it would be post-hoc); it is listed as an option below.
 
 ### Plot and colour notes
