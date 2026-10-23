@@ -743,3 +743,53 @@ This document records the automated verification logs across development phases,
 - **Calibration is conservative**: risk over-predicts in the 0.1-0.3 bins (predicted 0.135/0.244, observed 0.037/0.139) and in the 0.7-0.9 bins for eMBB/mURLLC; the 0.9-1.0 bin is accurate (0.983 vs 0.990). Persistent overload dominates the high bin; burst onset itself is not predictable (violation at the onset step has no warning).
 - **Calibration events come mostly from stress traces.** The original Agent+Shield and Heuristic+Shield have 0 URLLC/mURLLC violations in all 7 scenarios (seed 7000), so a clearly labelled `lean_static_stress` policy (tight URLLC/mURLLC compute, stress only, not an operator policy) was added to give those slices positive events.
 - **Important for L2-L4:** the shipped `agent.zip` raw output is almost constant (about 0.79/0.11/0.11 shares in every scenario); the shield (floors 0.15 + 1.2 x load) does the protecting, and Agent+Shield and Heuristic+Shield produce nearly identical shares (max difference 2e-7). With shield floors at 0.15, URLLC/mURLLC have little lendable share, and the original agent already has 0 violations in the standard scenarios. Expect little or no violation gain for Enhanced there; any gain is more likely in heavy-load/overload cases or eMBB served ratio. This will be reported as measured in L4.
+
+---
+
+## Phase L2: Lender Logic (LL-1 to LL-15, EP-1/3/5/8)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `python test_files/test_lender.py`
+- **Result**: **37/37 checks passed.** After the change: `test_predictor.py` 22/22, LL-12 fingerprints 21/21, `sim_selftest`, `shield`, `test_api`, `test_sla_11a/11c`, `test_bots_9b`, `test_allocation_r0` pass.
+- **Files**: `lender.py` (`Lender`, `EnhancedPolicy`), `predictor.py` (two additive output fields: `demand_last`, `queue_growth`, for the reactive ablation). `sim.py`, `shield.py`, `sla.py`, `train.py`, `baselines.py` unchanged since `pre-lending` (checked with git diff in LL-14b). Not yet wired into `api.py` (that is L3).
+
+### Test matrix (real output summary)
+| ID | Test | Result | Real output |
+| :---: | :--- | :---: | :--- |
+| LL-1 | Protected minimum | **PASSED** | 10,000 random states (100 lenders x 100 steps, 14,044 active-loan observations): 0 donors below protected minimum; same in reactive mode |
+| LL-2 | Conservation | **PASSED** | 0 violations: shares sum to 1, lent == borrowed, adj - raw == borrowed - lent, no negative share, no slice both donor and borrower on a resource |
+| LL-3 | No risk, no loan | **PASSED** | output array identical (also dtype) to the agent proposal |
+| LL-4 | Loan on risk | **PASSED** | burst-flagged borrower funded in the same step (0.267 <= 0.30), 2-step confirmation without a flag, lowest-risk donor first |
+| LL-5 | Bottleneck-aware | **PASSED** | cpu-limited -> vCPU only; radio-limited -> PRB only; within 5% -> both; `bottleneck_aware: false` -> PRB only |
+| LL-6 | Return | **PASSED** | no return before 3 calm steps (first at step 4), x0.75 of remaining per step, closed at step 17, shares equal the proposal again |
+| LL-7 | No flapping | **PASSED** | 100 toggle cycles -> 2 loans opened; 20 isolated bursts -> 33 loans opened (PRB then vCPU as the bottleneck shifts), 33 closed, mean duration 16.4 steps, 0 loans shorter than confirm_steps |
+| LL-8 | Recall | **PASSED** | donor risk > recall: loan 0.267 -> 0.233 in the same step, 'recalled' logged, donor back at target 0.467 |
+| LL-9 | Time limit | **PASSED** | past ttl with high risk renewed 2x; with moderate risk 'expired' logged and the loan winds down |
+| LL-10 | Funding order | **PASSED** | URLLC 0.167 before mURLLC 0.033 (total = lendable 0.20); mURLLC 0.10 before eMBB 0.05 |
+| LL-11 | Overload | **PASSED** | flagged, unfunded 45.1 PRB, text "Cannot fully fund URLLC risk: lendable 14.9 PRB, need 60.0 PRB. Protecting URLLC and mURLLC first.", minimums kept, no flag when funded |
+| LL-12 | Off == original | **PASSED** | `mode: off` EnhancedPolicy matches the pre-lending fingerprints, 21/21 runs bit-for-bit |
+| LL-13 | Determinism | **PASSED** | identical shares, ledger and stats in 3 scenarios (3 loans opened, so not vacuous) |
+| LL-14 | Contracts | **PASSED** | obs (12,), action (6,); core files unchanged since `pre-lending`; shield called after the lender on all 60 steps and the final action equals the shield output; URLLC/mURLLC shares never below 0.15 |
+| LL-15 | Speed | **PASSED** | lender + predictor mean 0.303 ms/step, p99 0.483 ms |
+| EP-1/3/5/8 | Edge cases | **PASSED** | all-slices-high: overload, shares unchanged; lender cannot borrow same resource; reset clears everything; huge loan clipped (0.300 per step), 361.7 PRB reported unfunded |
+
+### Bugs found and fixed during L2 (before commit)
+- **Overload was understated** (found by EP-8): unfunded was computed against the per-step capped amount, so a need of 4.0 pool-shares against 0.4 lendable looked fully funded. Fixed: overload now compares the full need with total lendable in priority order; the per-step cap (`max_loan_fraction`) only limits how fast a loan is drawn.
+- LL-7 and LL-13 were first too weak (2 loans / reading stats after the lender reset); strengthened as above.
+
+### Design notes (interpretations where the spec was open)
+- Lender reads risk at the agent's *proposed* allocation (no loans) for borrower/return decisions, and at the *effective* allocation (after loans) for donors and recall. This stops a funded borrower from looking safe and returning mid-burst.
+- `bottleneck_aware: false` means radio-only lending (the 'radio-only' ablation in section 9).
+- Geometric return never reaches zero, so a loan under 0.005 of the pool (0.5 PRB) is closed; TTL renewal is silent (counted in `renewals`, no ledger event).
+- Overload text is emitted when overload starts (and a 'cleared' message when it ends), not on every step.
+- A donor must be below `risk.recall` to lend; a slice that borrows or lends a resource cannot do the opposite on that resource.
+
+### Informational: lending activity with the real pre-lending agent (seed 7000, not an evaluation)
+| Scenario | Loans opened | Overload steps | URLLC+mURLLC violations (Enhanced) |
+| :--- | :---: | :---: | :---: |
+| steady, bots 0.3x, bots 1.0x | 0 | 0 | 0 |
+| urllc_burst | 1 (eMBB -> URLLC, PRB) | 0 | 0 |
+| murllc_storm | 2 (eMBB -> mURLLC, PRB and vCPU) | 0 | 0 |
+| embb_surge | 0 | 32 | 0 |
+| bots_3.0x | 0 | 198 of 200 | 0 |
+The original Agent + Shield also has 0 violations in all of these, so no violation gain is visible here. In eMBB surge and 3x bots eMBB cannot be funded, so overload is reported (eMBB degrades, URLLC/mURLLC protected). Whether Enhanced improves anything is for L4 to measure on the held-out seeds.

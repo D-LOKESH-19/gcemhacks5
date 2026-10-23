@@ -144,7 +144,9 @@ class Predictor:
         out: Dict[str, Dict[str, Any]] = {}
         for s in self.slices:
             p = self.preds[s]
-            p.update(float(arrivals[s]) + self.prev_queue[s])
+            demand_last = float(arrivals[s]) + self.prev_queue[s]
+            p.update(demand_last)
+            queue_growth = float(queues.get(s, 0.0)) - self.prev_queue[s]
             self.prev_queue[s] = float(queues.get(s, 0.0))
             cap = self.capacities(s, prb_shares[s], cpu_shares[s])
             margin = p.margin()
@@ -161,6 +163,8 @@ class Predictor:
                 "warming_up": p.warming_up,
                 "burst": p.burst_flag,
                 "violations_last": float(violations[s]) if violations else 0.0,
+                "demand_last": demand_last,
+                "queue_growth": queue_growth,
             }
         self.last = out
         return out
