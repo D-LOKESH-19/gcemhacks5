@@ -284,3 +284,24 @@ This document records the automated verification logs across development phases,
 | **FT-30** | Performance & 5 Hz rate | Smooth 5 steps/sec rendering with throttled store updates and zero UI jank | **PASSED** | P1 |
 
 ---
+
+## Phase F4: Page 2 — Traffic and Bots Page (FT-31 to FT-38)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f4.cjs` + `npm run typecheck` + `npm run build`
+- **Result**: **8/8 PASSED (P0/P1)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-31** | Traffic presets | Steady, eMBB surge, URLLC burst, mURLLC storm, and Mixed inject synchronized bot & spike profiles | **PASSED** | P1 |
+| **FT-32** | Add bots action | POST `/bots` with slice 'urllc', count 20, mode 'add' updates state and pushes live telemetry | **PASSED** | P0 |
+| **FT-33** | Remove and Set modes | Modes 'set' and 'remove' correctly establish exact or decremented counts | **PASSED** | P0 |
+| **FT-34** | Limit clipping | Injections exceeding slice capacities are bounded with explicit `clipped: true` indicator and `[Max reached]` tag | **PASSED** | P1 |
+| **FT-35** | Dynamic dot scaling | Heavy bot counts (e.g. 500-1000) scale to <= 60 dots with explicit `1 dot = X bots` legend | **PASSED** | P1 |
+| **FT-36** | Missing feature handling | Bots panel gracefully replaced with clean informative note when `capabilities.bots = false` | **PASSED** | P0 |
+| **FT-37** | Strict client validation | Decimals, negative values, and non-numeric strings rejected with UI toast before dispatch | **PASSED** | P1 |
+| **FT-38** | Stress test reliability | 30 rapid concurrent bot adjustments execute with 100% HTTP 200 responses and consistent state | **PASSED** | P1 |
+
+---
