@@ -8,7 +8,7 @@ import asyncio
 from contextlib import asynccontextmanager
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -26,6 +26,12 @@ class SpikeRequest(BaseModel):
     slice: str
     factor: float = 2.5
     duration: int = 25
+
+
+class BotRequest(BaseModel):
+    slice: str
+    count: int
+    mode: str = "set"  # "add" | "remove" | "set"
 
 
 class SimulationManager:
@@ -104,6 +110,41 @@ class SimulationManager:
         self.event_logs.append(
             f"Step {self.step_idx}: Triggered {slice_name.upper()} spike ({factor}x for {duration} steps)"
         )
+
+    def modify_bots(self, slice_name: str, count: int, mode: str = "set") -> Tuple[Dict[str, int], bool]:
+        """Modify bot counts simultaneously on all 3 environments."""
+        slice_name = slice_name.lower()
+        if slice_name not in ["embb", "urllc", "murllc"]:
+            raise ValueError(f"Unknown slice: {slice_name}")
+        if count < 0:
+            raise ValueError("Count must be non-negative")
+        mode = mode.lower()
+        if mode not in ["add", "remove", "set"]:
+            raise ValueError(f"Unknown mode: {mode}")
+
+        current = self.env_agent.bot_counts[slice_name]
+        max_limit = self.env_agent.max_bot_counts[slice_name]
+
+        if mode == "set":
+            target = count
+        elif mode == "add":
+            target = current + count
+        elif mode == "remove":
+            target = current - count
+
+        clipped = (target > max_limit) or (target < 0)
+        final_count = int(np.clip(target, 0, max_limit))
+
+        self.env_static.set_bots(slice_name, final_count)
+        self.env_heuristic.set_bots(slice_name, final_count)
+        self.env_agent.set_bots(slice_name, final_count)
+
+        sign = "+" if mode == "add" else ("-" if mode == "remove" else "=")
+        self.event_logs.append(
+            f"Step {self.step_idx}: {sign}{count} {slice_name.upper()} bots (now {final_count})"
+        )
+
+        return self.env_agent.get_bot_counts(), clipped
 
     def step_simulation(self) -> Dict[str, Any]:
         """Advance all 3 policies by one synchronized 100 ms step."""
@@ -216,6 +257,8 @@ class SimulationManager:
                 }
                 for pol in ["static", "heuristic", "agent"]
             },
+            "bots": self.env_agent.get_bot_counts(),
+            "bot_packets": self.info_agent.get("bot_packets", {}),
             "event_logs": self.event_logs[-8:],
         }
 
@@ -274,6 +317,33 @@ def health_check():
     return {"status": "ok", "agent_loaded": sim_manager.agent_model is not None}
 
 
+@app.get("/bots")
+def get_bots():
+    """Return current bot counts and max limits."""
+    return {
+        "counts": sim_manager.env_agent.get_bot_counts(),
+        "max": sim_manager.env_agent.max_bot_counts,
+    }
+
+
+@app.post("/bots")
+def modify_bots_endpoint(req: BotRequest):
+    """Modify bot counts with validation (4xx on invalid input)."""
+    slice_lower = req.slice.lower()
+    if slice_lower not in ["embb", "urllc", "murllc"]:
+        return JSONResponse(status_code=400, content={"error": f"Invalid slice: {req.slice}"})
+    if req.count < 0:
+        return JSONResponse(status_code=400, content={"error": "Count must be non-negative"})
+    if req.mode.lower() not in ["add", "remove", "set"]:
+        return JSONResponse(status_code=400, content={"error": f"Invalid mode: {req.mode}"})
+
+    try:
+        counts, clipped = sim_manager.modify_bots(slice_lower, req.count, req.mode.lower())
+        return {"counts": counts, "clipped": clipped}
+    except Exception as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
+
+
 @app.post("/spike")
 def set_spike(req: SpikeRequest):
     sim_manager.trigger_spike(req.slice.lower(), req.factor, req.duration)
@@ -315,6 +385,8 @@ async def websocket_endpoint(websocket: WebSocket):
             cmd = json.loads(data)
             if cmd.get("action") == "spike":
                 sim_manager.trigger_spike(cmd["slice"], float(cmd.get("factor", 2.5)), int(cmd.get("duration", 20)))
+            elif cmd.get("action") == "bots":
+                sim_manager.modify_bots(cmd["slice"], int(cmd.get("count", 0)), cmd.get("mode", "set"))
             elif cmd.get("action") == "reset":
                 sim_manager.reset_all()
             elif cmd.get("action") == "pause":
