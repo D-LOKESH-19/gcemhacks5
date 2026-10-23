@@ -238,5 +238,22 @@ This document records the automated verification logs across development phases,
 | **FT-8** | Shield telemetry | `changed` (>3% delta) and `intervention_rate_20` computed from real data | **PASSED** | P0 |
 | **FT-9** | Existing endpoints & routing | `/health`, `/ws`, `/spike`, `/reset`, `/summary`, `/bots`, `/sla`, `/legacy`, and SPA `/` intact | **PASSED** | P0 |
 
----
+## Phase F2: Shell, Design System & Data Layer (FT-10 to FT-16)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f2.cjs` + `npm run typecheck` + `npm run build`
+- **Result**: **7/7 PASSED (P0/P1/P2)**
 
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-10** | Types match reality | TypeScript types in `api.ts` strictly fit `stream_sample.json`; all 30 captured messages parsed cleanly | **PASSED** | P0 |
+| **FT-11** | Reconnect resilience | WebSocket backoff (1s, 2s, 4s, max 5s) handles disconnection and resubscribes seamlessly | **PASSED** | P0 |
+| **FT-12** | Ring buffer bounding | Chart series ring buffers capped at <= 300 points; FIFO eviction prevents memory growth | **PASSED** | P0 |
+| **FT-13** | Missing features handling | Graceful fallback when `bots`, `sla`, or `locations` are disabled without crashing | **PASSED** | P0 |
+| **FT-14** | No mock data | Automated scan verifies zero occurrences of `Math.random()`, `faker`, or fixture imports in production `src/` | **PASSED** | P0 |
+| **FT-15** | Error boundary | Isolated React error boundary displays error card with Retry without crashing shell | **PASSED** | P1 |
+| **FT-16** | Design tokens | Strict separation of slice colors (cyan/amber/violet) and policy colors (red/grey/emerald); radii 12px | **PASSED** | P2 |
+
+---
