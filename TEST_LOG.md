@@ -548,3 +548,19 @@ This document records the automated verification logs across development phases,
 | **AT-28e** | Traffic Queue Slowdown | Bottlenecked slices slow particle travel speed from 2.4 to 0.8 px/frame | **PASSED** | P0 |
 | **AT-28f** | Live State Integration | FlowStrip integrated into ResourceAllocationPage with real-time arrivals | **PASSED** | P0 |
 
+---
+
+## Phase R4: Pipeline, Coupling Panel & Transfer Ledger (AT-26, AT-27, AT-29)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_r4.cjs` + `npm --prefix frontend run build`
+- **Result**: **3/3 PASSED (P0)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **AT-26** | 5-Stage Decision Pipeline | Visualizes observe, policy propose, shield check, applied, and result; Static shows 'Fixed rule' | **PASSED** | P0 |
+| **AT-27** | Transfer Ledger | Tracks last 50 events, pauses auto-scroll on hover, collapses bursts (xN), and supports filters | **PASSED** | P0 |
+| **AT-29** | Radio-Compute Coupling | Compares radio and compute capacity per slice, highlights bottlenecks, and displays coupling rule | **PASSED** | P0 |
+

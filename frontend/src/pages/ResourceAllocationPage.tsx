@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useSliceStore } from '../store/useSliceStore';
 import { FlowStrip } from '../components/allocation/FlowStrip';
 import { ResourcePools } from '../components/allocation/ResourcePools';
+import { DecisionPipeline } from '../components/allocation/DecisionPipeline';
+import { CouplingPanel } from '../components/allocation/CouplingPanel';
+import { TransferLedger } from '../components/allocation/TransferLedger';
 import { AllocationLegend } from '../components/allocation/AllocationLegend';
 import { PolicyType } from '../types/api';
 import { ShieldAlert } from 'lucide-react';
@@ -108,6 +111,27 @@ export const ResourceAllocationPage: React.FC = () => {
           Waiting for live allocation telemetry stream...
         </div>
       )}
+
+      {/* 2-Column Section: Decision Pipeline and Coupling Panel */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {polData && (
+          <DecisionPipeline
+            policy={activePolicy}
+            telemetry={polData}
+            allocation={alloc}
+          />
+        )}
+        <CouplingPanel
+          allocation={alloc}
+          demand={polData?.arrivals}
+        />
+      </div>
+
+      {/* Transfer Ledger */}
+      <TransferLedger
+        currentTransfers={alloc?.transfers}
+        step={latestPayload?.step ?? 0}
+      />
 
       {/* Collapsible Architecture Legend */}
       <AllocationLegend />
