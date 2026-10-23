@@ -54,10 +54,10 @@ export const FlowStrip: React.FC<FlowStripProps> = ({
 
       for (let i = 0; i < count; i++) {
         newParticles.push({
-          x: Math.random() * 800,
-          y: 20 + idx * 24 + (Math.random() * 6 - 3),
+          x: (i * 137 + idx * 79) % 800,
+          y: 20 + idx * 24 + ((i * 17) % 6 - 3),
           slice,
-          speed: baseSpeed + Math.random() * 0.4,
+          speed: baseSpeed + ((i * 7) % 5) * 0.08,
           radius: slice === 'embb' ? 2.5 : 2.0,
         });
       }

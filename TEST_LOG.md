@@ -564,3 +564,21 @@ This document records the automated verification logs across development phases,
 | **AT-27** | Transfer Ledger | Tracks last 50 events, pauses auto-scroll on hover, collapses bursts (xN), and supports filters | **PASSED** | P0 |
 | **AT-29** | Radio-Compute Coupling | Compares radio and compute capacity per slice, highlights bottlenecks, and displays coupling rule | **PASSED** | P0 |
 
+---
+
+## Phase R5: Replay Scrubber, Compare Mode & Quality Polish (AT-30 to AT-38)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_r5.cjs` + `npm --prefix frontend run build`
+- **Result**: **5/5 PASSED (P0/P1)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **AT-30** | Replay Scrubber | Step slider over last 60 frames, banner 'Replaying step N', Live resume, buffer reset | **PASSED** | P0 |
+| **AT-31** | 3-Policy Compare Mode | Side-by-side comparison of Static, Heuristic, and Agent on identical simulation frame | **PASSED** | P0 |
+| **AT-34** | Zero Mock Data | Strictly 0 occurrences of `Math.random` or mock generators in `frontend/src/` | **PASSED** | P0 |
+| **AT-35** | Honest Terminology | Controller named 'Resource Controller'; whole-units and overload priority rules visible | **PASSED** | P0 |
+| **AT-37** | Disabled State Handling | Inactive capability flag renders friendly notification banner without crashing | **PASSED** | P1 |
+
