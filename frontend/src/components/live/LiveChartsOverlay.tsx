@@ -84,7 +84,7 @@ export const LiveChartsOverlay: React.FC = () => {
               Threshold breach comparison under dynamic traffic surges.
             </p>
           </div>
-          <span className="text-[11px] font-mono text-rose-400 bg-rose-950/60 border border-rose-800/80 px-2 py-0.5 rounded">
+          <span className="text-[11px] font-mono text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded">
             SLA Ceiling: {slaUrllcLimit.toFixed(2)}%
           </span>
         </div>
@@ -95,31 +95,32 @@ export const LiveChartsOverlay: React.FC = () => {
               data={formattedViolationData}
               margin={{ top: 10, right: 15, left: 0, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#1F2A44" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
               <XAxis
                 dataKey="step"
                 stroke="#64748B"
                 fontSize={11}
                 tickLine={false}
-                axisLine={{ stroke: "#1F2A44" }}
+                axisLine={{ stroke: "#CBD5E1" }}
                 domain={["auto", "auto"]}
               />
               <YAxis
                 stroke="#64748B"
                 fontSize={11}
                 tickLine={false}
-                axisLine={{ stroke: "#1F2A44" }}
+                axisLine={{ stroke: "#CBD5E1" }}
                 domain={[0, maxViolationValue]}
                 unit="%"
                 width={45}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#121A2B",
-                  borderColor: "#1F2A44",
+                  backgroundColor: "#FFFFFF",
+                  borderColor: "#CBD5E1",
                   borderRadius: "8px",
                   fontSize: "12px",
-                  color: "#E5E7EB",
+                  color: "#0F172A",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
                 }}
                 formatter={(value: any) => [`${value}%`, ""]}
                 labelFormatter={(label) => `Step #${label}`}
@@ -205,7 +206,7 @@ export const LiveChartsOverlay: React.FC = () => {
               Served bit-demand across policies under coupled resource sharing.
             </p>
           </div>
-          <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">
+          <span className="text-[11px] font-mono text-cyan-700 bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded">
             Unit: pkts/step
           </span>
         </div>
@@ -216,30 +217,31 @@ export const LiveChartsOverlay: React.FC = () => {
               data={formattedThroughputData}
               margin={{ top: 10, right: 15, left: 0, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#1F2A44" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
               <XAxis
                 dataKey="step"
                 stroke="#64748B"
                 fontSize={11}
                 tickLine={false}
-                axisLine={{ stroke: "#1F2A44" }}
+                axisLine={{ stroke: "#CBD5E1" }}
                 domain={["auto", "auto"]}
               />
               <YAxis
                 stroke="#64748B"
                 fontSize={11}
                 tickLine={false}
-                axisLine={{ stroke: "#1F2A44" }}
+                axisLine={{ stroke: "#CBD5E1" }}
                 domain={[0, maxThroughputValue]}
                 width={45}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#121A2B",
-                  borderColor: "#1F2A44",
+                  backgroundColor: "#FFFFFF",
+                  borderColor: "#CBD5E1",
                   borderRadius: "8px",
                   fontSize: "12px",
-                  color: "#E5E7EB",
+                  color: "#0F172A",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
                 }}
                 formatter={(value: any) => [`${value} pkts`, ""]}
                 labelFormatter={(label) => `Step #${label}`}

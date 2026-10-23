@@ -26,36 +26,36 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 }) => {
   const normStatus = status.toUpperCase().replace(/\s+/g, "_");
 
-  let colorClasses = "bg-slate-800 text-slate-300 border-slate-700";
+  let colorClasses = "bg-slate-100 text-slate-700 border-slate-300";
   let IconComponent = MinusCircle;
   let text = status;
 
   switch (normStatus) {
     case "OK":
-      colorClasses = "bg-emerald-950/70 text-emerald-400 border-emerald-800/80";
+      colorClasses = "bg-emerald-50 text-emerald-700 border-emerald-300 dark:text-emerald-400 shadow-sm";
       IconComponent = CheckCircle2;
       text = "OK";
       break;
     case "AT_RISK":
     case "RISK":
-      colorClasses = "bg-amber-950/70 text-amber-400 border-amber-800/80";
+      colorClasses = "bg-amber-50 text-amber-700 border-amber-300 dark:text-amber-400 shadow-sm";
       IconComponent = AlertTriangle;
       text = "AT RISK";
       break;
     case "BREACH":
     case "VIOLATION":
-      colorClasses = "bg-rose-950/70 text-rose-400 border-rose-800/80";
+      colorClasses = "bg-rose-50 text-rose-700 border-rose-300 dark:text-rose-400 shadow-sm";
       IconComponent = XCircle;
       text = "BREACH";
       break;
     case "OVERLOAD":
-      colorClasses = "bg-purple-950/70 text-purple-400 border-purple-800/80";
+      colorClasses = "bg-purple-50 text-purple-700 border-purple-300 dark:text-purple-400 shadow-sm";
       IconComponent = ShieldAlert;
       text = "OVERLOAD";
       break;
     case "NO_TRAFFIC":
     default:
-      colorClasses = "bg-slate-800/80 text-slate-400 border-slate-700";
+      colorClasses = "bg-slate-100 text-slate-500 border-slate-300";
       IconComponent = MinusCircle;
       text = normStatus === "NO_TRAFFIC" ? "NO TRAFFIC" : status;
       break;
@@ -85,12 +85,12 @@ export const ConnectionBadge: React.FC<ConnectionBadgeProps> = ({
 }) => {
   if (status === "connected") {
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 ${className}`}>
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-300 shadow-sm ${className}`}>
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
-        <Wifi size={13} className="shrink-0" />
+        <Wifi size={13} className="shrink-0 text-emerald-600" />
         <span>Live</span>
       </span>
     );
@@ -98,15 +98,15 @@ export const ConnectionBadge: React.FC<ConnectionBadgeProps> = ({
 
   if (status === "reconnecting") {
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-950/60 text-amber-400 border border-amber-800/60 ${className}`}>
-        <RefreshCw size={13} className="animate-spin shrink-0" />
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-300 shadow-sm ${className}`}>
+        <RefreshCw size={13} className="animate-spin shrink-0 text-amber-600" />
         <span>Reconnecting...</span>
       </span>
     );
   }
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700 ${className}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-300 shadow-sm ${className}`}>
       <WifiOff size={13} className="shrink-0" />
       <span>Offline</span>
     </span>

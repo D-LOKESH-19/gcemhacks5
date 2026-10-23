@@ -63,19 +63,19 @@ export const TrainingMetricsCards: React.FC<TrainingMetricsCardsProps> = ({
       {/* Dual Multipliers (Lambdas) Cards (FT-49) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
         {/* λ URLLC */}
-        <div className="p-3.5 rounded-xl bg-bg-card border border-amber-950/70 flex flex-col justify-between">
+        <div className="p-3.5 rounded-xl bg-bg-card border border-amber-200 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-bold text-slice-urllc uppercase">λ_urllc Penalty Weight</span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800/80">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-300">
               final trained value
             </span>
           </div>
           <div className="flex items-baseline justify-between font-mono my-1">
-            <span className="text-xl font-bold text-amber-400">
+            <span className="text-xl font-bold text-amber-600">
               {lambdas.urllc.toFixed(4)}
             </span>
             <span className="text-[11px] text-text-muted">
-              Cost: <strong className="text-emerald-400">{costs.urllc.toFixed(4)}</strong> / 0.005
+              Cost: <strong className="text-emerald-600">{costs.urllc.toFixed(4)}</strong> / 0.005
             </span>
           </div>
           <p className="text-[10px] text-text-muted mt-1 leading-snug">
@@ -84,19 +84,19 @@ export const TrainingMetricsCards: React.FC<TrainingMetricsCardsProps> = ({
         </div>
 
         {/* λ mURLLC */}
-        <div className="p-3.5 rounded-xl bg-bg-card border border-purple-950/70 flex flex-col justify-between">
+        <div className="p-3.5 rounded-xl bg-bg-card border border-purple-200 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-bold text-slice-murllc uppercase">λ_murllc Penalty Weight</span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-950/80 text-purple-300 border border-purple-800/80">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-300">
               final trained value
             </span>
           </div>
           <div className="flex items-baseline justify-between font-mono my-1">
-            <span className="text-xl font-bold text-purple-400">
+            <span className="text-xl font-bold text-purple-600">
               {lambdas.murllc.toFixed(4)}
             </span>
             <span className="text-[11px] text-text-muted">
-              Cost: <strong className="text-emerald-400">{costs.murllc.toFixed(4)}</strong> / 0.010
+              Cost: <strong className="text-emerald-600">{costs.murllc.toFixed(4)}</strong> / 0.010
             </span>
           </div>
           <p className="text-[10px] text-text-muted mt-1 leading-snug">
@@ -105,19 +105,19 @@ export const TrainingMetricsCards: React.FC<TrainingMetricsCardsProps> = ({
         </div>
 
         {/* λ eMBB */}
-        <div className="p-3.5 rounded-xl bg-bg-card border border-cyan-950/70 flex flex-col justify-between">
+        <div className="p-3.5 rounded-xl bg-bg-card border border-cyan-200 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-bold text-slice-embb uppercase">λ_embb Throughput Floor</span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-800/80">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-50 text-cyan-800 border border-cyan-300">
               final trained value
             </span>
           </div>
           <div className="flex items-baseline justify-between font-mono my-1">
-            <span className="text-xl font-bold text-cyan-400">
+            <span className="text-xl font-bold text-cyan-600">
               {lambdas.embb.toFixed(4)}
             </span>
             <span className="text-[11px] text-text-muted">
-              Shortfall Cost: <strong className="text-cyan-300">{costs.embb.toFixed(4)}</strong> / 0.050
+              Shortfall Cost: <strong className="text-cyan-700">{costs.embb.toFixed(4)}</strong> / 0.050
             </span>
           </div>
           <p className="text-[10px] text-text-muted mt-1 leading-snug">

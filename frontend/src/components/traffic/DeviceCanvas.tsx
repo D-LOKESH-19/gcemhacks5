@@ -109,9 +109,9 @@ export const DeviceCanvas: React.FC = () => {
           className="w-full h-full max-h-[320px] select-none"
         >
           {/* Background Concentric Radar Rings */}
-          <circle cx={cx} cy={cy} r="50" stroke="#1F2A44" strokeWidth="1" fill="none" strokeDasharray="3 3" />
-          <circle cx={cx} cy={cy} r="90" stroke="#1F2A44" strokeWidth="1" fill="none" strokeDasharray="3 3" />
-          <circle cx={cx} cy={cy} r="130" stroke="#1F2A44" strokeWidth="1" fill="none" strokeDasharray="3 3" />
+          <circle cx={cx} cy={cy} r="50" stroke="#E2E8F0" strokeWidth="1" fill="none" strokeDasharray="3 3" />
+          <circle cx={cx} cy={cy} r="90" stroke="#E2E8F0" strokeWidth="1" fill="none" strokeDasharray="3 3" />
+          <circle cx={cx} cy={cy} r="130" stroke="#E2E8F0" strokeWidth="1" fill="none" strokeDasharray="3 3" />
 
           {/* Radiating Packet Pulses Toward Tower */}
           <circle cx={cx} cy={cy} r="35" stroke="#22D3EE" strokeWidth="1.5" fill="none" opacity="0.4" className="animate-ping" style={{ animationDuration: "2.5s" }} />
@@ -119,7 +119,7 @@ export const DeviceCanvas: React.FC = () => {
 
           {/* Central 5G Base Station Tower */}
           <g transform={`translate(${cx - 18}, ${cy - 18})`}>
-            <circle cx="18" cy="18" r="22" fill="#121A2B" stroke="#22D3EE" strokeWidth="2" />
+            <circle cx="18" cy="18" r="22" fill="#FFFFFF" stroke="#22D3EE" strokeWidth="2" />
             <path
               d="M18 7 L24 28 L12 28 Z M18 10 L18 28 M14 20 L22 20"
               stroke="#22D3EE"

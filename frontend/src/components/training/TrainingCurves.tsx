@@ -54,11 +54,11 @@ export const TrainingCurves: React.FC<TrainingCurvesProps> = ({ log }) => {
         <div className="h-[210px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={log} margin={{ top: 10, right: 15, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1F2A44" vertical={false} />
-              <XAxis dataKey="episode" stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#1F2A44" }} />
-              <YAxis stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#1F2A44" }} width={45} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+              <XAxis dataKey="episode" stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#CBD5E1" }} />
+              <YAxis stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#CBD5E1" }} width={45} />
               <Tooltip
-                contentStyle={{ backgroundColor: "#121A2B", borderColor: "#1F2A44", borderRadius: "8px", fontSize: "12px" }}
+                contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#CBD5E1", color: "#0F172A", borderRadius: "8px", fontSize: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.06)" }}
                 formatter={(val: any) => [Number(val).toFixed(4), "Reward"]}
                 labelFormatter={(l) => `Episode #${l}`}
               />
@@ -77,7 +77,7 @@ export const TrainingCurves: React.FC<TrainingCurvesProps> = ({ log }) => {
               Constraint Costs with Contract Ceilings (Dashed Limits - FT-50)
             </h2>
           </div>
-          <span className="text-[10px] font-mono text-rose-300 bg-rose-950/60 border border-rose-800/80 px-2 py-0.5 rounded">
+          <span className="text-[10px] font-mono text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded">
             Limits: URLLC &lt; 0.005, mURLLC &lt; 0.010
           </span>
         </div>
@@ -85,11 +85,11 @@ export const TrainingCurves: React.FC<TrainingCurvesProps> = ({ log }) => {
         <div className="h-[230px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={log} margin={{ top: 10, right: 15, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1F2A44" vertical={false} />
-              <XAxis dataKey="episode" stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#1F2A44" }} />
-              <YAxis stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#1F2A44" }} domain={[0, 0.06]} width={45} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+              <XAxis dataKey="episode" stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#CBD5E1" }} />
+              <YAxis stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#CBD5E1" }} domain={[0, 0.06]} width={45} />
               <Tooltip
-                contentStyle={{ backgroundColor: "#121A2B", borderColor: "#1F2A44", borderRadius: "8px", fontSize: "12px" }}
+                contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#CBD5E1", color: "#0F172A", borderRadius: "8px", fontSize: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.06)" }}
                 labelFormatter={(l) => `Episode #${l}`}
               />
               <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: "8px", fontSize: "11px" }} />
@@ -116,7 +116,7 @@ export const TrainingCurves: React.FC<TrainingCurvesProps> = ({ log }) => {
               Dual Lagrangian Multipliers Adaptation (λ History - FT-50)
             </h2>
           </div>
-          <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">
+          <span className="text-[10px] font-mono text-cyan-700 bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded">
             Subgradient Ascent Updates
           </span>
         </div>
@@ -124,11 +124,11 @@ export const TrainingCurves: React.FC<TrainingCurvesProps> = ({ log }) => {
         <div className="h-[210px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={log} margin={{ top: 10, right: 15, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1F2A44" vertical={false} />
-              <XAxis dataKey="episode" stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#1F2A44" }} />
-              <YAxis stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#1F2A44" }} width={45} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+              <XAxis dataKey="episode" stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#CBD5E1" }} />
+              <YAxis stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#CBD5E1" }} width={45} />
               <Tooltip
-                contentStyle={{ backgroundColor: "#121A2B", borderColor: "#1F2A44", borderRadius: "8px", fontSize: "12px" }}
+                contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#CBD5E1", color: "#0F172A", borderRadius: "8px", fontSize: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.06)" }}
                 labelFormatter={(l) => `Episode #${l}`}
               />
               <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: "8px", fontSize: "11px" }} />

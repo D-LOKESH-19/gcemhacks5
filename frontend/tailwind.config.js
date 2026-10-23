@@ -8,17 +8,17 @@ export default {
     extend: {
       colors: {
         bg: {
-          base: "#0B1220",
-          card: "#121A2B",
-          surface: "#182234",
+          base: "#F8FAFC",
+          card: "#FFFFFF",
+          surface: "#F1F5F9",
         },
         border: {
-          subtle: "#1F2A44",
-          DEFAULT: "#24344D",
+          subtle: "#E2E8F0",
+          DEFAULT: "#CBD5E1",
         },
         text: {
-          primary: "#E5E7EB",
-          muted: "#94A3B8",
+          primary: "#0F172A",
+          muted: "#64748B",
         },
         // Slice Palettes (Only for share bars, bots, slice labels)
         slice: {

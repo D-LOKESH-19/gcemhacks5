@@ -72,7 +72,7 @@ export const SlaGridMatrix: React.FC = () => {
         <div className="flex items-baseline justify-between font-mono">
           <div>
             <span className="text-xs text-text-muted block text-[10px]">Current Value</span>
-            <span className={`text-sm font-bold ${status === "BREACH" ? "text-rose-400" : "text-text-primary"}`}>
+            <span className={`text-sm font-bold ${status === "BREACH" ? "text-rose-600" : "text-text-primary"}`}>
               {valPct}%
             </span>
           </div>
@@ -84,7 +84,7 @@ export const SlaGridMatrix: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden mt-0.5">
+        <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden mt-0.5">
           <div
             style={{ width: `${gaugeWidth}%` }}
             className={`h-full ${
@@ -92,7 +92,7 @@ export const SlaGridMatrix: React.FC = () => {
                 ? "bg-rose-500"
                 : status === "AT_RISK"
                 ? "bg-amber-400"
-                : "bg-emerald-400"
+                : "bg-emerald-500"
             }`}
           />
         </div>

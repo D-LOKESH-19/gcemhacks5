@@ -108,28 +108,28 @@ export const ScenarioGroupedBarChart: React.FC<ScenarioGroupedBarChartProps> = (
       <div className="h-[260px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ top: 15, right: 15, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1F2A44" vertical={false} />
-            <XAxis dataKey="scenario" stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#1F2A44" }} />
-            <YAxis stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#1F2A44" }} unit="%" width={45} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+            <XAxis dataKey="scenario" stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#CBD5E1" }} />
+            <YAxis stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#CBD5E1" }} unit="%" width={45} />
             <Tooltip
-              contentStyle={{ backgroundColor: "#121A2B", borderColor: "#1F2A44", borderRadius: "8px", fontSize: "12px" }}
+              contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#CBD5E1", color: "#0F172A", borderRadius: "8px", fontSize: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.06)" }}
               formatter={(val: any) => [`${val}%`, "Mean Violation Rate"]}
             />
             <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: "8px", fontSize: "11px" }} />
 
             {/* Static Policy (Red) */}
             <Bar dataKey="Static" fill="#F87171" radius={[4, 4, 0, 0]} isAnimationActive={false}>
-              <ErrorBar dataKey="Static_err" width={4} strokeWidth={1.5} stroke="#E5E7EB" direction="y" />
+              <ErrorBar dataKey="Static_err" width={4} strokeWidth={1.5} stroke="#475569" direction="y" />
             </Bar>
 
             {/* Heuristic Policy (Grey) */}
             <Bar dataKey="Heuristic" fill="#CBD5E1" radius={[4, 4, 0, 0]} isAnimationActive={false}>
-              <ErrorBar dataKey="Heuristic_err" width={4} strokeWidth={1.5} stroke="#E5E7EB" direction="y" />
+              <ErrorBar dataKey="Heuristic_err" width={4} strokeWidth={1.5} stroke="#475569" direction="y" />
             </Bar>
 
             {/* Agent Policy (Emerald) */}
             <Bar dataKey="Agent" fill="#34D399" radius={[4, 4, 0, 0]} isAnimationActive={false}>
-              <ErrorBar dataKey="Agent_err" width={4} strokeWidth={1.5} stroke="#E5E7EB" direction="y" />
+              <ErrorBar dataKey="Agent_err" width={4} strokeWidth={1.5} stroke="#475569" direction="y" />
             </Bar>
           </BarChart>
         </ResponsiveContainer>

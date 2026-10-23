@@ -259,17 +259,17 @@ export const PresenterPage: React.FC = () => {
             <span className="text-xs font-bold text-text-primary uppercase tracking-tight">
               URLLC Violation Rate Overlay (% of Packets Dropped)
             </span>
-            <span className="text-[10px] font-mono text-rose-400 bg-rose-950/60 border border-rose-800 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-mono text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded">
               SLA Limit: {slaUrllcLimit.toFixed(2)}%
             </span>
           </div>
           <div className="h-[200px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={formattedViolationData} margin={{ top: 5, right: 10, left: -5, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1F2A44" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
                 <XAxis dataKey="step" stroke="#64748B" fontSize={10} tickLine={false} />
                 <YAxis stroke="#64748B" fontSize={10} tickLine={false} domain={[0, maxViolation]} unit="%" width={40} />
-                <Tooltip contentStyle={{ backgroundColor: "#121A2B", borderColor: "#1F2A44", fontSize: "11px" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#CBD5E1", color: "#0F172A", fontSize: "11px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.06)" }} />
                 <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: "4px", fontSize: "10px" }} />
                 <ReferenceLine y={slaUrllcLimit} stroke="#F59E0B" strokeDasharray="4 4" />
                 <Line type="monotone" dataKey="Static" stroke="#F87171" strokeWidth={2.5} dot={false} isAnimationActive={false} />
@@ -286,17 +286,17 @@ export const PresenterPage: React.FC = () => {
             <span className="text-xs font-bold text-text-primary uppercase tracking-tight">
               eMBB Throughput Overlay (Packets Served / Step)
             </span>
-            <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-800 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-mono text-cyan-700 bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded">
               High-Bandwidth Utilization
             </span>
           </div>
           <div className="h-[200px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={formattedThroughputData} margin={{ top: 5, right: 10, left: -5, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1F2A44" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
                 <XAxis dataKey="step" stroke="#64748B" fontSize={10} tickLine={false} />
                 <YAxis stroke="#64748B" fontSize={10} tickLine={false} width={40} />
-                <Tooltip contentStyle={{ backgroundColor: "#121A2B", borderColor: "#1F2A44", fontSize: "11px" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderColor: "#CBD5E1", color: "#0F172A", fontSize: "11px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.06)" }} />
                 <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: "4px", fontSize: "10px" }} />
                 <Line type="monotone" dataKey="Static" stroke="#F87171" strokeWidth={2} dot={false} isAnimationActive={false} />
                 <Line type="monotone" dataKey="Heuristic" stroke="#CBD5E1" strokeWidth={2} dot={false} isAnimationActive={false} />

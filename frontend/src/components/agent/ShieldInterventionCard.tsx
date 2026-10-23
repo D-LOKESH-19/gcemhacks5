@@ -82,15 +82,17 @@ export const ShieldInterventionCard: React.FC = () => {
       <div className="h-[140px] w-full mb-2">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={formattedHistory} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1F2A44" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
             <XAxis dataKey="step" stroke="#64748B" fontSize={10} tickLine={false} />
             <YAxis stroke="#64748B" fontSize={10} tickLine={false} domain={[0, 100]} unit="%" width={35} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#121A2B",
-                borderColor: "#1F2A44",
+                backgroundColor: "#FFFFFF",
+                borderColor: "#CBD5E1",
                 borderRadius: "8px",
                 fontSize: "11px",
+                color: "#0F172A",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
               }}
               formatter={(val: any) => [`${val}%`, "Intervention Rate"]}
               labelFormatter={(l) => `Step #${l}`}

@@ -69,9 +69,9 @@ export const ExplainabilityFeed: React.FC = () => {
       {/* Feed Header */}
       <div className="flex items-center justify-between p-3 border-b border-border-subtle bg-bg-base/40">
         <div className="flex items-center gap-2">
-          <Terminal size={15} className="text-cyan-400" />
+          <Terminal size={15} className="text-cyan-600" />
           <h2 className="text-xs font-bold text-text-primary tracking-tight">Autonomous Decision & Explainability Feed</h2>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-text-muted border border-border-subtle">
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-300">
             {filteredFeed.length} Events
           </span>
         </div>
@@ -84,8 +84,8 @@ export const ExplainabilityFeed: React.FC = () => {
               onClick={() => setActiveFilter(filter)}
               className={`px-2 py-0.5 rounded text-[11px] font-medium uppercase tracking-wider transition-colors ${
                 activeFilter === filter
-                  ? "bg-slate-700 text-text-primary border border-slate-600"
-                  : "text-text-muted hover:text-text-primary hover:bg-slate-800/60"
+                  ? "bg-slate-200 text-slate-900 border border-slate-300 font-semibold"
+                  : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
               }`}
             >
               {filter}
@@ -93,7 +93,7 @@ export const ExplainabilityFeed: React.FC = () => {
           ))}
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1 text-text-muted hover:text-text-primary rounded ml-1 transition-colors"
+            className="p-1 text-slate-500 hover:text-slate-800 rounded ml-1 transition-colors"
             title={isExpanded ? "Collapse feed" : "Expand feed"}
           >
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -112,14 +112,14 @@ export const ExplainabilityFeed: React.FC = () => {
             filteredFeed.map((item) => (
               <div
                 key={item.id}
-                className="flex items-start justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-bg-base/70 border border-border-subtle hover:border-slate-700 transition-colors"
+                className="flex items-start justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-border-subtle hover:border-slate-300 transition-colors"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   {getCategoryIcon(item.category)}
                   <span className="text-[11px] text-text-primary truncate">{item.text}</span>
                 </div>
                 {item.count > 1 && (
-                  <span className="px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 text-[10px] font-bold shrink-0">
+                  <span className="px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-300 text-[10px] font-bold shrink-0">
                     x{item.count}
                   </span>
                 )}

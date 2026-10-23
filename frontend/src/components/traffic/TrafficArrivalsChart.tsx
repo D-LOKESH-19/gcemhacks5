@@ -64,29 +64,30 @@ export const TrafficArrivalsChart: React.FC = () => {
                 <stop offset="95%" stopColor="#A78BFA" stopOpacity={0.0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1F2A44" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
             <XAxis
               dataKey="step"
               stroke="#64748B"
               fontSize={11}
               tickLine={false}
-              axisLine={{ stroke: "#1F2A44" }}
+              axisLine={{ stroke: "#CBD5E1" }}
             />
             <YAxis
               stroke="#64748B"
               fontSize={11}
               tickLine={false}
-              axisLine={{ stroke: "#1F2A44" }}
+              axisLine={{ stroke: "#CBD5E1" }}
               domain={[0, maxArrivals]}
               width={45}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#121A2B",
-                borderColor: "#1F2A44",
+                backgroundColor: "#FFFFFF",
+                borderColor: "#CBD5E1",
                 borderRadius: "8px",
                 fontSize: "12px",
-                color: "#E5E7EB",
+                color: "#0F172A",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
               }}
               formatter={(value: any) => [`${value} pkts`, ""]}
               labelFormatter={(label) => `Step #${label}`}

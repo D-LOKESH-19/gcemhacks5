@@ -43,14 +43,14 @@ export const ControlBar: React.FC<ControlBarProps> = ({ isNominal }) => {
           onClick={() => handleSpike("embb")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
             activeSpikeSlice === "embb"
-              ? "bg-cyan-500 text-black border-cyan-400 shadow-md scale-95"
+              ? "bg-cyan-500 text-white border-cyan-500 shadow-md scale-95"
               : isNominal
-              ? "bg-cyan-950/70 hover:bg-cyan-900/80 text-cyan-300 border-cyan-800/80 animate-pulse hover:animate-none"
-              : "bg-cyan-950/50 hover:bg-cyan-900/70 text-cyan-300 border-cyan-800/70"
+              ? "bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border-cyan-300 animate-pulse hover:animate-none"
+              : "bg-cyan-50/70 hover:bg-cyan-100 text-cyan-800 border-cyan-200"
           }`}
           title={`Inject eMBB Surge (${spikeFactors.embb}x for ${spikeDuration} steps)`}
         >
-          <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
+          <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
           <span>eMBB Surge ({spikeFactors.embb}x)</span>
         </button>
 
@@ -59,14 +59,14 @@ export const ControlBar: React.FC<ControlBarProps> = ({ isNominal }) => {
           onClick={() => handleSpike("urllc")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
             activeSpikeSlice === "urllc"
-              ? "bg-amber-500 text-black border-amber-400 shadow-md scale-95"
+              ? "bg-amber-500 text-white border-amber-500 shadow-md scale-95"
               : isNominal
-              ? "bg-amber-950/70 hover:bg-amber-900/80 text-amber-300 border-amber-800/80 animate-pulse hover:animate-none"
-              : "bg-amber-950/50 hover:bg-amber-900/70 text-amber-300 border-amber-800/70"
+              ? "bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300 animate-pulse hover:animate-none"
+              : "bg-amber-50/70 hover:bg-amber-100 text-amber-800 border-amber-200"
           }`}
           title={`Inject URLLC Burst (${spikeFactors.urllc}x for ${spikeDuration} steps)`}
         >
-          <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span className="w-2 h-2 rounded-full bg-amber-500"></span>
           <span>URLLC Burst ({spikeFactors.urllc}x)</span>
         </button>
 
@@ -75,14 +75,14 @@ export const ControlBar: React.FC<ControlBarProps> = ({ isNominal }) => {
           onClick={() => handleSpike("murllc")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
             activeSpikeSlice === "murllc"
-              ? "bg-purple-500 text-black border-purple-400 shadow-md scale-95"
+              ? "bg-purple-500 text-white border-purple-500 shadow-md scale-95"
               : isNominal
-              ? "bg-purple-950/70 hover:bg-purple-900/80 text-purple-300 border-purple-800/80 animate-pulse hover:animate-none"
-              : "bg-purple-950/50 hover:bg-purple-900/70 text-purple-300 border-purple-800/70"
+              ? "bg-purple-50 hover:bg-purple-100 text-purple-800 border-purple-300 animate-pulse hover:animate-none"
+              : "bg-purple-50/70 hover:bg-purple-100 text-purple-800 border-purple-200"
           }`}
           title={`Inject mURLLC Storm (${spikeFactors.murllc}x for ${spikeDuration} steps)`}
         >
-          <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+          <span className="w-2 h-2 rounded-full bg-purple-500"></span>
           <span>mURLLC Storm ({spikeFactors.murllc}x)</span>
         </button>
       </div>
@@ -92,7 +92,7 @@ export const ControlBar: React.FC<ControlBarProps> = ({ isNominal }) => {
         {/* Scenario Pill */}
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-bg-base border border-border-subtle text-xs">
           <span className="text-text-muted">Active:</span>
-          <span className="text-emerald-400 font-medium capitalize">
+          <span className="text-emerald-700 font-semibold capitalize">
             {currentScenario.replace(/_/g, " ")}
           </span>
         </div>
@@ -102,19 +102,19 @@ export const ControlBar: React.FC<ControlBarProps> = ({ isNominal }) => {
           onClick={() => sendPause()}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
             isPaused
-              ? "bg-emerald-950/70 hover:bg-emerald-900 text-emerald-300 border-emerald-800"
-              : "bg-slate-800/80 hover:bg-slate-700 text-text-primary border-slate-700"
+              ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300"
+              : "bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300"
           }`}
           title={isPaused ? "Resume simulation" : "Pause simulation"}
         >
-          {isPaused ? <Play size={13} className="text-emerald-400" /> : <Pause size={13} />}
+          {isPaused ? <Play size={13} className="text-emerald-600" /> : <Pause size={13} />}
           <span>{isPaused ? "Resume" : "Pause"}</span>
         </button>
 
         {/* Reset */}
         <button
           onClick={() => sendReset()}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-950/50 hover:bg-rose-900/60 text-rose-300 border border-rose-800/70 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors"
           title="Reset simulation environments and metrics"
         >
           <RotateCcw size={13} />

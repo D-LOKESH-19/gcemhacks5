@@ -98,19 +98,19 @@ export const PolicyResourceCards: React.FC = () => {
 
           {/* Queue & Delay Row */}
           <div className="grid grid-cols-2 gap-2 pt-1 text-center">
-            <div className="p-1.5 rounded-lg bg-bg-base/60 border border-border-subtle">
+            <div className="p-1.5 rounded-lg bg-slate-50 border border-slate-200">
               <span className="text-[10px] text-text-muted flex items-center justify-center gap-1">
-                <Gauge size={10} className="text-cyan-400" /> eMBB Queue:
+                <Gauge size={10} className="text-cyan-600" /> eMBB Queue:
               </span>
               <span className="text-xs font-mono font-bold text-text-primary">
                 {Math.round(queue.embb || 0)} pkts
               </span>
             </div>
-            <div className="p-1.5 rounded-lg bg-bg-base/60 border border-border-subtle">
+            <div className="p-1.5 rounded-lg bg-slate-50 border border-slate-200">
               <span className="text-[10px] text-text-muted flex items-center justify-center gap-1">
-                <Clock size={10} className="text-amber-400" /> URLLC Delay:
+                <Clock size={10} className="text-amber-600" /> URLLC Delay:
               </span>
-              <span className="text-xs font-mono font-bold text-emerald-400">
+              <span className="text-xs font-mono font-bold text-emerald-700">
                 {(delays.urllc || 0.35).toFixed(2)} ms
               </span>
             </div>
@@ -122,13 +122,13 @@ export const PolicyResourceCards: React.FC = () => {
           <div className="pt-2 border-t border-border-subtle">
             <div className="flex items-center justify-between text-[11px] mb-1">
               <span className="text-text-muted flex items-center gap-1 font-medium">
-                <ShieldCheck size={12} className="text-emerald-400" /> Shield Intervention (20 steps):
+                <ShieldCheck size={12} className="text-emerald-600" /> Shield Intervention (20 steps):
               </span>
-              <span className="font-mono text-xs font-bold text-emerald-400">
+              <span className="font-mono text-xs font-bold text-emerald-700">
                 {interventionRate.toFixed(1)}%
               </span>
             </div>
-            <div className="w-full h-1.5 rounded-full overflow-hidden bg-bg-base border border-border-subtle">
+            <div className="w-full h-1.5 rounded-full overflow-hidden bg-slate-200 border border-slate-300">
               <div
                 style={{ width: `${Math.min(100, Math.max(0, interventionRate))}%` }}
                 className="bg-emerald-500 h-full transition-all duration-300"

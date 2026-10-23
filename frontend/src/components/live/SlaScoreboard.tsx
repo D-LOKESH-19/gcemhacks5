@@ -51,7 +51,7 @@ export const SlaScoreboard: React.FC = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
       {/* 1. Static Baseline Tile */}
-      <div className="p-4 rounded-xl bg-bg-card border border-rose-950/60 hover:border-rose-900/80 transition-all flex flex-col justify-between shadow-sm">
+      <div className="p-4 rounded-xl bg-bg-card border border-rose-200 hover:border-rose-300 transition-all flex flex-col justify-between shadow-sm">
         <div className="flex items-center justify-between pb-2.5 border-b border-border-subtle">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-policy-static"></span>
@@ -63,19 +63,19 @@ export const SlaScoreboard: React.FC = () => {
         <div className="grid grid-cols-3 gap-2 py-3 text-center">
           <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
             <span className="text-[10px] text-text-muted block uppercase">URLLC Viol.</span>
-            <span className={`text-base font-mono font-bold ${staticUrllcVR > 0.5 ? "text-rose-400" : "text-text-primary"}`}>
+            <span className={`text-base font-mono font-bold ${staticUrllcVR > 0.5 ? "text-rose-600" : "text-text-primary"}`}>
               {staticUrllcVR.toFixed(2)}%
             </span>
           </div>
           <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
             <span className="text-[10px] text-text-muted block uppercase">mURLLC Viol.</span>
-            <span className={`text-base font-mono font-bold ${staticMurllcVR > 1.0 ? "text-rose-400" : "text-text-primary"}`}>
+            <span className={`text-base font-mono font-bold ${staticMurllcVR > 1.0 ? "text-rose-600" : "text-text-primary"}`}>
               {staticMurllcVR.toFixed(2)}%
             </span>
           </div>
           <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
             <span className="text-[10px] text-text-muted block uppercase">eMBB Served</span>
-            <span className="text-base font-mono font-bold text-cyan-400">
+            <span className="text-base font-mono font-bold text-cyan-700">
               {staticEmbbRatio.toFixed(1)}%
             </span>
           </div>
@@ -83,12 +83,12 @@ export const SlaScoreboard: React.FC = () => {
 
         <div className="flex items-center justify-between pt-2 border-t border-border-subtle text-xs">
           <span className="text-text-muted text-[11px]">20-Step SLA Compliance:</span>
-          <span className="font-mono font-semibold text-rose-300">{staticCompliance}%</span>
+          <span className="font-mono font-semibold text-rose-600">{staticCompliance}%</span>
         </div>
       </div>
 
       {/* 2. Heuristic Proportional Tile */}
-      <div className="p-4 rounded-xl bg-bg-card border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between shadow-sm">
+      <div className="p-4 rounded-xl bg-bg-card border border-slate-200 hover:border-slate-300 transition-all flex flex-col justify-between shadow-sm">
         <div className="flex items-center justify-between pb-2.5 border-b border-border-subtle">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-policy-heuristic"></span>
@@ -100,19 +100,19 @@ export const SlaScoreboard: React.FC = () => {
         <div className="grid grid-cols-3 gap-2 py-3 text-center">
           <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
             <span className="text-[10px] text-text-muted block uppercase">URLLC Viol.</span>
-            <span className={`text-base font-mono font-bold ${heurUrllcVR > 0.5 ? "text-amber-400" : "text-text-primary"}`}>
+            <span className={`text-base font-mono font-bold ${heurUrllcVR > 0.5 ? "text-amber-600" : "text-text-primary"}`}>
               {heurUrllcVR.toFixed(2)}%
             </span>
           </div>
           <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
             <span className="text-[10px] text-text-muted block uppercase">mURLLC Viol.</span>
-            <span className={`text-base font-mono font-bold ${heurMurllcVR > 1.0 ? "text-amber-400" : "text-text-primary"}`}>
+            <span className={`text-base font-mono font-bold ${heurMurllcVR > 1.0 ? "text-amber-600" : "text-text-primary"}`}>
               {heurMurllcVR.toFixed(2)}%
             </span>
           </div>
           <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
             <span className="text-[10px] text-text-muted block uppercase">eMBB Served</span>
-            <span className="text-base font-mono font-bold text-cyan-400">
+            <span className="text-base font-mono font-bold text-cyan-700">
               {heurEmbbRatio.toFixed(1)}%
             </span>
           </div>
@@ -120,12 +120,12 @@ export const SlaScoreboard: React.FC = () => {
 
         <div className="flex items-center justify-between pt-2 border-t border-border-subtle text-xs">
           <span className="text-text-muted text-[11px]">20-Step SLA Compliance:</span>
-          <span className="font-mono font-semibold text-slate-300">{heurCompliance}%</span>
+          <span className="font-mono font-semibold text-slate-600">{heurCompliance}%</span>
         </div>
       </div>
 
       {/* 3. RL Agent + Safety Shield Tile */}
-      <div className="p-4 rounded-xl bg-bg-card border border-emerald-950/80 hover:border-emerald-800 transition-all flex flex-col justify-between shadow-sm relative overflow-hidden">
+      <div className="p-4 rounded-xl bg-bg-card border border-emerald-200 hover:border-emerald-300 transition-all flex flex-col justify-between shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none"></div>
 
         <div className="flex items-center justify-between pb-2.5 border-b border-border-subtle relative z-10">
@@ -141,19 +141,19 @@ export const SlaScoreboard: React.FC = () => {
         <div className="grid grid-cols-3 gap-2 py-3 text-center relative z-10">
           <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
             <span className="text-[10px] text-text-muted block uppercase">URLLC Viol.</span>
-            <span className="text-base font-mono font-bold text-emerald-400">
+            <span className="text-base font-mono font-bold text-emerald-700">
               {agentUrllcVR.toFixed(2)}%
             </span>
           </div>
           <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
             <span className="text-[10px] text-text-muted block uppercase">mURLLC Viol.</span>
-            <span className="text-base font-mono font-bold text-emerald-400">
+            <span className="text-base font-mono font-bold text-emerald-700">
               {agentMurllcVR.toFixed(2)}%
             </span>
           </div>
           <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
             <span className="text-[10px] text-text-muted block uppercase">eMBB Served</span>
-            <span className="text-base font-mono font-bold text-cyan-400">
+            <span className="text-base font-mono font-bold text-cyan-700">
               {agentEmbbRatio.toFixed(1)}%
             </span>
           </div>
@@ -161,7 +161,7 @@ export const SlaScoreboard: React.FC = () => {
 
         <div className="flex items-center justify-between pt-2 border-t border-border-subtle text-xs relative z-10">
           <span className="text-text-muted text-[11px]">20-Step SLA Compliance:</span>
-          <span className="font-mono font-semibold text-emerald-400">{agentCompliance}%</span>
+          <span className="font-mono font-semibold text-emerald-700">{agentCompliance}%</span>
         </div>
       </div>
     </div>
