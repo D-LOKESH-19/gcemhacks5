@@ -666,3 +666,27 @@ This document records the automated verification logs across development phases,
 | **FT-61** | Background Tab Protection | Stream throttles to 1Hz in inactive tabs with 300-point capped ring buffer | **PASSED** | P0 |
 | **FT-62** | Multi-Channel Status Badges | Status badges display color + Lucide icon + explicit text simultaneously | **PASSED** | P0 |
 
+---
+
+## Phase F8: Cutover, Dual Dashboard Routing & Final Offline Verification (FT-63 to FT-72)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f8.cjs` + Python backend regression suite
+- **Result**: **10/10 PASSED (P0/P1)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-63** | Production Root Route | Root `/` serves React SPA index.html with HTTP 200 | **PASSED** | P0 |
+| **FT-64** | Direct SPA Deep Linking | Direct URL hits to `/traffic`, `/agent`, `/sla`, `/training`, `/results`, `/present`, `/about` return index.html | **PASSED** | P0 |
+| **FT-65** | Legacy Dashboard Route | Classic NOC dashboard reliably served at `/legacy` with full historical functionality | **PASSED** | P0 |
+| **FT-66** | Reciprocal Cross-Links | Reciprocal navigation verified: `/legacy` links to `/` and React header links to `/legacy` | **PASSED** | P0 |
+| **FT-67** | Multi-Tier Fallback | `api.py` implements graceful fallbacks between React dist, static classic, and JSON status | **PASSED** | P1 |
+| **FT-68** | Zero External CDN Links | `dist/` is 100% self-contained with 0 external CDN links and bundles 56 local font files offline | **PASSED** | P0 |
+| **FT-69** | Bundled Asset Delivery | Bundled JS, CSS, and WOFF2 fonts served over HTTP at `/assets/` with HTTP 200 OK | **PASSED** | P0 |
+| **FT-70** | Model Weights Integrity | `models/agent.zip` SHA256 verified strictly identical (`3cd0a7e66847f16a...`) | **PASSED** | P0 |
+| **FT-71** | Simulator Core Untouched | `sim.py` (SliceEnv), `shield.py` (apply_shield), and `sla.py` remain strictly untouched | **PASSED** | P0 |
+| **FT-72** | Architecture Documentation | `README.md` documents both Enterprise React Suite and Classic NOC view with honest terminology | **PASSED** | P1 |
+
+
