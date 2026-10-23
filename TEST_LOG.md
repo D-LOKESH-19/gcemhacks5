@@ -324,3 +324,28 @@ This document records the automated verification logs across development phases,
 | **FT-44** | Scientific honesty | Copy strictly delineates algorithmic safety shield supervisor from learned neural RL policy | **PASSED** | P0 |
 
 ---
+
+## Phase F6: Pages 4–6 — SLA, Training & Results Pages (FT-45 to FT-56)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f6.cjs` + `npm run typecheck` + `npm run build`
+- **Result**: **12/12 PASSED (P0/P1/P2)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-45** | SLA contract promise | Formal limits displayed equal `config.yaml` across URLLC (<0.5%), mURLLC (<1.0%), and eMBB (>=70%) | **PASSED** | P0 |
+| **FT-46** | 3x3 SLA matrix grid | Grid renders status chips and gauge bars matching `/sla`; 'No traffic' displayed when arrivals = 0 | **PASSED** | P0 |
+| **FT-47** | Overload priority isolation | Severe load triggers `[OVERLOAD ACTIVE]` with exact 'URLLC and mURLLC protected first' guarantee | **PASSED** | P0 |
+| **FT-48** | Window compliance rate | 20-step window compliance percentage displayed per candidate policy | **PASSED** | P1 |
+| **FT-49** | Training metadata cards | Multipliers strictly labelled 'final trained value' and match `runs/log.csv` final checkpoint row | **PASSED** | P0 |
+| **FT-50** | Training loss & cost curves | Real reward curve, 3 constraint costs with dashed threshold lines, and dual multiplier histories plotted | **PASSED** | P1 |
+| **FT-51** | Headline recomputation | Verified recomputed metrics from `results/*.csv`: Agent cuts Static violations by 100.0% | **PASSED** | P0 |
+| **FT-52** | Grouped scenario chart | Side-by-side grouped bars with 95% bootstrap confidence interval error bars per scenario | **PASSED** | P1 |
+| **FT-53** | Model ablation study | 4 architecture rows with tail risk, worst window, and eMBB ratio comparing shield necessity | **PASSED** | P1 |
+| **FT-54** | Feasible vs overload tabs | Scenarios partitioned into separate tabs with explicit overload prioritization note | **PASSED** | P0 |
+| **FT-55** | CSV download endpoints | Direct download routes `/api/results/download/*.csv` serve valid structured benchmark data | **PASSED** | P2 |
+| **FT-56** | Scientific footnotes | Mandatory footnote visibly notes slice-level simulator and queuing-theory delay model estimates | **PASSED** | P0 |
+
+---

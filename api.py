@@ -765,6 +765,18 @@ def get_results():
     }
 
 
+@app.get("/api/results/download/{filename}")
+def download_results_file(filename: str):
+    """Download individual benchmark CSV files."""
+    allowed = ["sla_table.csv", "ablation.csv", "evaluation_table.csv"]
+    if filename not in allowed:
+        return JSONResponse(status_code=404, content={"error": "File not found"})
+    filepath = os.path.join("results", filename)
+    if not os.path.exists(filepath):
+        return JSONResponse(status_code=404, content={"error": "File not found"})
+    return FileResponse(filepath, media_type="text/csv", filename=filename)
+
+
 # Mount static files directory
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
