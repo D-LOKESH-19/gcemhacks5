@@ -205,6 +205,21 @@ This document records the automated verification logs across development phases,
 - **SLA Contract Specification**: Documented in `README.md`, `config.yaml`, and `sla.py`.
 - **Demo Script**: Rehearsed with explicit pitch line: *"Here are our SLAs, and here they hold while Static fails."*
 - **SLA Invariance & Safety**: Zero hardcoded SLA numbers outside config; zero `Math.random` in UI; `models/agent.zip` intact (`3cd0a7e66847...`).
-- **Complete Test Coverage**: SM-1 to SM-41 (Phase 11 SLA), BT-1 to BT-18 (Phase 9 Bots), LT-1 to LT-40 (Phase 10 Locations), E2E-14 to E2E-19 (End-to-End Scenarios) all PASSED.
+---
+
+## Phase F0: React Frontend Gate & Setup (FT-1 to FT-4)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Tag**: `pre-react`
+- **Result**: **4/4 PASSED (P0)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-1** | Old suite before changes | All earlier tests pass; `git tag pre-react` exists | **PASSED** | P0 |
+| **FT-2** | Node & npm environment | Node 18+ (verified Node v24.10.0, npm 11.6.1) | **PASSED** | P0 |
+| **FT-3** | Clean install & supply chain | Pinned versions in `package.json`, `package-lock.json` committed, zero unpinned packages | **PASSED** | P0 |
+| **FT-4** | Scripts verification | `npm run typecheck`, `npm run build` both exit 0; bundle generated with `@fontsource/inter` | **PASSED** | P0 |
 
 ---

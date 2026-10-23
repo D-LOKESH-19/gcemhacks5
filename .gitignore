@@ -29,3 +29,6 @@ ns3/
 .vscode/
 .idea/
 *.swp
+
+# Frontend build & dependencies
+frontend/node_modules/
