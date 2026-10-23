@@ -72,6 +72,13 @@ class Lender:
             "steps": self.counters["steps"],
         }
 
+    def risk_at_shares(self, prb: np.ndarray, cpu: np.ndarray) -> Optional[List[float]]:
+        """Predicted risk per slice if the given shares were applied next step; None before any data."""
+        if self.cfg["lending"]["mode"] == "off" or self.predictor.preds[self.slices[0]].n == 0:
+            return None
+        return [self.predictor.preds[s].risk_at(min(float(prb[i]) * self.pk["prb"], float(cpu[i]) * self.pk["cpu"]))
+                for i, s in enumerate(self.slices)]
+
     # ------------------------------------------------------------- entry points
     def step(self, info: Optional[Dict[str, Any]], raw_prb: np.ndarray, raw_cpu: np.ndarray):
         """Convenience wrapper: ingest the last env step's observables, build history, then adjust."""
@@ -394,6 +401,8 @@ class EnhancedPolicy:
         self.cfg = cfg
         self.lender = Lender(cfg)
         self.last_info: Optional[Dict[str, Any]] = None
+        self.last_shield_active = False
+        self.last_raw: Optional[Dict[str, List[float]]] = None  # the agent's own proposal, before the lender
 
     def predict(self, obs: np.ndarray, info: Dict[str, Any], cfg: Optional[Dict[str, Any]] = None) -> np.ndarray:
         from shield import apply_shield, shares_to_action_logits  # the existing shield, applied last
@@ -404,7 +413,10 @@ class EnhancedPolicy:
         raw_prb, raw_cpu = _softmax(action[:3]), _softmax(action[3:])
         adj_prb, adj_cpu, _, linfo = self.lender.step(info, raw_prb, raw_cpu)
         recent_load = {"embb": float(obs[1]), "urllc": float(obs[5]), "murllc": float(obs[9])}
-        sh_prb, sh_cpu, _ = apply_shield(adj_prb, adj_cpu, recent_load, cfg)
+        sh_prb, sh_cpu, shield_active = apply_shield(adj_prb, adj_cpu, recent_load, cfg)
         linfo["pipeline"]["final"] = {"prb": [float(x) for x in sh_prb], "cpu": [float(x) for x in sh_cpu]}
+        linfo["risk_final"] = self.lender.risk_at_shares(sh_prb, sh_cpu)
+        self.last_shield_active = bool(shield_active)
+        self.last_raw = {"prb": [float(x) for x in raw_prb], "cpu": [float(x) for x in raw_cpu]}
         self.last_info = linfo
         return shares_to_action_logits(sh_prb, sh_cpu)

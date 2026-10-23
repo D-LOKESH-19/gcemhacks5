@@ -793,3 +793,30 @@ This document records the automated verification logs across development phases,
 | embb_surge | 0 | 32 | 0 |
 | bots_3.0x | 0 | 198 of 200 | 0 |
 The original Agent + Shield also has 0 violations in all of these, so no violation gain is visible here. In eMBB surge and 3x bots eMBB cannot be funded, so overload is reported (eMBB degrades, URLLC/mURLLC protected). Whether Enhanced improves anything is for L4 to measure on the held-out seeds.
+
+---
+
+## Phase L3: Integration (LI-1 to LI-6)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `python test_files/test_lending_integration.py`
+- **Result**: **14/14 checks passed.** Full regression after the change: 21/21 Python suites (incl. `test_predictor` 22/22, `test_lender` 37/37), 12/12 Node suites (F2-F8, R1-R5), LL-12 fingerprints 21/21.
+- **Files changed**: `api.py` (additive: fourth env + `EnhancedPolicy`, `policies.enhanced`, `scoreboard.enhanced`, `est_delay_ms.enhanced`, SLA status for enhanced, `GET /api/lending`, `capabilities.lending`), `lender.py` (hooks: `last_shield_active`, `last_raw`, `risk_final`, `risk_at_shares`). Only 1 existing line of `api.py` text was modified (the stats loop / scoreboard tuple lists were extended); no core file (`sim.py`, `shield.py`, `sla.py`, `train.py`, `baselines.py`) changed.
+
+### Test matrix (real output summary)
+| ID | Test | Result | Real output |
+| :---: | :--- | :---: | :--- |
+| LI-1 | Four policies, same traffic | **PASSED** | arrivals identical for Static, Heuristic, Agent, Enhanced on all 100 steps with a mURLLC spike, URLLC spike, bots add/remove; still identical after a spike and a mid-run reset |
+| LI-2 | Pipeline fields | **PASSED** | raw, post_lender, final each sum to 1 (600 vectors, max error 1.0e-4 from 4-decimal rounding); 54 steps had active loans |
+| LI-3 | Shield last (adversarial) | **PASSED** | lender forced to lend (high risk threshold 0.001, max_loan_fraction 0.9; 200 loan-steps): final == shield(post_lender) on all 150 steps; URLLC/mURLLC final share never below 0.15 (min 0.1500) |
+| LI-4 | Stream fields from backend | **PASSED** | mURLLC forecast 19 -> 245 and max risk 0.03 -> 0.99 when a storm is triggered; 24 steps with loans; events opened/enlarged/returned; `/ws` messages carry `policies.enhanced.allocation.lending` |
+| LI-5 | Capabilities / API | **PASSED** | `lending` true -> false when `mode: off` -> true again; `GET /api/lending` returns config, loans, stats, ledger, live + offline calibration |
+| LI-6 | No regression | **PASSED** | every old field identical to the `pre-lending` `api.py` over 100 steps (only `inference_ms`, a wall-clock timing, excluded); message size 8,477 -> 11,616 bytes = **+37.0%** (limit 40%, small margin); step time 1.11 -> 2.37 ms; live WebSocket 4.65 steps/s |
+
+### Notes
+- New stream keys (all additive): `policies.enhanced` (same shape as `agent` without `lambda`/`bots_by_location`, plus `allocation.lending`), `scoreboard.enhanced`, `est_delay_ms.enhanced`, `/sla` and `/summary` gain `enhanced`.
+- `allocation.lending` = `{mode, thresholds{high,low,recall}, risk[3] (at the agent's proposal), risk_after[3] (after the lender), forecast[3], margin[3], headroom[3], warming_up, loans_active[], loans_events[] (this step only), messages[], lent{prb,cpu}, overload, unfunded{prb,cpu} (PRB/vCPU units), pipeline{raw,post_lender,final}}`. Pipeline `raw` is the agent's own proposal. Values are rounded to 4 decimals (shares) / 1 decimal (packets).
+- The 37.0% message growth leaves little room. L5 must not add more per-step fields; the loan ledger is built client-side from `loans_events` (capped at 200 entries), and `/api/lending` serves the full ledger.
+- `GET /api/lending` calibration: `live` = running (risk at the applied allocation, observed violation at the next step) pairs from the Enhanced copy, `offline` = the L1 validation-seed replay.
+- `lending.mode: off` keeps the `enhanced` stream (identical to Agent + Shield) and reports `capabilities.lending: false`.
+- Live WebSocket rate is 4.65 steps/s (sleep of 0.20 s plus step and send time); this loop was already in place before lending.

@@ -26,6 +26,7 @@ from baselines import StaticPolicy, HeuristicPolicy
 from shield import apply_shield, shares_to_action_logits
 import sla
 from allocation_engine import largest_remainder_counts, build_allocation_block, SLICES
+from lender import EnhancedPolicy
 
 
 class SpikeRequest(BaseModel):
@@ -57,11 +58,13 @@ class SimulationManager:
         self.env_static = SliceEnv(config=self.cfg, seed=self.seed)
         self.env_heuristic = SliceEnv(config=self.cfg, seed=self.seed)
         self.env_agent = SliceEnv(config=self.cfg, seed=self.seed)
+        self.env_enhanced = SliceEnv(config=self.cfg, seed=self.seed)  # Agent + Lender + Shield
 
         # Policies
         self.policy_static = StaticPolicy()
         self.policy_heuristic = HeuristicPolicy()
         self.agent_model = None
+        self.policy_enhanced: Optional[EnhancedPolicy] = None
         self._load_agent()
 
         # Cumulative stats
@@ -69,6 +72,7 @@ class SimulationManager:
             "static": {"total_violations": 0.0, "total_arrivals": 0.0, "total_embb_served": 0.0, "total_embb_demand": 0.0},
             "heuristic": {"total_violations": 0.0, "total_arrivals": 0.0, "total_embb_served": 0.0, "total_embb_demand": 0.0},
             "agent": {"total_violations": 0.0, "total_arrivals": 0.0, "total_embb_served": 0.0, "total_embb_demand": 0.0},
+            "enhanced": {"total_violations": 0.0, "total_arrivals": 0.0, "total_embb_served": 0.0, "total_embb_demand": 0.0},
         }
 
         # Explainability event log history for Agent
@@ -78,6 +82,8 @@ class SimulationManager:
         self.history_static: List[Dict[str, Any]] = []
         self.history_heuristic: List[Dict[str, Any]] = []
         self.history_agent: List[Dict[str, Any]] = []
+        self.history_enhanced: List[Dict[str, Any]] = []
+        self.live_cal: deque = deque(maxlen=3000)  # (slice, predicted risk, observed violation) pairs
 
         # Audit & timing tracking
         self.shield_history = deque(maxlen=20)
@@ -96,6 +102,7 @@ class SimulationManager:
             try:
                 from stable_baselines3 import PPO
                 self.agent_model = PPO.load(model_path)
+                self.policy_enhanced = EnhancedPolicy(self.agent_model, self.cfg)
                 print(f"[INFO] Loaded trained agent from {model_path}")
             except Exception as e:
                 print(f"[WARN] Failed to load agent model: {e}")
@@ -111,18 +118,24 @@ class SimulationManager:
         self.history_static.clear()
         self.history_heuristic.clear()
         self.history_agent.clear()
+        self.history_enhanced.clear()
+        self.live_cal.clear()
         self.shield_history.clear()
         self.shield_changed_history.clear()
 
         self.obs_static, self.info_static = self.env_static.reset(seed=self.seed)
         self.obs_heuristic, self.info_heuristic = self.env_heuristic.reset(seed=self.seed)
         self.obs_agent, self.info_agent = self.env_agent.reset(seed=self.seed)
+        self.obs_enhanced, self.info_enhanced = self.env_enhanced.reset(seed=self.seed)
+        if self.policy_enhanced is not None:
+            self.policy_enhanced.lender.reset()
         self.policy_heuristic.reset()
 
         self.stats = {
             "static": {"total_violations": 0.0, "total_arrivals": 0.0, "total_embb_served": 0.0, "total_embb_demand": 0.0},
             "heuristic": {"total_violations": 0.0, "total_arrivals": 0.0, "total_embb_served": 0.0, "total_embb_demand": 0.0},
             "agent": {"total_violations": 0.0, "total_arrivals": 0.0, "total_embb_served": 0.0, "total_embb_demand": 0.0},
+            "enhanced": {"total_violations": 0.0, "total_arrivals": 0.0, "total_embb_served": 0.0, "total_embb_demand": 0.0},
         }
         self.event_logs = ["Simulation reset. Traffic baseline active."]
 
@@ -134,11 +147,13 @@ class SimulationManager:
             "static": {"prb": list(init_s), "cpu": list(init_s)},
             "heuristic": {"prb": list(init_s), "cpu": list(init_s)},
             "agent": {"prb": list(init_s), "cpu": list(init_s)},
+            "enhanced": {"prb": list(init_s), "cpu": list(init_s)},
         }
         self.prev_counts = {
             "static": {"prb": largest_remainder_counts(init_s, prb_tot), "cpu": largest_remainder_counts(init_s, vcpu_tot)},
             "heuristic": {"prb": largest_remainder_counts(init_s, prb_tot), "cpu": largest_remainder_counts(init_s, vcpu_tot)},
             "agent": {"prb": largest_remainder_counts(init_s, prb_tot), "cpu": largest_remainder_counts(init_s, vcpu_tot)},
+            "enhanced": {"prb": largest_remainder_counts(init_s, prb_tot), "cpu": largest_remainder_counts(init_s, vcpu_tot)},
         }
 
     def trigger_spike(self, slice_name: str, factor: float, duration: int):
@@ -146,6 +161,7 @@ class SimulationManager:
         self.env_static.set_spike(slice_name, factor, duration)
         self.env_heuristic.set_spike(slice_name, factor, duration)
         self.env_agent.set_spike(slice_name, factor, duration)
+        self.env_enhanced.set_spike(slice_name, factor, duration)
         self.scenario_name = f"{slice_name.upper()} Surge ({factor}x)"
         self.event_logs.append(
             f"Step {self.step_idx}: Triggered {slice_name.upper()} spike ({factor}x for {duration} steps)"
@@ -187,7 +203,8 @@ class SimulationManager:
         _, clipped_s = self.env_static.apply_bot_event(slice_name, location, mode, count)
         _, clipped_h = self.env_heuristic.apply_bot_event(slice_name, location, mode, count)
         matrix, clipped_a = self.env_agent.apply_bot_event(slice_name, location, mode, count)
-        clipped = clipped_s or clipped_h or clipped_a
+        _, clipped_e = self.env_enhanced.apply_bot_event(slice_name, location, mode, count)
+        clipped = clipped_s or clipped_h or clipped_a or clipped_e
 
         counts = self.env_agent.get_bot_counts()
         loc_label = self.cfg.get("locations", {}).get(location, {}).get("label", location.title())
@@ -282,12 +299,31 @@ class SimulationManager:
 
         self.obs_agent, _, term_a, trunc_a, self.info_agent = self.env_agent.step(action_agent)
 
+        # 4. Enhanced = Agent + Lender + Shield (same traffic and events as the other three)
+        if self.policy_enhanced is not None:
+            action_enh = self.policy_enhanced.predict(self.obs_enhanced, self.info_enhanced, self.cfg)
+            lend_info = self.policy_enhanced.last_info
+            risk_pred = lend_info.get("risk_final")
+        else:
+            action_enh = action_heur
+            lend_info, risk_pred = None, None
+        prev_queue_e = dict(self.info_enhanced["queue"])
+        self.obs_enhanced, _, term_e, trunc_e, self.info_enhanced = self.env_enhanced.step(action_enh)
+        if risk_pred is not None:  # live calibration: risk for this step's allocation vs what then happened
+            for k, s in enumerate(SLICES):
+                dem = self.info_enhanced["arrivals"][s] + prev_queue_e.get(s, 0.0)
+                if s == "embb":
+                    y = float(dem > 0 and self.info_enhanced["throughput"][s] / dem < self.cfg["sla"]["embb"]["min_served_ratio"])
+                else:
+                    y = float(self.info_enhanced["violations"][s] > 0)
+                self.live_cal.append((s, float(risk_pred[k]), y))
+
         # Auto-loop if episode terminates
         if term_s or trunc_s:
             self.reset_all(self.seed + 1)
 
         # Update stats
-        for pol_key, info_dict in [("static", self.info_static), ("heuristic", self.info_heuristic), ("agent", self.info_agent)]:
+        for pol_key, info_dict in [("static", self.info_static), ("heuristic", self.info_heuristic), ("agent", self.info_agent), ("enhanced", self.info_enhanced)]:
             viol = info_dict["violations"]["urllc"] + info_dict["violations"]["murllc"]
             arr = info_dict["arrivals"]["urllc"] + info_dict["arrivals"]["murllc"]
             self.stats[pol_key]["total_violations"] += viol
@@ -317,11 +353,13 @@ class SimulationManager:
         self.history_static.append(self.info_static)
         self.history_heuristic.append(self.info_heuristic)
         self.history_agent.append(self.info_agent)
+        self.history_enhanced.append(self.info_enhanced)
 
         # SLA status via sla.py
         sla_s = {s: sla.window_status(self.history_static, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
         sla_h = {s: sla.window_status(self.history_heuristic, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
         sla_a = {s: sla.window_status(self.history_agent, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
+        sla_e = {s: sla.window_status(self.history_enhanced, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
 
         # Compute Section 14.5 Resource Allocation blocks
         # 1. Static
@@ -403,6 +441,39 @@ class SimulationManager:
         self.prev_counts["agent"]["prb"] = alloc_agent["prb"]["counts"]
         self.prev_counts["agent"]["cpu"] = alloc_agent["cpu"]["counts"]
 
+        # 4. Enhanced
+        final_prb_e = [self.info_enhanced["shares"]["prb"][s] for s in SLICES]
+        final_cpu_e = [self.info_enhanced["shares"]["vcpu"][s] for s in SLICES]
+        if lend_info is not None:
+            raw_prb_e, raw_cpu_e = self.policy_enhanced.last_raw["prb"], self.policy_enhanced.last_raw["cpu"]
+            pl_prb = lend_info["pipeline"]["post_lender"]["prb"]
+            enh_shield_active = bool(self.policy_enhanced.last_shield_active)
+        else:
+            raw_prb_e, raw_cpu_e, pl_prb, enh_shield_active = list(final_prb_h), list(final_cpu_h), list(final_prb_h), False
+        demand_e = [self.info_enhanced["arrivals"][s] + self.info_enhanced["queue"][s] for s in SLICES]
+        delta_pct_e = [round(abs(final_prb_e[i] - pl_prb[i]) * 100.0, 2) for i in range(3)]
+        enh_shield_changed = bool(max(delta_pct_e) > 3.0)
+        alloc_enhanced = build_allocation_block(
+            policy_name="enhanced",
+            raw_prb=raw_prb_e,
+            final_prb=final_prb_e,
+            prev_prb=self.prev_shares["enhanced"]["prb"],
+            raw_cpu=raw_cpu_e,
+            final_cpu=final_cpu_e,
+            prev_cpu=self.prev_shares["enhanced"]["cpu"],
+            prev_prb_counts=self.prev_counts["enhanced"]["prb"],
+            prev_cpu_counts=self.prev_counts["enhanced"]["cpu"],
+            demand=demand_e,
+            cfg=self.cfg,
+            shield_changed=enh_shield_changed,
+            shield_delta_pct=delta_pct_e,
+        )
+        alloc_enhanced["lending"] = self._lending_block(lend_info)
+        self.prev_shares["enhanced"]["prb"] = final_prb_e
+        self.prev_shares["enhanced"]["cpu"] = final_cpu_e
+        self.prev_counts["enhanced"]["prb"] = alloc_enhanced["prb"]["counts"]
+        self.prev_counts["enhanced"]["cpu"] = alloc_enhanced["cpu"]["counts"]
+
         # Package telemetry payload
         total_arrivals = sum(self.info_agent.get("arrivals", {}).values())
         payload = {
@@ -456,6 +527,7 @@ class SimulationManager:
                 "static": self.info_static.get("est_delay_ms", {}),
                 "heuristic": self.info_heuristic.get("est_delay_ms", {}),
                 "agent": self.info_agent.get("est_delay_ms", {}),
+                "enhanced": self.info_enhanced.get("est_delay_ms", {}),
             },
             "policies": {
                 "static": {
@@ -510,6 +582,21 @@ class SimulationManager:
                     "sla_ok": bool(sla_a["urllc"]["status"] != "breach" and sla_a["murllc"]["status"] != "breach"),
                     "allocation": alloc_agent,
                 },
+                "enhanced": {
+                    "throughput": self.info_enhanced["throughput"],
+                    "violations": self.info_enhanced["violations"],
+                    "violation_rate": self.info_enhanced["violation_rate"],
+                    "shares": self.info_enhanced["shares"],
+                    "queue": self.info_enhanced["queue"],
+                    "arrivals": self.info_enhanced.get("arrivals", {}),
+                    "shield_active": enh_shield_active,
+                    "shield": {"active": enh_shield_active, "changed": enh_shield_changed, "delta_pct": round(max(delta_pct_e), 2)},
+                    "sla": sla_e,
+                    "est_delay_ms": self.info_enhanced.get("est_delay_ms", {}),
+                    "feasible": bool(self.info_enhanced.get("feasible", True)),
+                    "sla_ok": bool(sla_e["urllc"]["status"] != "breach" and sla_e["murllc"]["status"] != "breach"),
+                    "allocation": alloc_enhanced,
+                },
             },
             "scoreboard": {
                 pol: {
@@ -521,7 +608,7 @@ class SimulationManager:
                         self.stats[pol]["total_embb_served"] / max(1.0, self.stats[pol]["total_embb_demand"])
                     ),
                 }
-                for pol in ["static", "heuristic", "agent"]
+                for pol in ["static", "heuristic", "agent", "enhanced"]
             },
             "bots": self.env_agent.get_bot_counts(),
             "bot_packets": self.info_agent.get("bot_packets", {}),
@@ -530,25 +617,102 @@ class SimulationManager:
 
         return payload
 
+    def _lending_block(self, li: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        """Compact, backend-only lending telemetry for the stream (additive; see LENDING_SPEC section 8)."""
+        mode = self.cfg.get("lending", {}).get("mode", "off")
+        if li is None:
+            return {"mode": mode, "available": False}
+        r4 = lambda xs: [round(float(x), 4) for x in xs]
+        rk = self.cfg["lending"]["risk"]
+        pipe = li["pipeline"]
+        return {
+            "mode": li["mode"],
+            "thresholds": {"high": rk["high"], "low": rk["low"], "recall": rk["recall"]},
+            "risk": r4(li["risk"]),
+            "risk_after": r4(li["risk_after"]),
+            "forecast": [round(float(x), 1) for x in li["forecast"]],
+            "margin": [round(float(x), 1) for x in li["margin"]],
+            "headroom": [round(float(x), 1) for x in li["headroom"]],
+            "warming_up": bool(li["warming_up"]),
+            "loans_active": [
+                {"id": l["id"], "resource": l["resource"], "donor": l["donor"], "borrower": l["borrower"],
+                 "amount": round(l["amount"], 4), "amount_units": round(l["amount_units"], 2), "opened_step": l["opened_step"],
+                 "ttl": l["ttl"], "reason_code": l["reason_code"], "risk_at_open": round(l["risk_at_open"], 3)}
+                for l in li["loans_active"]
+            ],
+            "loans_events": [
+                {"kind": e["kind"], "step": e["step"], "loan_id": e["loan_id"], "resource": e["resource"], "donor": e["donor"],
+                 "borrower": e["borrower"], "amount": round(e["amount"], 4), "amount_units": round(e["amount_units"], 2),
+                 "reason": e["reason"]}
+                for e in li["loans_events"]
+            ],
+            "messages": list(li["messages"]),
+            "lent": {r: r4(v) for r, v in li["lent"].items()},
+            "overload": bool(li["overload"]),
+            "unfunded": {r: [round(float(x), 2) for x in v] for r, v in li["unfunded"].items()},
+            "pipeline": {k: ({r: r4(v) for r, v in pipe[k].items()} if pipe[k] else None) for k in ("raw", "post_lender", "final")},
+        }
+
+    def get_lending_status(self) -> Dict[str, Any]:
+        """Payload for GET /api/lending: config, open loans, loan statistics, ledger and calibration."""
+        cfg_l = self.cfg.get("lending", {})
+        pol = self.policy_enhanced
+        lender = pol.lender if pol is not None else None
+        enabled = lender is not None and cfg_l.get("mode", "off") != "off"
+        pairs = list(self.live_cal)
+        live: Dict[str, Any] = {"n": len(pairs)}
+        if pairs:
+            r = np.array([q[1] for q in pairs])
+            y = np.array([q[2] for q in pairs])
+            live.update({"base_rate": float(y.mean()), "brier": float(np.mean((r - y) ** 2)),
+                         "brier_constant": float(np.mean((y.mean() - y) ** 2)), "mean_risk": float(r.mean())})
+            bins = np.clip((r * 10).astype(int), 0, 9)
+            live["reliability"] = [{"bin_lo": b / 10, "bin_hi": (b + 1) / 10, "n": int((bins == b).sum()),
+                                    "mean_predicted": float(r[bins == b].mean()), "observed_freq": float(y[bins == b].mean())}
+                                   for b in range(10) if (bins == b).any()]
+        offline = None
+        path = os.path.join("results", "lending_predictor_val.json")
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    offline = json.load(f)
+                offline["source"] = "offline replay on validation seeds (results/lending_predictor_val.json)"
+            except Exception:
+                offline = None
+        last = pol.last_info if pol is not None else None
+        return {
+            "enabled": bool(enabled),
+            "config": cfg_l,
+            "loans_open": list(last["loans_active"]) if last else [],
+            "stats": lender.stats() if lender is not None else {},
+            "ledger": list(lender.ledger) if lender is not None else [],
+            "overload": bool(lender.prev_overload) if lender is not None else False,
+            "calibration": {"live": live, "offline": offline},
+        }
+
     def get_sla_status(self) -> Dict[str, Any]:
         """Compute full SLA table limits, current episode status, and window status."""
         win_s = {s: sla.window_status(self.history_static, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
         win_h = {s: sla.window_status(self.history_heuristic, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
         win_a = {s: sla.window_status(self.history_agent, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
+        win_e = {s: sla.window_status(self.history_enhanced, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
         return {
             "limits": self.cfg.get("sla", {}),
             "static": win_s,
             "heuristic": win_h,
             "agent": win_a,
+            "enhanced": win_e,
             "current_status": {
                 "static": sla.episode_status(self.history_static, self.cfg),
                 "heuristic": sla.episode_status(self.history_heuristic, self.cfg),
                 "agent": sla.episode_status(self.history_agent, self.cfg),
+                "enhanced": sla.episode_status(self.history_enhanced, self.cfg),
             },
             "window_status": {
                 "static": win_s,
                 "heuristic": win_h,
                 "agent": win_a,
+                "enhanced": win_e,
             },
             "feasible": bool(self.info_agent.get("feasible", True)),
         }
@@ -730,7 +894,14 @@ def get_capabilities():
         "results": os.path.exists("results/sla_table.csv") and os.path.exists("results/ablation.csv"),
         "delay": True,
         "allocation": True,
+        "lending": bool(sim_manager.policy_enhanced is not None and sim_manager.cfg.get("lending", {}).get("mode", "off") != "off"),
     }
+
+
+@app.get("/api/lending")
+def get_lending():
+    """Lending config, open loans, loan statistics, ledger and predictor calibration."""
+    return sim_manager.get_lending_status()
 
 
 @app.get("/api/config/public")
