@@ -215,11 +215,28 @@ This document records the automated verification logs across development phases,
 
 ### Test Matrix
 
-| ID | Test Category | Acceptance Criteria | Result | Severity |
-| :---: | :--- | :--- | :---: | :---: |
 | **FT-1** | Old suite before changes | All earlier tests pass; `git tag pre-react` exists | **PASSED** | P0 |
 | **FT-2** | Node & npm environment | Node 18+ (verified Node v24.10.0, npm 11.6.1) | **PASSED** | P0 |
 | **FT-3** | Clean install & supply chain | Pinned versions in `package.json`, `package-lock.json` committed, zero unpinned packages | **PASSED** | P0 |
 | **FT-4** | Scripts verification | `npm run typecheck`, `npm run build` both exit 0; bundle generated with `@fontsource/inter` | **PASSED** | P0 |
 
 ---
+
+## Phase F1: Backend Additions & Real Stream Capture (FT-5 to FT-9)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `test_phase_f1.py`
+- **Result**: **5/5 PASSED (P0/P1)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-5** | Capabilities | `GET /api/capabilities` returns 6 booleans matching reality | **PASSED** | P0 |
+| **FT-6** | Public config | `GET /api/config/public` values equal `config.yaml` | **PASSED** | P0 |
+| **FT-7** | Training & results endpoints | Return real downsampled logs (<=500 pts) and results CSV matrices | **PASSED** | P1 |
+| **FT-8** | Shield telemetry | `changed` (>3% delta) and `intervention_rate_20` computed from real data | **PASSED** | P0 |
+| **FT-9** | Existing endpoints & routing | `/health`, `/ws`, `/spike`, `/reset`, `/summary`, `/bots`, `/sla`, `/legacy`, and SPA `/` intact | **PASSED** | P0 |
+
+---
+
