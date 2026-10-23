@@ -1,0 +1,23 @@
+steps_per_episode: 200      # 1 step = 100 ms of simulated time
+prb_total: 100
+vcpu_total: 8
+prb_rate: 12                # packets per PRB per step
+cpu_rate: 200               # packets per vCPU per step
+slices: [embb, urllc, murllc]
+arrival_mean:
+  embb: 400
+  urllc: 30
+  murllc: 20
+spike_factor:
+  embb: 2.5
+  urllc: 3.0
+  murllc: 7.0
+queue_max:
+  embb: 2000
+  urllc: 0
+  murllc: 0   # 0 means no queue: missed deadline = violation
+shield_floor:
+  urllc: 0.15
+  murllc: 0.15
+cost_limit: 0.01            # max allowed average violation rate for urllc+murllc
+lagrange_lr: 0.05

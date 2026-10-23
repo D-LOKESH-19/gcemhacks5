@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5G SliceOS: Constrained RL & Safety Shield Orchestrator</title>
+  <script src="/static/chart.min.js"></script>
+  <style>
+    :root {
+      --bg-base: #0a0e17;
+      --bg-surface: #111827;
+      --bg-card: #182234;
+      --border: #24344d;
+      --text: #f3f4f6;
+      --text-muted: #94a3b8;
+      --embb: #06b6d4;
+      --urllc: #f59e0b;
+      --murllc: #a855f7;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Header & Control Bar */
+    header {
+      background: rgba(17, 24, 39, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-weight: 600;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      color: #38bdf8;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: #064e3b;
+      color: #6ee7b7;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #334155;
+      border-color: #475569;
+      transform: translateY(-1px);
+    }
+
+    button.spike-embb { border-color: rgba(6, 182, 212, 0.4); color: #38bdf8; }
+    button.spike-embb:hover { background: rgba(6, 182, 212, 0.15); }
+
+    button.spike-urllc { border-color: rgba(245, 158, 11, 0.4); color: #fbbf24; }
+    button.spike-urllc:hover { background: rgba(245, 158, 11, 0.15); }
+
+    button.spike-murllc { border-color: rgba(168, 85, 247, 0.4); color: #c084fc; }
+    button.spike-murllc:hover { background: rgba(168, 85, 247, 0.15); }
+
+    button.primary { background: #2563eb; border-color: #3b82f6; }
+    button.primary:hover { background: #1d4ed8; }
+
+    /* Main Grid */
+    main {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .columns-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .columns-grid { grid-template-columns: 1fr; }
+    }
+
+    .policy-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .policy-card.sla-breach {
+      border-color: var(--danger) !important;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.35);
+    }
+
+    .policy-card.agent-card {
+      border-color: #3b82f6;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.12);
+    }
+
+    .policy-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 10px;
+    }
+
+    .policy-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .policy-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .sla-chip {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    .sla-ok { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .sla-bad { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); animation: pulse 1s infinite alternate; }
+
+    @keyframes pulse {
+      0% { opacity: 0.8; }
+      100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.6)); }
+    }
+
+    .chart-container {
+      position: relative;
+      height: 140px;
+      width: 100%;
+    }
+
+    .chart-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Resource Stacked Bars */
+    .resource-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .bar-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .stacked-bar {
+      height: 18px;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      background: #0f172a;
+      border: 1px solid var(--border);
+    }
+
+    .bar-seg {
+      height: 100%;
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #000;
+    }
+
+    .seg-embb { background: var(--embb); }
+    .seg-urllc { background: var(--urllc); }
+    .seg-murllc { background: var(--murllc); color: #fff; }
+
+    /* Queue Meter */
+    .queue-meter {
+      height: 8px;
+      background: #0f172a;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .queue-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #06b6d4, #ef4444);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Agent Telemetry Box */
+    .agent-extras {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .extras-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+    }
+
+    .shield-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.72rem;
+      background: #1e293b;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .shield-badge.active {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border-color: #f59e0b;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+    }
+
+    /* Event Log Terminal */
+    .terminal-box {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      height: 80px;
+      overflow-y: auto;
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .terminal-line { line-height: 1.3; }
+    .terminal-line.highlight { color: #38bdf8; font-weight: 600; }
+    .terminal-line.warning { color: #fbbf24; }
+
+    /* Scoreboard */
+    .scoreboard {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .score-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .score-title {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .score-val {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .headline-banner {
+      flex: 1;
+      min-width: 300px;
+      background: linear-gradient(90deg, rgba(37, 99, 235, 0.15), rgba(168, 85, 247, 0.15));
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 8px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #e0e7ff;
+    }
+
+    .legend-bar {
+      display: flex;
+      gap: 16px;
+      font-size: 0.75rem;
+      align-items: center;
+    }
+
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-color { width: 10px; height: 10px; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>5G SliceOS</h1>
+      <span class="badge" id="scenarioBadge">Nominal Load</span>
+      <span class="badge" id="stepBadge">Step 0</span>
+      <div class="status-pill" id="connPill">
+        <div class="status-dot" id="connDot"></div>
+        <span id="connText">Connecting...</span>
+      </div>
+    </div>
+
+    <div class="controls-group">
+      <button class="spike-embb" onclick="sendSpike('embb', 2.5, 30)">⚡ eMBB Surge (x2.5)</button>
+      <button class="spike-urllc" onclick="sendSpike('urllc', 3.0, 20)">⚡ URLLC Burst (x3.0)</button>
+      <button class="spike-murllc" onclick="sendSpike('murllc', 7.0, 10)">⚡ mURLLC Storm (x7.0)</button>
+      <button onclick="togglePause()" id="pauseBtn">⏸ Pause</button>
+      <button onclick="sendReset()">🔄 Reset</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="columns-grid">
+
+      <!-- Column 1: Static Baseline -->
+      <div class="policy-card" id="cardStatic">
+        <div class="policy-header">
+          <div>
+            <div class="policy-title">Static Partition</div>
+            <div class="policy-subtitle">Fixed 60/25/15 PRB & vCPU</div>
+          </div>
+          <span class="sla-chip sla-ok" id="slaStatic">SLA OK</span>
+        </div>
+
+        <div>
+          <div class="chart-label">
+            <span>URLLC/mURLLC Violation Rate</span>
+            <span style="color: #ef4444;">SLA Limit: 1.0%</span>
+          </div>
+          <div class="chart-container"><canvas id="chartViolStatic"></canvas></div>
+        </div>
+
+        <div>
+          <div class="chart-label"><span>eMBB Throughput (pkts/step)</span></div>
+          <div class="chart-container"><canvas id="chartThruStatic"></canvas></div>
+        </div>
+
+        <div class="resource-section">
+          <div class="bar-label-row"><span>Radio PRB Share</span><span id="prbLblStatic">60% | 25% | 15%</span></div>
+          <div class="stacked-bar">
+            <div class="bar-seg seg-embb" id="prbStaticEmbb" style="width: 60%;">eMBB</div>
+            <div class="bar-seg seg-urllc" id="prbStaticUrllc" style="width: 25%;">URLLC</div>
+            <div class="bar-seg seg-murllc" id="prbStaticMurllc" style="width: 15%;">mURLLC</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="bar-label-row"><span>eMBB Queue Buffer</span><span id="queueLblStatic">0 / 2000</span></div>
+          <div class="queue-meter"><div class="queue-fill" id="queueBarStatic"></div></div>
+        </div>
+      </div>
+
+      <!-- Column 2: Heuristic Baseline -->
+      <div class="policy-card" id="cardHeuristic">
+        <div class="policy-header">
+          <div>
+            <div class="policy-title">Demand Heuristic</div>
+            <div class="policy-subtitle">Queue + Smoothed Load with Floors</div>
+          </div>
+          <span class="sla-chip sla-ok" id="slaHeuristic">SLA OK</span>
+        </div>
+
+        <div>
+          <div class="chart-label">
+            <span>URLLC/mURLLC Violation Rate</span>
+            <span style="color: #ef4444;">SLA Limit: 1.0%</span>
+          </div>
+          <div class="chart-container"><canvas id="chartViolHeuristic"></canvas></div>
+        </div>
+
+        <div>
+          <div class="chart-label"><span>eMBB Throughput (pkts/step)</span></div>
+          <div class="chart-container"><canvas id="chartThruHeuristic"></canvas></div>
+        </div>
+
+        <div class="resource-section">
+          <div class="bar-label-row"><span>Radio PRB Share</span><span id="prbLblHeuristic">--</span></div>
+          <div class="stacked-bar">
+            <div class="bar-seg seg-embb" id="prbHeurEmbb" style="width: 60%;">eMBB</div>
+            <div class="bar-seg seg-urllc" id="prbHeurUrllc" style="width: 25%;">URLLC</div>
+            <div class="bar-seg seg-murllc" id="prbHeurMurllc" style="width: 15%;">mURLLC</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="bar-label-row"><span>eMBB Queue Buffer</span><span id="queueLblHeuristic">0 / 2000</span></div>
+          <div class="queue-meter"><div class="queue-fill" id="queueBarHeuristic"></div></div>
+        </div>
+      </div>
+
+      <!-- Column 3: Safe RL Agent -->
+      <div class="policy-card agent-card" id="cardAgent">
+        <div class="policy-header">
+          <div>
+            <div class="policy-title">Constrained RL + Hard Shield</div>
+            <div class="policy-subtitle">Lagrangian PPO Orchestration</div>
+          </div>
+          <span class="sla-chip sla-ok" id="slaAgent">SLA OK</span>
+        </div>
+
+        <div>
+          <div class="chart-label">
+            <span>URLLC/mURLLC Violation Rate</span>
+            <span style="color: #ef4444;">SLA Limit: 1.0%</span>
+          </div>
+          <div class="chart-container"><canvas id="chartViolAgent"></canvas></div>
+        </div>
+
+        <div>
+          <div class="chart-label"><span>eMBB Throughput (pkts/step)</span></div>
+          <div class="chart-container"><canvas id="chartThruAgent"></canvas></div>
+        </div>
+
+        <div class="resource-section">
+          <div class="bar-label-row"><span>Radio PRB Share</span><span id="prbLblAgent">--</span></div>
+          <div class="stacked-bar">
+            <div class="bar-seg seg-embb" id="prbAgentEmbb" style="width: 60%;">eMBB</div>
+            <div class="bar-seg seg-urllc" id="prbAgentUrllc" style="width: 25%;">URLLC</div>
+            <div class="bar-seg seg-murllc" id="prbAgentMurllc" style="width: 15%;">mURLLC</div>
+          </div>
+        </div>
+
+        <div class="agent-extras">
+          <div class="extras-row">
+            <span>Lagrangian Multiplier λ: <strong id="lambdaVal" style="color: #38bdf8;">0.00</strong></span>
+            <span class="shield-badge" id="shieldBadge">🛡️ Shield Active</span>
+          </div>
+          <div class="bar-label-row"><span>eMBB Queue Buffer</span><span id="queueLblAgent">0 / 2000</span></div>
+          <div class="queue-meter"><div class="queue-fill" id="queueBarAgent"></div></div>
+        </div>
+
+        <div>
+          <div class="chart-label"><span>Agent Explainability Event Log</span></div>
+          <div class="terminal-box" id="eventTerminal">
+            <div class="terminal-line">Waiting for telemetry stream...</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bottom Scoreboard & Headline -->
+    <div class="scoreboard">
+      <div class="score-item">
+        <span class="score-title">Static Violations</span>
+        <span class="score-val" id="scoreStaticViol" style="color: #f87171;">0</span>
+      </div>
+
+      <div class="score-item">
+        <span class="score-title">Heuristic Violations</span>
+        <span class="score-val" id="scoreHeurViol" style="color: #fbbf24;">0</span>
+      </div>
+
+      <div class="score-item">
+        <span class="score-title">Agent Violations</span>
+        <span class="score-val" id="scoreAgentViol" style="color: #34d399;">0</span>
+      </div>
+
+      <div class="headline-banner">
+        <span>🏆</span>
+        <span id="headlineText">Collecting benchmark statistics across active traffic...</span>
+      </div>
+
+      <div class="legend-bar">
+        <div class="legend-item"><div class="legend-color" style="background: var(--embb);"></div>eMBB</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--urllc);"></div>URLLC</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--murllc);"></div>mURLLC</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let ws = null;
+    const MAX_POINTS = 30;
+
+    // Charts storage
+    const charts = {};
+
+    function initChart(canvasId, label, color, yMax = null, drawLimitLine = false) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      const annotations = drawLimitLine ? {
+        limit: {
+          type: 'line',
+          yMin: 0.01,
+          yMax: 0.01,
+          borderColor: '#ef4444',
+          borderWidth: 1.5,
+          borderDash: [4, 4]
+        }
+      } : {};
+
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array(MAX_POINTS).fill(''),
+          datasets: [{
+            label: label,
+            data: Array(MAX_POINTS).fill(0),
+            borderColor: color,
+            backgroundColor: color.replace(')', ', 0.1)').replace('rgb', 'rgba'),
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          scales: {
+            x: { display: false },
+            y: {
+              beginAtZero: true,
+              max: yMax,
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#64748b', font: { size: 9 } }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+          }
+        }
+      });
+    }
+
+    function setupCharts() {
+      // Violation rate charts (0 to 0.10)
+      charts.violStatic = initChart('chartViolStatic', 'Static Violations', '#ef4444', 0.10, true);
+      charts.violHeuristic = initChart('chartViolHeuristic', 'Heuristic Violations', '#fbbf24', 0.10, true);
+      charts.violAgent = initChart('chartViolAgent', 'Agent Violations', '#10b981', 0.10, true);
+
+      // Throughput charts (0 to 1200)
+      charts.thruStatic = initChart('chartThruStatic', 'Static Throughput', '#06b6d4', 1200);
+      charts.thruHeuristic = initChart('chartThruHeuristic', 'Heuristic Throughput', '#06b6d4', 1200);
+      charts.thruAgent = initChart('chartThruAgent', 'Agent Throughput', '#06b6d4', 1200);
+    }
+
+    function updateChartData(chart, newValue) {
+      chart.data.datasets[0].data.shift();
+      chart.data.datasets[0].data.push(newValue);
+      chart.update('none');
+    }
+
+    function connectWebSocket() {
+      const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${proto}//${window.location.host}/ws`;
+
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        document.getElementById('connPill').style.background = '#064e3b';
+        document.getElementById('connDot').style.background = '#10b981';
+        document.getElementById('connText').innerText = 'Live 5G Stream';
+      };
+
+      ws.onclose = () => {
+        document.getElementById('connPill').style.background = '#7f1d1d';
+        document.getElementById('connDot').style.background = '#ef4444';
+        document.getElementById('connText').innerText = 'Reconnecting...';
+        setTimeout(connectWebSocket, 1500);
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        handleTelemetry(data);
+      };
+    }
+
+    function handleTelemetry(data) {
+      document.getElementById('scenarioBadge').innerText = data.scenario || 'Nominal';
+      document.getElementById('stepBadge').innerText = `Step ${data.step}`;
+
+      // Update Pause button state
+      document.getElementById('pauseBtn').innerText = data.paused ? '▶ Resume' : '⏸ Pause';
+
+      const pols = data.policies;
+
+      // Update Static
+      updatePolicyPanel('Static', pols.static);
+      updateChartData(charts.violStatic, pols.static.violation_rate);
+      updateChartData(charts.thruStatic, pols.static.throughput.embb);
+
+      // Update Heuristic
+      updatePolicyPanel('Heuristic', pols.heuristic);
+      updateChartData(charts.violHeuristic, pols.heuristic.violation_rate);
+      updateChartData(charts.thruHeuristic, pols.heuristic.throughput.embb);
+
+      // Update Agent
+      updatePolicyPanel('Agent', pols.agent);
+      updateChartData(charts.violAgent, pols.agent.violation_rate);
+      updateChartData(charts.thruAgent, pols.agent.throughput.embb);
+
+      // Agent extras
+      document.getElementById('lambdaVal').innerText = (pols.agent.lambda || 0).toFixed(3);
+      const shieldBadge = document.getElementById('shieldBadge');
+      if (pols.agent.shield_active) {
+        shieldBadge.classList.add('active');
+        shieldBadge.innerText = '🛡️ Shield ACTIVE';
+      } else {
+        shieldBadge.classList.remove('active');
+        shieldBadge.innerText = '🛡️ Shield Standby';
+      }
+
+      // Event log terminal
+      if (data.event_logs && data.event_logs.length > 0) {
+        const terminal = document.getElementById('eventTerminal');
+        terminal.innerHTML = data.event_logs.map(line => {
+          let cls = 'terminal-line';
+          if (line.includes('ACTIVE') || line.includes('spike')) cls += ' warning';
+          if (line.includes('dynamically allocated')) cls += ' highlight';
+          return `<div class="${cls}">${line}</div>`;
+        }).join('');
+        terminal.scrollTop = terminal.scrollHeight;
+      }
+
+      // Scoreboard & Headline
+      if (data.scoreboard) {
+        const sStatic = data.scoreboard.static;
+        const sHeur = data.scoreboard.heuristic;
+        const sAgent = data.scoreboard.agent;
+
+        document.getElementById('scoreStaticViol').innerText = Math.round(sStatic.cum_violations);
+        document.getElementById('scoreHeurViol').innerText = Math.round(sHeur.cum_violations);
+        document.getElementById('scoreAgentViol').innerText = Math.round(sAgent.cum_violations);
+
+        if (sStatic.cum_violations > 0) {
+          const cutPct = Math.max(0, ((sStatic.cum_violations - sAgent.cum_violations) / sStatic.cum_violations) * 100).toFixed(1);
+          const embbGain = Math.max(0, ((sAgent.mean_embb_ratio - sStatic.mean_embb_ratio) / Math.max(0.01, sStatic.mean_embb_ratio)) * 100).toFixed(1);
+          document.getElementById('headlineText').innerText = 
+            `Agent cuts URLLC/mURLLC violations by ${cutPct}% versus Static while serving +${embbGain}% more eMBB traffic.`;
+        }
+      }
+    }
+
+    function updatePolicyPanel(name, pol) {
+      const card = document.getElementById(`card${name}`);
+      const chip = document.getElementById(`sla${name}`);
+
+      if (pol.sla_ok) {
+        chip.className = 'sla-chip sla-ok';
+        chip.innerText = 'SLA OK';
+        card.classList.remove('sla-breach');
+      } else {
+        chip.className = 'sla-chip sla-bad';
+        chip.innerText = 'SLA BREACH';
+        card.classList.add('sla-breach');
+      }
+
+      // Resource Bars
+      const prb = pol.shares.prb;
+      const embbPct = (prb.embb * 100).toFixed(0);
+      const urllcPct = (prb.urllc * 100).toFixed(0);
+      const murllcPct = (prb.murllc * 100).toFixed(0);
+
+      document.getElementById(`prbLbl${name}`).innerText = `${embbPct}% | ${urllcPct}% | ${murllcPct}%`;
+
+      if (name === 'Static') {
+        document.getElementById('prbStaticEmbb').style.width = `${embbPct}%`;
+        document.getElementById('prbStaticUrllc').style.width = `${urllcPct}%`;
+        document.getElementById('prbStaticMurllc').style.width = `${murllcPct}%`;
+        document.getElementById('queueLblStatic').innerText = `${Math.round(pol.queue.embb)} / 2000`;
+        document.getElementById('queueBarStatic').style.width = `${Math.min(100, (pol.queue.embb / 2000) * 100)}%`;
+      } else if (name === 'Heuristic') {
+        document.getElementById('prbHeurEmbb').style.width = `${embbPct}%`;
+        document.getElementById('prbHeurUrllc').style.width = `${urllcPct}%`;
+        document.getElementById('prbHeurMurllc').style.width = `${murllcPct}%`;
+        document.getElementById('queueLblHeuristic').innerText = `${Math.round(pol.queue.embb)} / 2000`;
+        document.getElementById('queueBarHeuristic').style.width = `${Math.min(100, (pol.queue.embb / 2000) * 100)}%`;
+      } else if (name === 'Agent') {
+        document.getElementById('prbAgentEmbb').style.width = `${embbPct}%`;
+        document.getElementById('prbAgentUrllc').style.width = `${urllcPct}%`;
+        document.getElementById('prbAgentMurllc').style.width = `${murllcPct}%`;
+        document.getElementById('queueLblAgent').innerText = `${Math.round(pol.queue.embb)} / 2000`;
+        document.getElementById('queueBarAgent').style.width = `${Math.min(100, (pol.queue.embb / 2000) * 100)}%`;
+      }
+    }
+
+    function sendSpike(sliceName, factor, duration) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ action: 'spike', slice: sliceName, factor: factor, duration: duration }));
+      } else {
+        fetch('/spike', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slice: sliceName, factor: factor, duration: duration })
+        });
+      }
+    }
+
+    function togglePause() {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ action: 'pause' }));
+      } else {
+        fetch('/pause', { method: 'POST' });
+      }
+    }
+
+    function sendReset() {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ action: 'reset' }));
+      } else {
+        fetch('/reset', { method: 'POST' });
+      }
+    }
+
+    window.onload = () => {
+      setupCharts();
+      connectWebSocket();
+    };
+  </script>
+</body>
+</html>
