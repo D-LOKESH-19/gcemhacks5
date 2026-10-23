@@ -646,3 +646,23 @@ This document records the automated verification logs across development phases,
 | **FT-54** | Scenario Partitioning | Results partition Feasible vs Overload stress with explicit protection disclosures | **PASSED** | P1 |
 | **FT-55** | CSV Download Endpoints | Both `/api/results/download/sla_table.csv` and `/ablation.csv` stream valid CSV payloads | **PASSED** | P0 |
 | **FT-56** | Mandatory Honesty Footnote | Visible footnote explains slice-level simulator scope and delay model estimation limits | **PASSED** | P0 |
+
+---
+
+## Phase F7: Presenter Mode & Projection Polish (FT-57 to FT-62)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f7.cjs` + `npm --prefix frontend run build`
+- **Result**: **6/6 PASSED (P0/P1)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-57** | 2-Meter Readable Typography | PresenterPage implements >= 24px-48px high-contrast typography readable at 2 meters | **PASSED** | P0 |
+| **FT-58** | Keyboard Shortcuts & Help | Hotkeys (1, 2, 3, Space, R, P, Esc, ?) fully functional with accessible help modal overlay | **PASSED** | P0 |
+| **FT-59** | Error & Loading States | ErrorBoundary with user-facing Retry component and LoadingSkeleton pulse states | **PASSED** | P1 |
+| **FT-60** | Responsive Viewport Layout | Multi-column grid adapts seamlessly to 1920x1080 and 1366x768 without overlap | **PASSED** | P1 |
+| **FT-61** | Background Tab Protection | Stream throttles to 1Hz in inactive tabs with 300-point capped ring buffer | **PASSED** | P0 |
+| **FT-62** | Multi-Channel Status Badges | Status badges display color + Lucide icon + explicit text simultaneously | **PASSED** | P0 |
+
