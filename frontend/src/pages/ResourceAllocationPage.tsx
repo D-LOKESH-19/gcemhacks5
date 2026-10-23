@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSliceStore } from '../store/useSliceStore';
+import { FlowStrip } from '../components/allocation/FlowStrip';
 import { ResourcePools } from '../components/allocation/ResourcePools';
 import { AllocationLegend } from '../components/allocation/AllocationLegend';
 import { PolicyType } from '../types/api';
@@ -77,6 +78,15 @@ export const ResourceAllocationPage: React.FC = () => {
           </span>
         </div>
       </div>
+
+      {/* 5-Node Architectural Flow Strip */}
+      <FlowStrip
+        bottlenecks={alloc?.bottleneck}
+        arrivals={latestPayload?.policies?.[activePolicy]?.arrivals}
+        bots={latestPayload?.bots}
+        prbTotal={prbTotal}
+        vcpuTotal={vcpuTotal}
+      />
 
       {/* Main Resource Pools Component */}
       {alloc ? (

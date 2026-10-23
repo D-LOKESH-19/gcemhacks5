@@ -529,3 +529,22 @@ This document records the automated verification logs across development phases,
 | **AT-25** | SLA Floor Locks | Protected SLA floor cells display lock icon matching `floor(floor_share * total)` | **PASSED** | P0 |
 | **AT-42** | Legend & Honesty Text | Collapsible legend explains tokens, locks, and flashes; whole-units disclaimer visible | **PASSED** | P1 |
 
+---
+
+## Phase R3: End-to-End Architectural Flow Strip (AT-28)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_r3.cjs` + `npm --prefix frontend run build`
+- **Result**: **6/6 PASSED (P0)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **AT-28a** | 5-Node Topology | Devices -> gNB Radio -> Slicer -> Edge UPF -> Apps rendered in sequence | **PASSED** | P0 |
+| **AT-28b** | Honest Controller Label | Slicer labeled as 'Resource Controller' with safety shield indicator | **PASSED** | P0 |
+| **AT-28c** | Particle Density Bounds | Particles capped at 120 max with calibration label '1 particle = 10 packets' | **PASSED** | P0 |
+| **AT-28d** | Bottleneck Detection | Stream bottleneck state triggers warning badge at radio or compute nodes | **PASSED** | P0 |
+| **AT-28e** | Traffic Queue Slowdown | Bottlenecked slices slow particle travel speed from 2.4 to 0.8 px/frame | **PASSED** | P0 |
+| **AT-28f** | Live State Integration | FlowStrip integrated into ResourceAllocationPage with real-time arrivals | **PASSED** | P0 |
+
