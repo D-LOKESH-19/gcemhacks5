@@ -622,4 +622,27 @@ This document records the automated verification logs across development phases,
 | **FT-43** | Heuristic Overlay | Interactive toggle overlays/removes Heuristic reference baseline without reload | **PASSED** | P2 |
 | **FT-44** | Scientific Honesty | Explanatory copy cleanly delineates algorithmic supervisor from neural RL policy without overclaiming | **PASSED** | P0 |
 
+---
 
+## Phase F6: SLA Matrix, Training Curves & Results Telemetry (FT-45 to FT-56)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f6.cjs` + `npm --prefix frontend run build`
+- **Result**: **12/12 PASSED (P0/P1/P2)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-45** | SLA Promise Guarantees | SlaPromiseCard defines plain-words guarantees for URLLC, mURLLC, and eMBB matching config | **PASSED** | P0 |
+| **FT-46** | Empty Slice Indicator | SlaGridMatrix renders unambiguous 'No traffic' message when arrivals equal 0 | **PASSED** | P0 |
+| **FT-47** | Overload Badge & Copy | Overload badge renders exact 'URLLC and mURLLC protected first' prioritization copy | **PASSED** | P0 |
+| **FT-48** | Windowed SLA Compliance | 20-step window compliance percentage displayed per slice matching backend telemetry | **PASSED** | P1 |
+| **FT-49** | Training Lambda Cards | Multipliers strictly labelled 'final trained value' matching `runs/log.csv` final rows | **PASSED** | P0 |
+| **FT-50** | Cost Curves & Empty States | Costs plotted with dashed contract limit lines and actionable empty state fallback | **PASSED** | P1 |
+| **FT-51** | Recomputed Headline Card | /api/results headline recomputed from CSV: Agent cuts Static violations by 100.0% | **PASSED** | P0 |
+| **FT-52** | Error Bar Confidence Bounds | ScenarioGroupedBarChart renders 95% bootstrap confidence interval error bars | **PASSED** | P1 |
+| **FT-53** | 4-Variant Ablation Table | Ablation study table renders 4 configurations with tail risk and worst-window metrics | **PASSED** | P1 |
+| **FT-54** | Scenario Partitioning | Results partition Feasible vs Overload stress with explicit protection disclosures | **PASSED** | P1 |
+| **FT-55** | CSV Download Endpoints | Both `/api/results/download/sla_table.csv` and `/ablation.csv` stream valid CSV payloads | **PASSED** | P0 |
+| **FT-56** | Mandatory Honesty Footnote | Visible footnote explains slice-level simulator scope and delay model estimation limits | **PASSED** | P0 |
