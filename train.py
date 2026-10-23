@@ -503,5 +503,46 @@ def train(
     return "models/agent.zip"
 
 
+class UnconstrainedEnvWrapper(gym.Wrapper):
+    """Wrapper with no Lagrange penalties and NO safety shield for Ablation (a)."""
+
+    def __init__(self, env: SliceEnv) -> None:
+        super().__init__(env)
+        self.raw_env = env
+
+    def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
+        # No shield: direct softmax logits
+        obs, step_reward, terminated, truncated, info = self.env.step(action)
+        return obs, float(step_reward), terminated, truncated, info
+
+
+def train_unconstrained(total_timesteps: int = 25_000, seed: int = 42, model_path: str = "models/agent_unconstrained.zip") -> str:
+    """Train unconstrained PPO policy (no shield, lambdas=0) for Ablation (a)."""
+    if os.path.exists(model_path):
+        return model_path
+
+    print(f"\nTraining Unconstrained PPO Agent (Ablation a) for {total_timesteps} steps...")
+    base_env = SliceEnv(seed=seed)
+    train_env = UnconstrainedEnvWrapper(base_env)
+
+    model = PPO(
+        policy="MlpPolicy",
+        env=train_env,
+        policy_kwargs=dict(net_arch=dict(pi=[64, 64], vf=[64, 64])),
+        n_steps=1024,
+        batch_size=256,
+        gamma=0.95,
+        learning_rate=3e-4,
+        seed=seed,
+        verbose=0,
+    )
+
+    model.learn(total_timesteps=total_timesteps)
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+    model.save(model_path)
+    print(f"[SUCCESS] Unconstrained agent saved to {model_path}")
+    return model_path
+
+
 if __name__ == "__main__":
     train(seeds=[42, 43, 44], total_timesteps=100_000)

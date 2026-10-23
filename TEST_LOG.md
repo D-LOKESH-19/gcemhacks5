@@ -54,3 +54,26 @@ This document records the automated verification logs across development phases,
 | **SM-24** | PID dual mode | PID dual mode executes without numerical divergence | **PASSED** | P2 |
 
 ---
+
+## Sub-Phase 11c: Evaluation & Ablations (SM-25 to SM-33)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `test_sla_11c.py`
+- **Seeds**: 20 held-out disjoint evaluation seeds `[100, ..., 119]`
+- **Result**: **9/9 PASSED**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **SM-25** | Traffic synchrony | Bit-for-bit identical arrivals across all evaluated policies per seed | **PASSED** | P0 |
+| **SM-26** | Output tables | `results/sla_table.csv` and `results/ablation.csv` generated | **PASSED** | P0 |
+| **SM-27** | Bootstrap CI95 | 95% bootstrap confidence intervals computed around mean violation rates | **PASSED** | P1 |
+| **SM-28** | Agent meets SLAs | Agent achieves 100.0% window compliance across all feasible scenarios | **PASSED** | P0 |
+| **SM-29** | Beats Static | Static breaches in mURLLC storm (VR=0.0082, worst window=0.2147); Agent=0.0000 | **PASSED** | P0 |
+| **SM-30** | Ablation (a) breach | Unconstrained PPO without shield breaches SLA in storm (VR=0.0079, worst window=0.2107) | **PASSED** | P1 |
+| **SM-31** | Ablation (c) comparison | Heuristic+Shield holds SLA (0.0000 VR); delivers identical 0.6394 eMBB surge ratio | **PASSED** | P1 |
+| **SM-32** | Overload partition | 6 feasible vs 1 overload (Bots 3.0x) partitioned and reported separately | **PASSED** | P0 |
+| **SM-33** | Headline numbers | Agent meets SLAs in 100.0% of windows vs 99.2% for Static (recomputed from CSV) | **PASSED** | P0 |
+
+---

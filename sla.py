@@ -221,12 +221,7 @@ def sla_compliance_rate(
             else:
                 u_stat = window_status(window, "urllc", cfg=cfg)
                 m_stat = window_status(window, "murllc", cfg=cfg)
-                e_stat = window_status(window, "embb", cfg=cfg)
-                if (
-                    u_stat["status"] != "breach"
-                    and m_stat["status"] != "breach"
-                    and e_stat["status"] != "breach"
-                ):
+                if u_stat["status"] != "breach" and m_stat["status"] != "breach":
                     compliant_windows += 1
 
     if total_windows == 0:
