@@ -360,11 +360,11 @@
 
     .bot-canvas-wrap {
       position: relative;
-      background: rgba(248, 250, 252, 0.92);
+      background: rgba(248, 250, 252, 0.94);
       border: 1px solid var(--glass-border);
       border-radius: 12px;
       overflow: hidden;
-      height: 80px;
+      height: 125px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1344,7 +1344,7 @@
 
       <!-- Real-Time Bot Pulse Field Canvas -->
       <div class="bot-canvas-wrap">
-        <canvas id="botCanvas" height="85"></canvas>
+        <canvas id="botCanvas" height="125"></canvas>
         <div class="canvas-scale-label" id="canvasScaleLabel">1 dot = 1 user (Active Transmitters)</div>
       </div>
     </section>
@@ -2477,7 +2477,7 @@
     function resizeBotCanvas() {
       if (!canvas) return;
       canvas.width = canvas.parentElement.clientWidth || 900;
-      canvas.height = canvas.parentElement.clientHeight || 75;
+      canvas.height = canvas.parentElement.clientHeight || 125;
     }
 
     function animateBotCanvas() {
@@ -2488,18 +2488,23 @@
       ctx.clearRect(0, 0, w, h);
 
       const towerX = w / 2;
-      const towerY = h / 2;
+      const towerY = Math.round(h * 0.62);
 
       // Draw Central 5G Tower Icon
-      ctx.fillStyle = '#38bdf8';
+      ctx.fillStyle = '#0284c7';
       ctx.beginPath();
-      ctx.arc(towerX, towerY, 5, 0, Math.PI * 2);
+      ctx.arc(towerX, towerY, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(towerX, towerY, 2.5, 0, Math.PI * 2);
       ctx.fill();
 
       // Radiating Signal Wave
       const pulseRadius = (animFrame % 50) * 1.5;
-      ctx.strokeStyle = `rgba(56, 189, 248, ${Math.max(0, 1 - pulseRadius / 75)})`;
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = `rgba(2, 132, 199, ${Math.max(0, 0.8 - pulseRadius / 75)})`;
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
       ctx.arc(towerX, towerY, pulseRadius, 0, Math.PI * 2);
       ctx.stroke();
@@ -2511,7 +2516,7 @@
         { key: 'smart_city', label: '🏙️ Smart City', baseAngle: 0 }
       ];
 
-      const sliceColors = { embb: '#06b6d4', urllc: '#f59e0b', murllc: '#a855f7' };
+      const sliceColors = { embb: '#0284c7', urllc: '#d97706', murllc: '#7c3aed' };
 
       // Calculate max scale across zones (at most 40 dots per zone)
       let maxScale = 1;
@@ -2529,15 +2534,20 @@
 
       locDefs.forEach(ld => {
         const zm = botMatrix[ld.key] || {};
-        const radius = Math.min(w * 0.38, 220);
-        const zoneCenterX = towerX + radius * Math.cos(ld.baseAngle);
-        const zoneCenterY = towerY + (h * 0.32) * Math.sin(ld.baseAngle);
+        const isFactory = ld.key === 'factory';
+        const radiusX = Math.min(w * 0.36, 230);
+        const radiusY = Math.min(h * 0.38, 42);
 
-        // Draw Zone Label
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '9px sans-serif';
+        const zoneCenterX = towerX + radiusX * Math.cos(ld.baseAngle);
+        const zoneCenterY = isFactory ? 36 : (towerY + radiusY * Math.sin(ld.baseAngle));
+
+        // Draw Zone Label (bold, high-contrast, properly positioned away from edges)
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(ld.label, zoneCenterX, zoneCenterY + (ld.baseAngle === -Math.PI / 2 ? -10 : 18));
+        ctx.textBaseline = 'middle';
+        const labelY = isFactory ? 14 : (zoneCenterY + 16);
+        ctx.fillText(ld.label, zoneCenterX, labelY);
 
         // Draw Dots for each slice in this zone
         let dotIdx = 0;
@@ -2546,10 +2556,18 @@
           const renderCount = Math.min(40, Math.ceil(rawCount / maxScale));
           for (let i = 0; i < renderCount; i++) {
             if (dotIdx >= 40) break;
-            const spread = 0.55;
-            const angle = ld.baseAngle + ((dotIdx - 10) * (spread / 20));
-            const botX = towerX + (radius * 0.95) * Math.cos(angle);
-            const botY = towerY + (h * 0.32) * Math.sin(angle);
+            
+            let botX, botY;
+            if (isFactory) {
+              // Position Factory bot transmitters cleanly below the Factory label
+              botX = towerX + ((dotIdx % 12) - 5.5) * 8;
+              botY = 32 + Math.floor(dotIdx / 12) * 8;
+            } else {
+              const spread = 0.55;
+              const angle = ld.baseAngle + ((dotIdx - 10) * (spread / 20));
+              botX = towerX + (radiusX * 0.95) * Math.cos(angle);
+              botY = towerY + (radiusY * 0.95) * Math.sin(angle);
+            }
 
             // Bot Dot
             ctx.fillStyle = sliceColors[s];
