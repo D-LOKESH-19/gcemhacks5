@@ -801,7 +801,7 @@ The original Agent + Shield also has 0 violations in all of these, so no violati
 - **Branch**: `a/core-sla`
 - **Script**: `python test_files/test_lending_integration.py`
 - **Result**: **14/14 checks passed.** Full regression after the change: 21/21 Python suites (incl. `test_predictor` 22/22, `test_lender` 37/37), 12/12 Node suites (F2-F8, R1-R5), LL-12 fingerprints 21/21.
-- **Files changed**: `api.py` (additive: fourth env + `EnhancedPolicy`, `policies.enhanced`, `scoreboard.enhanced`, `est_delay_ms.enhanced`, SLA status for enhanced, `GET /api/lending`, `capabilities.lending`), `lender.py` (hooks: `last_shield_active`, `last_raw`, `risk_final`, `risk_at_shares`). Only 1 existing line of `api.py` text was modified (the stats loop / scoreboard tuple lists were extended); no core file (`sim.py`, `shield.py`, `sla.py`, `train.py`, `baselines.py`) changed.
+- **Files changed**: `api.py` (additive: fourth env + `EnhancedPolicy`, `policies.enhanced`, `scoreboard.enhanced`, `est_delay_ms.enhanced`, SLA status for enhanced, `GET /api/lending`, `capabilities.lending`), `lender.py` (hooks: `last_shield_active`, `last_raw`, `risk_final`, `risk_at_shares`). Only 3 existing lines of `api.py` were modified, each just extended with `enhanced` (the `clipped = ...` bot-clip line, the per-policy stats loop list, and the scoreboard policy list); everything else is additions; no core file (`sim.py`, `shield.py`, `sla.py`, `train.py`, `baselines.py`) changed.
 
 ### Test matrix (real output summary)
 | ID | Test | Result | Real output |
