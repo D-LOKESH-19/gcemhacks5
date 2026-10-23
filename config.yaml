@@ -22,6 +22,21 @@ shield_floor:
 cost_limit: 0.01            # max allowed average violation rate for urllc+murllc
 lagrange_lr: 0.05
 
+sla:
+  window_steps: 20
+  embb:   {min_served_ratio: 0.70}
+  urllc:  {max_violation_rate: 0.005, max_window_violation: 0.02}
+  murllc: {max_violation_rate: 0.01,  max_window_violation: 0.03}
+  feasible_load_fraction: 0.90
+  amber_fraction: 0.80        # UI turns amber above 80 percent of a limit
+cmdp:
+  limits: {embb_shortfall: 0.05, urllc: 0.005, murllc: 0.01}
+  lambda_init: 1.0
+  lambda_max: 20.0
+  lagrange_lr: 0.05
+  dual_mode: simple           # simple | pid
+  pid: {kp: 0.5, ki: 0.05, kd: 0.1}
+
 # Phase 9: Bots Feature Configuration
 traffic_mode: bots          # aggregate | bots
 bots:

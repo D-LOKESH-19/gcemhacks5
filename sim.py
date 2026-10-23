@@ -10,6 +10,8 @@ from gymnasium import spaces
 import numpy as np
 import yaml
 
+import sla
+
 
 class SliceEnv(gym.Env):
     """Gymnasium environment simulating 5G network slicing with radio and compute constraints."""
@@ -48,8 +50,16 @@ class SliceEnv(gym.Env):
         self.queue_max: Dict[str, float] = {
             s: float(self.cfg["queue_max"][s]) for s in self.slices
         }
-        self.cost_limit: float = float(self.cfg.get("cost_limit", 0.01))
+        self.cost_limit: float = float(self.cfg["cost_limit"])
         self.lagrange_lr: float = float(self.cfg.get("lagrange_lr", 0.05))
+
+        # Total capacities & SLA parameters
+        self.total_radio_cap: float = self.prb_total * self.prb_rate
+        self.total_cpu_cap: float = self.vcpu_total * self.cpu_rate
+        self.total_capacity: float = min(self.total_radio_cap, self.total_cpu_cap)
+        self.embb_min_served_ratio: float = float(
+            self.cfg["sla"]["embb"]["min_served_ratio"]
+        )
 
         # Traffic mode: "aggregate" or "bots"
         self.traffic_mode: str = str(self.cfg.get("traffic_mode", "bots"))
@@ -215,6 +225,8 @@ class SliceEnv(gym.Env):
             violations={s: 0.0 for s in self.slices},
             step_cost=0.0,
             step_reward=0.0,
+            step_costs={s: 0.0 for s in self.slices},
+            is_step_feasible=True,
         )
         return obs, info
 
@@ -268,7 +280,7 @@ class SliceEnv(gym.Env):
         n_murllc = self.bot_counts["murllc"]
         if n_murllc > 0:
             murllc_cfg = self.bots_cfg.get("murllc", {})
-            p_burst = murllc_cfg.get("p_burst", 0.02)
+            p_burst = float(murllc_cfg.get("p_burst", 2 / 100))
             burst_len = murllc_cfg.get("burst_len", 3)
             rate_burst = murllc_cfg.get("rate_burst", 3.33)
 
@@ -342,7 +354,7 @@ class SliceEnv(gym.Env):
         elif self.murllc_burst_remaining > 0:
             murllc_mult *= 7.0
             self.murllc_burst_remaining -= 1
-        elif self.np_random.random() < 0.02:
+        elif self.np_random.random() < float(self.bots_cfg.get("murllc", {}).get("p_burst", 2 / 100)):
             self.murllc_burst_remaining = 3
             murllc_mult *= 7.0
 
@@ -425,6 +437,21 @@ class SliceEnv(gym.Env):
                 0.0, self.lambda_param + self.lagrange_lr * (mean_cost - self.cost_limit)
             )
 
+        # Per-slice costs (Section 5)
+        urllc_cost = (violations["urllc"] / arrivals["urllc"]) if arrivals["urllc"] > 0 else 0.0
+        murllc_cost = (violations["murllc"] / arrivals["murllc"]) if arrivals["murllc"] > 0 else 0.0
+        embb_ratio = (served["embb"] / embb_demand) if embb_demand > 0 else 1.0
+        embb_cost = max(0.0, self.embb_min_served_ratio - embb_ratio) if embb_demand > 0 else 0.0
+        step_costs = {
+            "urllc": float(np.clip(urllc_cost, 0.0, 1.0)),
+            "murllc": float(np.clip(murllc_cost, 0.0, 1.0)),
+            "embb": float(np.clip(embb_cost, 0.0, 1.0)),
+        }
+
+        # Feasible load check across all slices
+        offered_load = float(sum(arrivals.values()) + self.queues["embb"])
+        is_step_feasible = sla.is_feasible(offered_load, self.total_capacity, self.cfg)
+
         obs = self._get_observation()
         info = self._get_info(
             arrivals=arrivals,
@@ -433,6 +460,8 @@ class SliceEnv(gym.Env):
             violations=violations,
             step_cost=step_cost,
             step_reward=step_reward,
+            step_costs=step_costs,
+            is_step_feasible=is_step_feasible,
         )
 
         return obs, step_reward, terminated, truncated, info
@@ -465,15 +494,22 @@ class SliceEnv(gym.Env):
         violations: Dict[str, float],
         step_cost: float,
         step_reward: float,
+        step_costs: Optional[Dict[str, float]] = None,
+        is_step_feasible: bool = True,
     ) -> Dict[str, Any]:
         """Construct detailed info dictionary for telemetry and dashboard."""
         urllc_murllc_arr = arrivals["urllc"] + arrivals["murllc"]
         urllc_murllc_viol = violations["urllc"] + violations["murllc"]
         violation_rate = (urllc_murllc_viol / urllc_murllc_arr) if urllc_murllc_arr > 0 else 0.0
 
+        if step_costs is None:
+            step_costs = {s: 0.0 for s in self.slices}
+
         return {
             "step": self.current_step,
             "cost": float(step_cost),
+            "costs": {s: float(step_costs.get(s, 0.0)) for s in self.slices},
+            "feasible": bool(is_step_feasible),
             "reward": float(step_reward),
             "lambda": float(self.lambda_param),
             "violation_rate": float(violation_rate),
