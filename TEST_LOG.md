@@ -128,3 +128,23 @@ This document records the automated verification logs across development phases,
 | **LT-36** | Model untouched | `models/agent.zip` SHA256 verified unchanged (`3cd0a7e66847...`) | **PASSED** | P0 |
 
 ---
+
+## Sub-Phase 10b: Locations API & Telemetry Endpoints (LT-13 to LT-17, LT-37, LT-40)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `test_locations_10b.py`
+- **Result**: **7/7 PASSED**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **LT-13** | Backward compatibility | Body without location defaults cleanly to slice's primary location | **PASSED** | P0 |
+| **LT-14** | Location rules | Only location, only slice, both, and neither handled cleanly | **PASSED** | P0 |
+| **LT-15** | Input validation | Unknown location/slice, negative count, bad mode return 4xx without server crash | **PASSED** | P1 |
+| **LT-16** | Stream fields | WebSocket telemetry includes `bots_by_location` and `est_delay_ms` per policy | **PASSED** | P0 |
+| **LT-17** | Synchronized state | One POST updates Static, Heuristic, Agent synchronously; Reset restores defaults | **PASSED** | P0 |
+| **LT-37** | Event log SLA | Event log lines name locations and match exact SLA status numbers from `sla.py` | **PASSED** | P1 |
+| **LT-40** | Fair policy inputs | Location bot events apply simultaneously and provide identical arrivals across policies | **PASSED** | P0 |
+
+---

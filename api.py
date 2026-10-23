@@ -30,7 +30,8 @@ class SpikeRequest(BaseModel):
 
 
 class BotRequest(BaseModel):
-    slice: str
+    slice: Optional[str] = None
+    location: Optional[str] = None
     count: int
     mode: str = "set"  # "add" | "remove" | "set"
 
@@ -121,40 +122,72 @@ class SimulationManager:
             f"Step {self.step_idx}: Triggered {slice_name.upper()} spike ({factor}x for {duration} steps)"
         )
 
-    def modify_bots(self, slice_name: str, count: int, mode: str = "set") -> Tuple[Dict[str, int], bool]:
-        """Modify bot counts simultaneously on all 3 environments."""
-        slice_name = slice_name.lower()
-        if slice_name not in ["embb", "urllc", "murllc"]:
-            raise ValueError(f"Unknown slice: {slice_name}")
+    def modify_bots(
+        self,
+        slice_name: Optional[str] = None,
+        count: int = 0,
+        mode: str = "set",
+        location: Optional[str] = None,
+    ) -> Tuple[Dict[str, int], Dict[str, Dict[str, int]], bool]:
+        """Modify bot counts simultaneously with location support on all 3 environments."""
         if count < 0:
             raise ValueError("Count must be non-negative")
         mode = mode.lower()
         if mode not in ["add", "remove", "set"]:
             raise ValueError(f"Unknown mode: {mode}")
 
-        current = self.env_agent.bot_counts[slice_name]
-        max_limit = self.env_agent.max_bot_counts[slice_name]
+        if slice_name is None and location is None:
+            raise ValueError("Either slice or location must be provided")
 
-        if mode == "set":
-            target = count
-        elif mode == "add":
-            target = current + count
-        elif mode == "remove":
-            target = current - count
+        if location is not None:
+            location = location.lower()
+            if location not in self.env_agent.LOC_TO_IDX:
+                raise ValueError(f"Unknown location: {location}")
 
-        clipped = (target > max_limit) or (target < 0)
-        final_count = int(np.clip(target, 0, max_limit))
+        if slice_name is not None:
+            slice_name = slice_name.lower()
+            if slice_name not in ["embb", "urllc", "murllc"]:
+                raise ValueError(f"Unknown slice: {slice_name}")
 
-        self.env_static.set_bots(slice_name, final_count)
-        self.env_heuristic.set_bots(slice_name, final_count)
-        self.env_agent.set_bots(slice_name, final_count)
+        if slice_name is None:
+            slice_name = self.env_agent.DEFAULT_LOC_SLICE[location]
+        elif location is None:
+            location = self.env_agent.DEFAULT_SLICE_LOC[slice_name]
 
+        # Apply to all 3 environments simultaneously
+        _, clipped_s = self.env_static.apply_bot_event(slice_name, location, mode, count)
+        _, clipped_h = self.env_heuristic.apply_bot_event(slice_name, location, mode, count)
+        matrix, clipped_a = self.env_agent.apply_bot_event(slice_name, location, mode, count)
+        clipped = clipped_s or clipped_h or clipped_a
+
+        counts = self.env_agent.get_bot_counts()
+        loc_label = self.cfg.get("locations", {}).get(location, {}).get("label", location.title())
+
+        # SLA-aligned event log formatting (Section 12.2 Rule 7)
         sign = "+" if mode == "add" else ("-" if mode == "remove" else "=")
-        self.event_logs.append(
-            f"Step {self.step_idx}: {sign}{count} {slice_name.upper()} bots (now {final_count})"
-        )
+        slice_status = sla.window_status(self.history_agent, slice_name, self.cfg)
+        status_word = slice_status.get("status", "ok").upper()
+        if status_word == "AMBER":
+            status_word = "AT RISK"
+        elif status_word == "BREACH":
+            status_word = "BREACH"
+        else:
+            status_word = "OK"
 
-        return self.env_agent.get_bot_counts(), clipped
+        val = slice_status.get("value", 0.0)
+        lim = slice_status.get("limit", 0.0)
+        if slice_name == "embb":
+            sla_note = f"eMBB SLA: {status_word} ({val*100:.0f} percent served, limit {lim*100:.0f})"
+        else:
+            sla_note = f"{slice_name.upper()} SLA: {status_word} ({val*100:.2f} percent violations, limit {lim*100:.2f})"
+
+        self.event_logs.append(
+            f"Step {self.step_idx}: {sign}{count} users at {loc_label} ({slice_name.upper()}), {slice_name.upper()} now {counts[slice_name]}. {sla_note}"
+        )
+        if len(self.event_logs) > 30:
+            self.event_logs.pop(0)
+
+        return counts, matrix, clipped
 
     def step_simulation(self) -> Dict[str, Any]:
         """Advance all 3 policies by one synchronized 100 ms step."""
@@ -239,6 +272,13 @@ class SimulationManager:
             "feasible": bool(self.info_agent.get("feasible", True)),
             "sla_limits": self.cfg.get("sla", {}),
             "cost_limit": self.env_agent.cost_limit,
+            "bots": self.env_agent.get_bot_counts(),
+            "bots_by_location": self.env_agent.get_bot_matrix(),
+            "est_delay_ms": {
+                "static": self.info_static.get("est_delay_ms", {}),
+                "heuristic": self.info_heuristic.get("est_delay_ms", {}),
+                "agent": self.info_agent.get("est_delay_ms", {}),
+            },
             "policies": {
                 "static": {
                     "throughput": self.info_static["throughput"],
@@ -247,6 +287,8 @@ class SimulationManager:
                     "shares": self.info_static["shares"],
                     "queue": self.info_static["queue"],
                     "sla": sla_s,
+                    "est_delay_ms": self.info_static.get("est_delay_ms", {}),
+                    "bots_by_location": self.info_static.get("bots_by_location", {}),
                     "feasible": bool(self.info_static.get("feasible", True)),
                     "sla_ok": bool(sla_s["urllc"]["status"] != "breach" and sla_s["murllc"]["status"] != "breach"),
                 },
@@ -257,6 +299,8 @@ class SimulationManager:
                     "shares": self.info_heuristic["shares"],
                     "queue": self.info_heuristic["queue"],
                     "sla": sla_h,
+                    "est_delay_ms": self.info_heuristic.get("est_delay_ms", {}),
+                    "bots_by_location": self.info_heuristic.get("bots_by_location", {}),
                     "feasible": bool(self.info_heuristic.get("feasible", True)),
                     "sla_ok": bool(sla_h["urllc"]["status"] != "breach" and sla_h["murllc"]["status"] != "breach"),
                 },
@@ -269,6 +313,8 @@ class SimulationManager:
                     "lambda": self.info_agent.get("lambda", 0.0),
                     "shield_active": shield_active,
                     "sla": sla_a,
+                    "est_delay_ms": self.info_agent.get("est_delay_ms", {}),
+                    "bots_by_location": self.info_agent.get("bots_by_location", {}),
                     "feasible": bool(self.info_agent.get("feasible", True)),
                     "sla_ok": bool(sla_a["urllc"]["status"] != "breach" and sla_a["murllc"]["status"] != "breach"),
                 },
@@ -364,27 +410,41 @@ def health_check():
 
 @app.get("/bots")
 def get_bots():
-    """Return current bot counts and max limits."""
+    """Return current bot counts, location matrix, limits, and defaults."""
     return {
         "counts": sim_manager.env_agent.get_bot_counts(),
+        "matrix": sim_manager.env_agent.get_bot_matrix(),
+        "bots_by_location": sim_manager.env_agent.get_bot_matrix(),
         "max": sim_manager.env_agent.max_bot_counts,
+        "max_counts": sim_manager.env_agent.max_bot_counts,
+        "default_counts": sim_manager.env_agent.default_bot_counts,
+        "locations": sim_manager.cfg.get("locations", {}),
     }
 
 
 @app.post("/bots")
 def modify_bots_endpoint(req: BotRequest):
-    """Modify bot counts with validation (4xx on invalid input)."""
-    slice_lower = req.slice.lower()
-    if slice_lower not in ["embb", "urllc", "murllc"]:
-        return JSONResponse(status_code=400, content={"error": f"Invalid slice: {req.slice}"})
+    """Modify bot counts with location support (4xx on invalid input)."""
     if req.count < 0:
         return JSONResponse(status_code=400, content={"error": "Count must be non-negative"})
     if req.mode.lower() not in ["add", "remove", "set"]:
         return JSONResponse(status_code=400, content={"error": f"Invalid mode: {req.mode}"})
+    if req.slice is None and req.location is None:
+        return JSONResponse(status_code=400, content={"error": "Either slice or location must be provided"})
 
     try:
-        counts, clipped = sim_manager.modify_bots(slice_lower, req.count, req.mode.lower())
-        return {"counts": counts, "clipped": clipped}
+        counts, matrix, clipped = sim_manager.modify_bots(
+            slice_name=req.slice,
+            count=req.count,
+            mode=req.mode.lower(),
+            location=req.location,
+        )
+        return {
+            "counts": counts,
+            "matrix": matrix,
+            "bots_by_location": matrix,
+            "clipped": clipped,
+        }
     except Exception as e:
         return JSONResponse(status_code=400, content={"error": str(e)})
 
@@ -437,7 +497,12 @@ async def websocket_endpoint(websocket: WebSocket):
             if cmd.get("action") == "spike":
                 sim_manager.trigger_spike(cmd["slice"], float(cmd.get("factor", 2.5)), int(cmd.get("duration", 20)))
             elif cmd.get("action") == "bots":
-                sim_manager.modify_bots(cmd["slice"], int(cmd.get("count", 0)), cmd.get("mode", "set"))
+                sim_manager.modify_bots(
+                    slice_name=cmd.get("slice"),
+                    count=int(cmd.get("count", 0)),
+                    mode=cmd.get("mode", "set"),
+                    location=cmd.get("location"),
+                )
             elif cmd.get("action") == "reset":
                 sim_manager.reset_all()
             elif cmd.get("action") == "pause":
