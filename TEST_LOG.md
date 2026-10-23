@@ -77,3 +77,24 @@ This document records the automated verification logs across development phases,
 | **SM-33** | Headline numbers | Agent meets SLAs in 100.0% of windows vs 99.2% for Static (recomputed from CSV) | **PASSED** | P0 |
 
 ---
+
+## Sub-Phase 11d: API and UI SLA Status (SM-34 to SM-41)
+- **Date**: 2026-10-23
+- **Branch**: `a/core-sla`
+- **Script**: `test_sla_11d.py`
+- **Result**: **8/8 PASSED**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **SM-34** | Stream fields | WebSocket telemetry contains per-policy & per-slice `sla`, `feasible`, and `sla_limits` from `sla.py` | **PASSED** | P0 |
+| **SM-35** | `GET /sla` | Endpoint returns complete limits, current episode status, window status matching `config.yaml` | **PASSED** | P1 |
+| **SM-36** | Change limit | Limit changes in config dynamically propagate to chips, chart labels, and info card | **PASSED** | P0 |
+| **SM-37** | Dynamic chips | Chips cleanly transition between green 'SLA OK', amber 'AT RISK' (>=80%), and red 'SLA BREACH' | **PASSED** | P0 |
+| **SM-38** | Overload badge | Overload condition (>90% cap) toggles '#overloadBadge' with 'URLLC & mURLLC protected first' | **PASSED** | P1 |
+| **SM-39** | SLA info card | Plain-words contract promises visible for URLLC (<0.5%), mURLLC (<1.0%), and eMBB (>=70%) | **PASSED** | P1 |
+| **SM-40** | No fake UI | Zero `Math.random`, `mock`, or `fake` driving SLA metrics in `static/index.html` | **PASSED** | P0 |
+| **SM-41** | Console & offline | No console errors; operates completely offline with local `static/chart.min.js` | **PASSED** | P0 |
+
+---

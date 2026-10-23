@@ -341,7 +341,83 @@
     }
 
     .sla-ok { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .sla-amber { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
     .sla-bad { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); animation: pulse 1s infinite alternate; }
+
+    .policy-card.sla-amber {
+      border-color: var(--warning) !important;
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.25);
+    }
+
+    .overload-badge {
+      font-size: 0.72rem;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      font-weight: 700;
+      background: rgba(239, 68, 68, 0.25);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      animation: pulse 1s infinite alternate;
+    }
+
+    /* SLA Contract Info Card */
+    .sla-info-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    .sla-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sla-card-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #f3f4f6;
+    }
+
+    .sla-card-subtitle {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .sla-promises-grid {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .sla-promise-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+    }
+
+    .promise-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .promise-dot.urllc { background: var(--urllc); }
+    .promise-dot.murllc { background: var(--murllc); }
+    .promise-dot.embb { background: var(--embb); }
+
+    .promise-name {
+      font-weight: 700;
+    }
+
+    .promise-desc {
+      color: #cbd5e1;
+    }
 
     @keyframes pulse {
       0% { opacity: 0.8; }
@@ -544,6 +620,7 @@
         <div class="status-dot" id="connDot"></div>
         <span id="connText">Connecting...</span>
       </div>
+      <span class="overload-badge" id="overloadBadge" style="display: none;">⚠️ OVERLOAD: URLLC &amp; mURLLC protected first</span>
     </div>
 
     <div class="controls-group">
@@ -594,6 +671,31 @@
       </div>
     </section>
 
+    <!-- Phase 11: SLA Contract & Quality of Service Info Card -->
+    <div class="sla-info-card" id="slaInfoCard">
+      <div class="sla-card-header">
+        <span class="sla-card-title">📜 SLA Contract (Strict Quality of Service Guarantee)</span>
+        <span class="sla-card-subtitle" id="slaFeasibleSubtitle">Feasible Load Regime</span>
+      </div>
+      <div class="sla-promises-grid">
+        <div class="sla-promise-item">
+          <span class="promise-dot urllc"></span>
+          <span class="promise-name">URLLC:</span>
+          <span class="promise-desc" id="slaPromiseUrllc">under 0.5% violations (hard shield + CMDP)</span>
+        </div>
+        <div class="sla-promise-item">
+          <span class="promise-dot murllc"></span>
+          <span class="promise-name">mURLLC:</span>
+          <span class="promise-desc" id="slaPromiseMurllc">under 1.0% violations (hard shield + CMDP)</span>
+        </div>
+        <div class="sla-promise-item">
+          <span class="promise-dot embb"></span>
+          <span class="promise-name">eMBB:</span>
+          <span class="promise-desc" id="slaPromiseEmbb">at least 70% traffic served</span>
+        </div>
+      </div>
+    </div>
+
     <!-- 3 Side-by-Side Policy Columns -->
     <div class="columns-grid">
 
@@ -610,7 +712,7 @@
         <div>
           <div class="chart-label">
             <span>URLLC/mURLLC Violation Rate</span>
-            <span style="color: #ef4444;">SLA Limit: 1.0%</span>
+            <span id="slaLimitStatic" style="color: #ef4444;">SLA Limit: 0.5%</span>
           </div>
           <div class="chart-container"><canvas id="chartViolStatic"></canvas></div>
         </div>
@@ -648,7 +750,7 @@
         <div>
           <div class="chart-label">
             <span>URLLC/mURLLC Violation Rate</span>
-            <span style="color: #ef4444;">SLA Limit: 1.0%</span>
+            <span id="slaLimitHeuristic" style="color: #ef4444;">SLA Limit: 0.5%</span>
           </div>
           <div class="chart-container"><canvas id="chartViolHeuristic"></canvas></div>
         </div>
@@ -686,7 +788,7 @@
         <div>
           <div class="chart-label">
             <span>URLLC/mURLLC Violation Rate</span>
-            <span style="color: #ef4444;">SLA Limit: 1.0%</span>
+            <span id="slaLimitAgent" style="color: #ef4444;">SLA Limit: 0.5%</span>
           </div>
           <div class="chart-container"><canvas id="chartViolAgent"></canvas></div>
         </div>
@@ -893,6 +995,21 @@
         updateBotCounters(data.bots);
       }
 
+      // Check overload / feasible badge
+      const overloadBadge = document.getElementById('overloadBadge');
+      if (overloadBadge) {
+        if (data.feasible === false) {
+          overloadBadge.style.display = 'inline-block';
+        } else {
+          overloadBadge.style.display = 'none';
+        }
+      }
+
+      // Dynamic SLA limits
+      if (data.sla_limits) {
+        updateSlaLimitsDisplay(data.sla_limits);
+      }
+
       const pols = data.policies;
 
       // Update Static
@@ -956,14 +1073,34 @@
       const card = document.getElementById(`card${name}`);
       const chip = document.getElementById(`sla${name}`);
 
-      if (pol.sla_ok) {
+      let hasBreach = false;
+      let hasAmber = false;
+      if (pol.sla) {
+        for (const s of ['urllc', 'murllc', 'embb']) {
+          if (pol.sla[s]) {
+            if (pol.sla[s].status === 'breach') hasBreach = true;
+            else if (pol.sla[s].status === 'amber') hasAmber = true;
+          }
+        }
+      } else {
+        hasBreach = !pol.sla_ok;
+      }
+
+      if (hasBreach) {
+        chip.className = 'sla-chip sla-bad';
+        chip.innerText = 'SLA BREACH';
+        card.classList.remove('sla-amber');
+        card.classList.add('sla-breach');
+      } else if (hasAmber) {
+        chip.className = 'sla-chip sla-amber';
+        chip.innerText = 'AT RISK';
+        card.classList.remove('sla-breach');
+        card.classList.add('sla-amber');
+      } else {
         chip.className = 'sla-chip sla-ok';
         chip.innerText = 'SLA OK';
         card.classList.remove('sla-breach');
-      } else {
-        chip.className = 'sla-chip sla-bad';
-        chip.innerText = 'SLA BREACH';
-        card.classList.add('sla-breach');
+        card.classList.remove('sla-amber');
       }
 
       const prb = pol.shares.prb;
@@ -1114,9 +1251,54 @@
       requestAnimationFrame(animateBotCanvas);
     }
 
+    function updateSlaLimitsDisplay(limits) {
+      if (!limits) return;
+      const urllcVal = (limits.urllc && limits.urllc.max_violation_rate !== undefined) 
+        ? limits.urllc.max_violation_rate 
+        : (limits.urllc_violation_limit !== undefined ? limits.urllc_violation_limit : 0.005);
+      const murllcVal = (limits.murllc && limits.murllc.max_violation_rate !== undefined) 
+        ? limits.murllc.max_violation_rate 
+        : (limits.murllc_violation_limit !== undefined ? limits.murllc_violation_limit : 0.01);
+      const embbVal = (limits.embb && limits.embb.min_served_ratio !== undefined) 
+        ? limits.embb.min_served_ratio 
+        : (limits.embb_min_served_ratio !== undefined ? limits.embb_min_served_ratio : 0.70);
+
+      const urllcLimitPct = (urllcVal * 100).toFixed(1);
+      const murllcLimitPct = (murllcVal * 100).toFixed(1);
+      const embbServedPct = (embbVal * 100).toFixed(0);
+
+      const limitTxt = `SLA Limit: ${urllcLimitPct}%`;
+      ['slaLimitStatic', 'slaLimitHeuristic', 'slaLimitAgent'].forEach(id => {
+        const elem = document.getElementById(id);
+        if (elem) elem.innerText = limitTxt;
+      });
+
+      const pUrllc = document.getElementById('slaPromiseUrllc');
+      if (pUrllc) pUrllc.innerText = `under ${urllcLimitPct}% violations (hard shield + CMDP)`;
+      const pMurllc = document.getElementById('slaPromiseMurllc');
+      if (pMurllc) pMurllc.innerText = `under ${murllcLimitPct}% violations (hard shield + CMDP)`;
+      const pEmbb = document.getElementById('slaPromiseEmbb');
+      if (pEmbb) pEmbb.innerText = `at least ${embbServedPct}% traffic served`;
+    }
+
+    async function initSlaInfo() {
+      try {
+        const res = await fetch('/sla');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.limits) {
+            updateSlaLimitsDisplay(data.limits);
+          }
+        }
+      } catch (e) {
+        // Fallback gracefully
+      }
+    }
+
     window.onload = () => {
       setupCharts();
       initBotCanvas();
+      initSlaInfo();
       connectWebSocket();
     };
   </script>

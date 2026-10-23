@@ -20,6 +20,7 @@ import yaml
 from sim import SliceEnv
 from baselines import StaticPolicy, HeuristicPolicy
 from shield import apply_shield, shares_to_action_logits
+import sla
 
 
 class SpikeRequest(BaseModel):
@@ -67,6 +68,11 @@ class SimulationManager:
         # Explainability event log history for Agent
         self.event_logs: List[str] = ["Simulation initialized. Nominal traffic active."]
 
+        # Step histories for window and episode SLA status via sla.py
+        self.history_static: List[Dict[str, Any]] = []
+        self.history_heuristic: List[Dict[str, Any]] = []
+        self.history_agent: List[Dict[str, Any]] = []
+
         # Reset all
         self.reset_all()
 
@@ -88,6 +94,10 @@ class SimulationManager:
             self.seed = seed
         self.step_idx = 0
         self.scenario_name = "Nominal Load"
+
+        self.history_static.clear()
+        self.history_heuristic.clear()
+        self.history_agent.clear()
 
         self.obs_static, self.info_static = self.env_static.reset(seed=self.seed)
         self.obs_heuristic, self.info_heuristic = self.env_heuristic.reset(seed=self.seed)
@@ -211,11 +221,23 @@ class SimulationManager:
         if len(self.event_logs) > 30:
             self.event_logs.pop(0)
 
+        # Record histories for SLA monitoring
+        self.history_static.append(self.info_static)
+        self.history_heuristic.append(self.info_heuristic)
+        self.history_agent.append(self.info_agent)
+
+        # SLA status via sla.py
+        sla_s = {s: sla.window_status(self.history_static, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
+        sla_h = {s: sla.window_status(self.history_heuristic, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
+        sla_a = {s: sla.window_status(self.history_agent, s, self.cfg) for s in ["urllc", "murllc", "embb"]}
+
         # Package telemetry payload
         payload = {
             "step": self.step_idx,
             "scenario": self.scenario_name,
             "paused": self.paused,
+            "feasible": bool(self.info_agent.get("feasible", True)),
+            "sla_limits": self.cfg.get("sla", {}),
             "cost_limit": self.env_agent.cost_limit,
             "policies": {
                 "static": {
@@ -224,7 +246,9 @@ class SimulationManager:
                     "violation_rate": self.info_static["violation_rate"],
                     "shares": self.info_static["shares"],
                     "queue": self.info_static["queue"],
-                    "sla_ok": self.info_static["violation_rate"] <= self.env_static.cost_limit,
+                    "sla": sla_s,
+                    "feasible": bool(self.info_static.get("feasible", True)),
+                    "sla_ok": bool(sla_s["urllc"]["status"] != "breach" and sla_s["murllc"]["status"] != "breach"),
                 },
                 "heuristic": {
                     "throughput": self.info_heuristic["throughput"],
@@ -232,7 +256,9 @@ class SimulationManager:
                     "violation_rate": self.info_heuristic["violation_rate"],
                     "shares": self.info_heuristic["shares"],
                     "queue": self.info_heuristic["queue"],
-                    "sla_ok": self.info_heuristic["violation_rate"] <= self.env_heuristic.cost_limit,
+                    "sla": sla_h,
+                    "feasible": bool(self.info_heuristic.get("feasible", True)),
+                    "sla_ok": bool(sla_h["urllc"]["status"] != "breach" and sla_h["murllc"]["status"] != "breach"),
                 },
                 "agent": {
                     "throughput": self.info_agent["throughput"],
@@ -242,7 +268,9 @@ class SimulationManager:
                     "queue": self.info_agent["queue"],
                     "lambda": self.info_agent.get("lambda", 0.0),
                     "shield_active": shield_active,
-                    "sla_ok": self.info_agent["violation_rate"] <= self.env_agent.cost_limit,
+                    "sla": sla_a,
+                    "feasible": bool(self.info_agent.get("feasible", True)),
+                    "sla_ok": bool(sla_a["urllc"]["status"] != "breach" and sla_a["murllc"]["status"] != "breach"),
                 },
             },
             "scoreboard": {
@@ -263,6 +291,23 @@ class SimulationManager:
         }
 
         return payload
+
+    def get_sla_status(self) -> Dict[str, Any]:
+        """Compute full SLA table limits, current episode status, and window status."""
+        return {
+            "limits": self.cfg.get("sla", {}),
+            "current_status": {
+                "static": sla.episode_status(self.history_static, self.cfg),
+                "heuristic": sla.episode_status(self.history_heuristic, self.cfg),
+                "agent": sla.episode_status(self.history_agent, self.cfg),
+            },
+            "window_status": {
+                "static": {s: sla.window_status(self.history_static, s, self.cfg) for s in ["urllc", "murllc", "embb"]},
+                "heuristic": {s: sla.window_status(self.history_heuristic, s, self.cfg) for s in ["urllc", "murllc", "embb"]},
+                "agent": {s: sla.window_status(self.history_agent, s, self.cfg) for s in ["urllc", "murllc", "embb"]},
+            },
+            "feasible": bool(self.info_agent.get("feasible", True)),
+        }
 
 
 sim_manager = SimulationManager()
@@ -369,6 +414,12 @@ def get_summary():
         "scenario": sim_manager.scenario_name,
         "scoreboard": sim_manager.stats,
     }
+
+
+@app.get("/sla")
+def get_sla():
+    """Returns SLA table limits and current episode status per policy from sla.py."""
+    return sim_manager.get_sla_status()
 
 
 @app.websocket("/ws")
