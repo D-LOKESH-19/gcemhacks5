@@ -43,6 +43,19 @@ body {
   box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
+/* Predictive lending: striped loan cells and animated loan arrows (motion only if the user allows it) */
+.loan-stripes {
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.75) 0 3px, rgba(255, 255, 255, 0) 3px 6px);
+}
+.loan-arrow-live { stroke-dasharray: 6 5; }
+.loan-arrow-return { stroke-dasharray: 3 4; opacity: 0.55; }
+@media (prefers-reduced-motion: no-preference) {
+  .loan-arrow-live { animation: loan-dash 1.2s linear infinite; }
+  .loan-arrow-return { animation: loan-fade 2.4s ease-out forwards; }
+}
+@keyframes loan-dash { to { stroke-dashoffset: -22; } }
+@keyframes loan-fade { from { opacity: 0.75; } to { opacity: 0.15; } }
+
 /* Custom scrollbar for clean enterprise light aesthetic */
 ::-webkit-scrollbar {
   width: 6px;

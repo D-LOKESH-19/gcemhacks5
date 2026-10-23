@@ -647,6 +647,7 @@ class SimulationManager:
                 for e in li["loans_events"]
             ],
             "messages": list(li["messages"]),
+            "overload_notes": list(li.get("overload_notes", [])),
             "lent": {r: r4(v) for r, v in li["lent"].items()},
             "overload": bool(li["overload"]),
             "unfunded": {r: [round(float(x), 2) for x in v] for r, v in li["unfunded"].items()},
@@ -904,6 +905,55 @@ def get_lending():
     return sim_manager.get_lending_status()
 
 
+@app.get("/api/lending/results")
+def get_lending_results():
+    """Held-out evaluation of predictive lending for the Results page, read from results/lending_*.csv|json
+    (written by lending_run_eval.py). Verdict wording comes from lending_report.verdict, the same function
+    that writes results/lending_report.md."""
+    import pandas as pd
+    from lending_report import verdict
+
+    R = "results"
+    files = ["lending_paired.csv", "lending_loans.csv", "lending_headline.json", "lending_seeds.json", "lending_regime.json",
+             "lending_predictor_eval.json", "lending_tuning_val.json", "lending_reliability_eval_all.csv"]
+    missing = [f for f in files if not os.path.exists(os.path.join(R, f))]
+    if missing:
+        return {"available": False, "message": f"Run python lending_run_eval.py first (missing {', '.join(missing)})."}
+
+    def clean(df: "pd.DataFrame") -> List[Dict[str, Any]]:
+        return json.loads(df.to_json(orient="records"))  # NaN becomes null
+
+    paired = pd.read_csv(os.path.join(R, "lending_paired.csv"))
+    paired["verdict"] = [verdict(r.improvement, r.ci_lo, r.ci_hi, r.metric) for r in paired.itertuples()]
+    hl = json.load(open(os.path.join(R, "lending_headline.json"), encoding="utf-8"))
+    hl_rows = []
+    for key, v in hl.items():
+        if "__enhanced_vs_" in key:
+            metric, base = key.split("__enhanced_vs_")
+            hl_rows.append({"metric": metric, "baseline": base, "enhanced": v["enhanced"], "baseline_value": v["baseline"],
+                            "improvement": v["improvement"], "ci_lo": v["ci_lo"], "ci_hi": v["ci_hi"],
+                            "verdict": verdict(v["improvement"], v["ci_lo"], v["ci_hi"], metric)})
+    rel = []
+    for s in ("all", "embb", "urllc", "murllc"):
+        p = os.path.join(R, f"lending_reliability_eval_{s}.csv")
+        if os.path.exists(p):
+            rel.extend(clean(pd.read_csv(p)))
+    seeds = json.load(open(os.path.join(R, "lending_seeds.json"), encoding="utf-8"))
+    tune = json.load(open(os.path.join(R, "lending_tuning_val.json"), encoding="utf-8"))
+    return {
+        "available": True,
+        "seeds": {"validation_seeds": seeds["validation_seeds"], "evaluation_seeds": seeds["evaluation_seeds"]},
+        "tuning": {"chosen": tune["chosen"], "defaults": tune["defaults"]},
+        "regime": json.load(open(os.path.join(R, "lending_regime.json"), encoding="utf-8"))["regime"],
+        "headline": {"feasible_scenarios": hl["feasible_scenarios"], "overload_scenarios": hl["overload_scenarios"], "n_seeds": hl["n_seeds"]},
+        "headline_rows": hl_rows,
+        "paired": clean(paired),
+        "loans": clean(pd.read_csv(os.path.join(R, "lending_loans.csv"))),
+        "predictor": json.load(open(os.path.join(R, "lending_predictor_eval.json"), encoding="utf-8")),
+        "reliability": rel,
+    }
+
+
 @app.get("/api/config/public")
 def get_public_config():
     """Return slice names, SLA limits, bot limits, spike factors and location defaults from config.yaml."""
@@ -1073,6 +1123,7 @@ def get_legacy():
 
 
 @app.get("/")
+@app.get("/allocation")
 @app.get("/traffic")
 @app.get("/agent")
 @app.get("/sla")

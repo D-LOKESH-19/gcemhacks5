@@ -7,6 +7,7 @@ import { CouplingPanel } from '../components/allocation/CouplingPanel';
 import { TransferLedger } from '../components/allocation/TransferLedger';
 import { AllocationLegend } from '../components/allocation/AllocationLegend';
 import { ReplayScrubber } from '../components/allocation/ReplayScrubber';
+import { LendingPanel } from '../components/lending/LendingPanel';
 import { PolicyType, TelemetryPayload } from '../types/api';
 import { ShieldAlert, SplitSquareVertical, Layers } from 'lucide-react';
 import { extractScrubBuffer } from '../utils/allocationUtils';
@@ -149,6 +150,24 @@ export const ResourceAllocationPage: React.FC = () => {
             Static 60/25/15
           </button>
 
+          {capabilities?.lending && (
+            <button
+              onClick={() => {
+                setIsCompareMode(false);
+                setActivePolicy('enhanced');
+              }}
+              data-testid="tab-enhanced"
+              style={!isCompareMode && activePolicy === 'enhanced' ? { backgroundColor: '#F472B6', color: '#fff' } : undefined}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                !isCompareMode && activePolicy === 'enhanced'
+                  ? 'shadow-sm'
+                  : 'bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200'
+              }`}
+            >
+              Enhanced (Lending)
+            </button>
+          )}
+
           <button
             onClick={() => setIsCompareMode(!isCompareMode)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ml-1 ${
@@ -183,6 +202,14 @@ export const ResourceAllocationPage: React.FC = () => {
         vcpuTotal={vcpuTotal}
       />
 
+      {/* Predictive lending panel (Enhanced = Agent + Lender + Shield), always backend data */}
+      {capabilities?.lending && (
+        <LendingPanel
+          lending={currentPayload?.policies?.enhanced?.allocation?.lending}
+          step={currentPayload?.step ?? 0}
+        />
+      )}
+
       {/* Main Content Area: Compare Mode vs Single View */}
       {isCompareMode ? (
         <div className="space-y-4">
@@ -214,6 +241,21 @@ export const ResourceAllocationPage: React.FC = () => {
                 </div>
               );
             })}
+            {currentPayload?.policies?.enhanced?.allocation && (
+              <div key="compare-enhanced" className="space-y-2">
+                <span className="text-xs font-bold block uppercase px-1" style={{ color: '#DB2777' }}>
+                  Enhanced: Agent + Lender + Shield
+                </span>
+                <ResourcePools
+                  prb={currentPayload.policies.enhanced.allocation.prb}
+                  cpu={currentPayload.policies.enhanced.allocation.cpu}
+                  prbTotal={prbTotal}
+                  vcpuTotal={vcpuTotal}
+                  policyName="ENHANCED"
+                  lending={currentPayload.policies.enhanced.allocation.lending}
+                />
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -229,8 +271,11 @@ export const ResourceAllocationPage: React.FC = () => {
                   ? 'RL Agent + Safety Shield'
                   : activePolicy === 'heuristic'
                   ? 'Heuristic Slicer'
+                  : activePolicy === 'enhanced'
+                  ? 'Enhanced: Agent + Lender + Shield'
                   : 'Static Partition'
               }
+              lending={activePolicy === 'enhanced' ? alloc.lending : undefined}
             />
           ) : (
             <div className="p-8 text-center text-xs text-slate-500 rounded-2xl bg-white border border-sky-100">
@@ -245,6 +290,7 @@ export const ResourceAllocationPage: React.FC = () => {
                 policy={activePolicy}
                 telemetry={polData}
                 allocation={alloc}
+                lending={activePolicy === 'enhanced' ? alloc?.lending : undefined}
               />
             )}
             <CouplingPanel

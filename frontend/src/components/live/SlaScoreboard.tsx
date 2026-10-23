@@ -48,8 +48,16 @@ export const SlaScoreboard: React.FC = () => {
   const heurCompliance = Math.max(0, 100 - ((scoreboard?.heuristic?.cum_violation_rate ?? 0) * 150)).toFixed(1);
   const agentCompliance = (agentStatus === "BREACH" ? 95.0 : 100.0).toFixed(1);
 
+  // Enhanced (Agent + Lender + Shield): backend values only
+  const enhPol = policies?.enhanced;
+  const enhStatus = getPolicyStatus(enhPol);
+  const enhLend = enhPol?.allocation?.lending;
+  const enhUrllcVR = (enhPol?.violation_rate ?? 0) * 100;
+  const enhMurllcVR = (enhPol?.sla?.murllc?.value ?? 0) * 100;
+  const enhEmbbRatio = (scoreboard?.enhanced?.mean_embb_ratio ?? 0) * 100;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
       {/* 1. Static Baseline Tile */}
       <div className="p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 hover:border-slate-300 transition-all flex flex-col justify-between shadow-[0_10px_25px_-5px_rgba(2,132,199,0.06)]">
         <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
@@ -164,6 +172,46 @@ export const SlaScoreboard: React.FC = () => {
           <span className="font-mono font-semibold text-emerald-600">{agentCompliance}%</span>
         </div>
       </div>
+
+      {/* 4. Enhanced: Agent + Lender + Shield (predictive lending) */}
+      {enhPol && (
+        <div
+          className="p-4 rounded-2xl bg-white/95 backdrop-blur-md border-2 transition-all flex flex-col justify-between shadow-[0_12px_28px_-4px_rgba(244,114,182,0.2)]"
+          style={{ borderColor: "#F472B6" }}
+          data-testid="tile-enhanced"
+        >
+          <div className="flex items-center justify-between pb-2.5 border-b border-pink-100">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-policy-enhanced"></span>
+              <span className="text-sm font-bold text-slate-900 tracking-tight">Enhanced: Agent + Lender + Shield</span>
+            </div>
+            <StatusBadge status={enhStatus} size="sm" />
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 py-3 text-center">
+            <div className="p-2 rounded-xl bg-pink-50/50 border border-pink-100">
+              <span className="text-[10px] text-slate-500 block uppercase font-medium">URLLC Viol.</span>
+              <span className="text-base font-mono font-bold text-slate-900">{enhUrllcVR.toFixed(2)}%</span>
+            </div>
+            <div className="p-2 rounded-xl bg-pink-50/50 border border-pink-100">
+              <span className="text-[10px] text-slate-500 block uppercase font-medium">mURLLC Viol.</span>
+              <span className="text-base font-mono font-bold text-slate-900">{enhMurllcVR.toFixed(2)}%</span>
+            </div>
+            <div className="p-2 rounded-xl bg-pink-50/50 border border-pink-100">
+              <span className="text-[10px] text-slate-500 block uppercase font-medium">eMBB Served</span>
+              <span className="text-base font-mono font-bold text-sky-600">{enhEmbbRatio.toFixed(1)}%</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-pink-100 text-xs">
+            <span className="text-slate-500 text-[11px]">Loans open:</span>
+            <span className="font-mono font-semibold text-slate-700" data-testid="tile-loans">
+              {enhLend?.loans_active?.length ?? 0}
+              {enhLend?.overload ? " | overload" : ""}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

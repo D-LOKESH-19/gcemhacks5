@@ -31,6 +31,7 @@ export default {
           static: "#F87171",
           heuristic: "#CBD5E1",
           agent: "#34D399",
+          enhanced: "#F472B6",
         },
         // Status Palettes
         status: {

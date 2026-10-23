@@ -3,6 +3,7 @@ import { BarChart3, RefreshCw, AlertOctagon } from "lucide-react";
 import { ResultsHeadlineCard } from "../components/results/ResultsHeadlineCard";
 import { ScenarioGroupedBarChart } from "../components/results/ScenarioGroupedBarChart";
 import { AblationStudyTable } from "../components/results/AblationStudyTable";
+import { LendingResultsSection } from "../components/results/LendingResultsSection";
 
 export const ResultsPage: React.FC = () => {
   const [data, setData] = useState<{
@@ -96,6 +97,9 @@ export const ResultsPage: React.FC = () => {
           <AblationStudyTable ablationRows={data.ablation} />
         </>
       )}
+
+      {/* Innovation: predictive lending (own fetch, so it never blocks the existing results) */}
+      <LendingResultsSection />
     </div>
   );
 };

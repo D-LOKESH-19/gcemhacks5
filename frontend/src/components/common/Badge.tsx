@@ -142,7 +142,7 @@ export const SliceBadge: React.FC<SliceBadgeProps> = ({ slice, className = "" })
 };
 
 interface PolicyBadgeProps {
-  policy: "static" | "heuristic" | "agent" | string;
+  policy: "static" | "heuristic" | "agent" | "enhanced" | string;
   className?: string;
 }
 
@@ -160,6 +160,9 @@ export const PolicyBadge: React.FC<PolicyBadgeProps> = ({ policy, className = ""
   } else if (norm === "agent") {
     color = "bg-emerald-50 text-emerald-700 border-emerald-300";
     label = "RL Agent + Shield";
+  } else if (norm === "enhanced") {
+    color = "bg-pink-50 text-pink-700 border-pink-300";
+    label = "Enhanced (Lending)";
   }
 
   return (

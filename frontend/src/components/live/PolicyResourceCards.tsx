@@ -11,6 +11,7 @@ export const PolicyResourceCards: React.FC = () => {
   const staticPol = pols?.static;
   const heurPol = pols?.heuristic;
   const agentPol = pols?.agent;
+  const enhPol = pols?.enhanced;
 
   const getStatus = (p?: PolicyTelemetry) => {
     if (!p) return "NO_TRAFFIC";
@@ -23,7 +24,7 @@ export const PolicyResourceCards: React.FC = () => {
   const renderResourceCard = (
     title: string,
     pol: PolicyTelemetry | undefined,
-    policyKey: "static" | "heuristic" | "agent",
+    policyKey: "static" | "heuristic" | "agent" | "enhanced",
     colorClass: string
   ) => {
     const prb = pol?.shares?.prb || { embb: 0.33, urllc: 0.33, murllc: 0.34 };
@@ -56,7 +57,7 @@ export const PolicyResourceCards: React.FC = () => {
             <div>
               <span className="text-sm font-bold text-slate-900 tracking-tight block">{title}</span>
               <span className="text-[11px] text-slate-500 block">
-                {policyKey === "static" ? "Fixed 60/25/15 PRB & vCPU" : policyKey === "heuristic" ? "Queue + Smoothed Load with Floors" : "Lagrangian PPO Orchestration"}
+                {policyKey === "static" ? "Fixed 60/25/15 PRB & vCPU" : policyKey === "heuristic" ? "Queue + Smoothed Load with Floors" : policyKey === "enhanced" ? "Agent + Lender + Shield (predictive lending)" : "Lagrangian PPO Orchestration"}
               </span>
             </div>
           </div>
@@ -146,6 +147,26 @@ export const PolicyResourceCards: React.FC = () => {
           </div>
         </div>
 
+        {/* Predictive lending summary (Enhanced only, backend values) */}
+        {policyKey === "enhanced" && (
+          <div className="mb-3 p-2 rounded-xl bg-pink-50/60 border border-pink-200 text-[11px] font-mono text-slate-700" data-testid="card-enhanced-lending">
+            <div className="flex items-center justify-between">
+              <span>Loans open</span>
+              <span className="font-bold">{pol?.allocation?.lending?.loans_active?.length ?? 0}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Risk (eMBB | URLLC | mURLLC)</span>
+              <span className="font-bold">
+                {(pol?.allocation?.lending?.risk ?? [0, 0, 0]).map((r: number) => `${(r * 100).toFixed(0)}%`).join(" | ")}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Overload</span>
+              <span className="font-bold">{pol?.allocation?.lending?.overload ? "yes, URLLC and mURLLC protected first" : "no"}</span>
+            </div>
+          </div>
+        )}
+
         {/* Shield Intervention Rate Meter (for Agent) */}
         {isAgent && (
           <div className="pt-2 border-t border-slate-100">
@@ -170,10 +191,11 @@ export const PolicyResourceCards: React.FC = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
       {renderResourceCard("Static Partition", staticPol, "static", "bg-policy-static")}
       {renderResourceCard("Demand Heuristic", heurPol, "heuristic", "bg-policy-heuristic")}
       {renderResourceCard("Constrained RL + Hard Shield", agentPol, "agent", "bg-policy-agent")}
+      {enhPol && renderResourceCard("Enhanced: Agent + Lender + Shield", enhPol, "enhanced", "bg-policy-enhanced")}
     </div>
   );
 };

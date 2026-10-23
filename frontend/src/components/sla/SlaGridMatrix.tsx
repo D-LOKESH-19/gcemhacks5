@@ -27,6 +27,7 @@ export const SlaGridMatrix: React.FC = () => {
     { key: "static", name: "Static Baseline", pol: staticPol, color: "text-policy-static" },
     { key: "heuristic", name: "Heuristic Proportional", pol: heurPol, color: "text-policy-heuristic" },
     { key: "agent", name: "RL Agent + Safety Shield", pol: agentPol, color: "text-policy-agent" },
+    ...(pols?.enhanced ? [{ key: "enhanced", name: "Enhanced (Agent + Lender + Shield)", pol: pols.enhanced, color: "text-policy-enhanced" }] : []),
   ];
 
   const renderCell = (pol: any, sliceKey: "embb" | "urllc" | "murllc") => {
@@ -104,6 +105,7 @@ export const SlaGridMatrix: React.FC = () => {
   const getWindowCompliance = (polKey: string) => {
     const sc = (latestPayload?.scoreboard as any)?.[polKey];
     if (polKey === "agent") return "100.0%";
+    if (polKey === "enhanced") return "see slice cells";
     if (!sc) return "99.2%";
     const compl = Math.max(0, 100 - (sc.cum_violation_rate || 0) * 180);
     return `${compl.toFixed(1)}%`;
@@ -140,7 +142,7 @@ export const SlaGridMatrix: React.FC = () => {
                 <td className="py-3 px-3 align-middle">
                   <div className="font-bold text-xs text-slate-900">{p.name}</div>
                   <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                    {p.key === "static" ? "Fixed 33%" : p.key === "heuristic" ? "Instant Proportional" : "Safe PPO + Shield"}
+                    {p.key === "static" ? "Fixed 33%" : p.key === "heuristic" ? "Instant Proportional" : p.key === "enhanced" ? "Predictive lending + Shield" : "Safe PPO + Shield"}
                   </div>
                 </td>
                 <td className="py-3 px-2 w-1/4">{renderCell(p.pol, "embb")}</td>

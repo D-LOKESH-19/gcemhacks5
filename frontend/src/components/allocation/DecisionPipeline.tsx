@@ -1,12 +1,13 @@
 import React from 'react';
-import { Eye, Cpu, ShieldCheck, CheckCircle2, ArrowRight, Activity } from 'lucide-react';
-import { AllocationBlock, PolicyType, PolicyTelemetry, SliceType } from '../../types/api';
+import { Eye, Cpu, ShieldCheck, CheckCircle2, ArrowRight, Activity, Landmark } from 'lucide-react';
+import { AllocationBlock, PolicyType, PolicyTelemetry, SliceType, LendingBlock } from '../../types/api';
 
 interface DecisionPipelineProps {
   policy: PolicyType;
   telemetry: PolicyTelemetry;
   allocation?: AllocationBlock;
   observation?: number[]; // 12-dim observation vector
+  lending?: LendingBlock; // Enhanced only: raw, post-lender and final shares
 }
 
 const SLICE_COLORS: Record<SliceType, string> = {
@@ -22,6 +23,7 @@ export const DecisionPipeline: React.FC<DecisionPipelineProps> = ({
   telemetry,
   allocation,
   observation = [0.1, 0.4, 0.6, 0.5, 0.05, 0.1, 0.25, 0.25, 0.02, 0.1, 0.15, 0.25],
+  lending,
 }) => {
   const isHeuristic = policy === 'heuristic';
   const isStatic = policy === 'static';
@@ -97,6 +99,38 @@ export const DecisionPipeline: React.FC<DecisionPipelineProps> = ({
             ))}
           </div>
         </div>
+
+        {/* Stage 2b (Enhanced only): Lender adjusts, between the agent's proposal and the shield */}
+        {policy === 'enhanced' && lending?.pipeline && lending.pipeline.post_lender && (
+          <div className="p-2.5 rounded-xl border border-pink-300 bg-pink-50/60" data-testid="stage-lender">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                <Landmark size={13} style={{ color: '#F472B6' }} /> 2b. Lender Adjusts (predictive loans)
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium">
+                {lending.loans_active?.length ?? 0} active loan(s), mode {lending.mode}
+              </span>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5 text-center text-[10px]">
+              <span className="text-slate-500 text-left">PRB share</span>
+              {SLICES.map((s) => (
+                <span key={`lh-${s}`} className="font-bold uppercase" style={{ color: SLICE_COLORS[s] }}>{s}</span>
+              ))}
+              {(['raw', 'post_lender', 'final'] as const).map((stage) => (
+                <React.Fragment key={`ls-${stage}`}>
+                  <span className="text-slate-600 text-left">
+                    {stage === 'raw' ? 'Agent proposes' : stage === 'post_lender' ? 'After lender' : 'Final (after shield)'}
+                  </span>
+                  {SLICES.map((s, idx) => (
+                    <span key={`lv-${stage}-${s}`} className="font-mono font-bold text-slate-800" data-testid={`lender-${stage}-${s}`}>
+                      {lending.pipeline?.[stage] ? (lending.pipeline[stage]!.prb[idx] * 100).toFixed(1) : '-'}%
+                    </span>
+                  ))}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Stage 3: Safety Shield Checks */}
         <div className={`p-2.5 rounded-xl border transition-colors ${

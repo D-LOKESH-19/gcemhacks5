@@ -25,6 +25,7 @@ export const LiveChartsOverlay: React.FC = () => {
       Static: Number(((pt.static || 0) * 100).toFixed(2)),
       Heuristic: Number(((pt.heuristic || 0) * 100).toFixed(2)),
       Agent: Number(((pt.agent || 0) * 100).toFixed(2)),
+      Enhanced: pt.enhanced === undefined ? null : Number((pt.enhanced * 100).toFixed(2)),
     }));
   }, [violationHistory]);
 
@@ -34,6 +35,7 @@ export const LiveChartsOverlay: React.FC = () => {
       Static: Number((pt.static || 0).toFixed(1)),
       Heuristic: Number((pt.heuristic || 0).toFixed(1)),
       Agent: Number((pt.agent || 0).toFixed(1)),
+      Enhanced: pt.enhanced === undefined ? null : Number(pt.enhanced.toFixed(1)),
     }));
   }, [throughputHistory]);
 
@@ -45,6 +47,7 @@ export const LiveChartsOverlay: React.FC = () => {
       if (d.Static > maxVal) maxVal = d.Static;
       if (d.Heuristic > maxVal) maxVal = d.Heuristic;
       if (d.Agent > maxVal) maxVal = d.Agent;
+      if ((d.Enhanced ?? 0) > maxVal) maxVal = d.Enhanced ?? 0;
     }
     return Math.max(slaUrllcLimit * 2, maxVal * 1.2, 1.2);
   }, [formattedViolationData, slaUrllcLimit]);
@@ -55,6 +58,7 @@ export const LiveChartsOverlay: React.FC = () => {
       if (d.Static > maxVal) maxVal = d.Static;
       if (d.Heuristic > maxVal) maxVal = d.Heuristic;
       if (d.Agent > maxVal) maxVal = d.Agent;
+      if ((d.Enhanced ?? 0) > maxVal) maxVal = d.Enhanced ?? 0;
     }
     return Math.max(100, maxVal * 1.15);
   }, [formattedThroughputData]);
@@ -190,6 +194,16 @@ export const LiveChartsOverlay: React.FC = () => {
                 dot={false}
                 isAnimationActive={false}
               />
+              <Line
+                type="monotone"
+                dataKey="Enhanced"
+                stroke="#F472B6"
+                strokeWidth={2}
+                strokeDasharray="2 4"
+                dot={false}
+                connectNulls={false}
+                isAnimationActive={false}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -289,6 +303,16 @@ export const LiveChartsOverlay: React.FC = () => {
                 stroke="#34D399"
                 strokeWidth={2.5}
                 dot={false}
+                isAnimationActive={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="Enhanced"
+                stroke="#F472B6"
+                strokeWidth={2}
+                strokeDasharray="2 4"
+                dot={false}
+                connectNulls={false}
                 isAnimationActive={false}
               />
             </LineChart>

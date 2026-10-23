@@ -101,7 +101,7 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Scenario Badge */}
-          <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 border border-sky-200 text-xs shadow-sm">
+          <div className="hidden 2xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 border border-sky-200 text-xs shadow-sm">
             <span className="text-slate-500">Scenario:</span>
             <span className="text-sky-700 font-semibold capitalize">{currentScenario.replace(/_/g, " ")}</span>
           </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Lock, Cpu, Radio } from 'lucide-react';
-import { ResourcePoolAllocation, SliceType } from '../../types/api';
+import { Lock, Cpu, Radio, Clock } from 'lucide-react';
+import { ResourcePoolAllocation, SliceType, LendingBlock } from '../../types/api';
+import { onLoanCells } from '../lending/lendingUtils';
 
 interface ResourcePoolsProps {
   prb: ResourcePoolAllocation;
@@ -8,6 +9,7 @@ interface ResourcePoolsProps {
   prbTotal?: number;
   vcpuTotal?: number;
   policyName?: string;
+  lending?: LendingBlock;   // Enhanced only: loaned cells get stripes, a clock and the donor's dashed outline
 }
 
 const SLICE_CONFIG: Record<SliceType, { name: string; color: string; border: string; bg: string }> = {
@@ -39,7 +41,10 @@ export const ResourcePools: React.FC<ResourcePoolsProps> = ({
   prbTotal = 100,
   vcpuTotal = 8,
   policyName = 'RL Agent',
+  lending,
 }) => {
+  const prbLoan = onLoanCells(lending?.loans_active, prb.counts, 'prb');
+  const cpuLoan = onLoanCells(lending?.loans_active, cpu.counts, 'cpu');
   const [hoveredSlice, setHoveredSlice] = useState<SliceType | null>(null);
   const [flashingIndices, setFlashingIndices] = useState<Set<number>>(new Set());
   const [floatingDeltas, setFloatingDeltas] = useState<{ prb: number[]; cpu: number[] }>({ prb: [0, 0, 0], cpu: [0, 0, 0] });
@@ -153,10 +158,13 @@ export const ResourcePools: React.FC<ResourcePoolsProps> = ({
               const fillPct = Math.min(100, Math.round(cell.util * 100));
               const isOverCap = cell.util > 1.0;
               const cfg = SLICE_CONFIG[cell.slice];
+              const loan = prbLoan.get(cell.index);
 
               return (
                 <div
                   key={`prb-${cell.index}`}
+                  data-onloan={loan ? 'true' : undefined}
+                  data-donor={loan?.donor}
                   onMouseEnter={() => setHoveredSlice(cell.slice)}
                   onMouseLeave={() => setHoveredSlice(null)}
                   className={`relative rounded-md overflow-hidden border transition-all duration-300 flex items-center justify-center ${
@@ -164,10 +172,14 @@ export const ResourcePools: React.FC<ResourcePoolsProps> = ({
                   }`}
                   style={{
                     backgroundColor: `${cfg.color}25`,
-                    borderColor: cfg.color,
+                    borderColor: loan ? SLICE_CONFIG[loan.donor].color : cfg.color,
+                    borderStyle: loan ? 'dashed' : undefined,
+                    borderWidth: loan ? 2 : undefined,
                   }}
-                  title={`${cfg.name} PRB #${cell.index + 1} (Util: ${(cell.util * 100).toFixed(1)}%)`}
+                  title={`${cfg.name} PRB #${cell.index + 1} (Util: ${(cell.util * 100).toFixed(1)}%)${loan ? ` | on loan from ${SLICE_CONFIG[loan.donor].name}` : ''}`}
                 >
+                  {loan && <div className="absolute inset-0 loan-stripes z-[5]" />}
+                  {loan && <Clock size={9} className="absolute bottom-0.5 right-0.5 z-10 text-slate-900" />}
                   {/* Utilization Inner Fill */}
                   <div
                     className="absolute bottom-0 left-0 right-0 transition-all duration-300"
@@ -229,6 +241,11 @@ export const ResourcePools: React.FC<ResourcePoolsProps> = ({
         <p className="text-[10px] text-slate-400 mt-2 text-center">
           Displayed in whole units. The simulator uses continuous shares.
         </p>
+        {lending && lending.available !== false && (
+          <p className="text-[10px] text-pink-700 mt-1 text-center" data-testid="loan-cell-legend">
+            Striped cell with a clock = on loan to this slice; its dashed outline is the donor slice's colour.
+          </p>
+        )}
       </div>
 
       {/* 2. vCPU Compute Pool (8 Cores) */}
@@ -253,19 +270,26 @@ export const ResourcePools: React.FC<ResourcePoolsProps> = ({
               const fillPct = Math.min(100, Math.round(chip.util * 100));
               const isOverCap = chip.util > 1.0;
               const cfg = SLICE_CONFIG[chip.slice];
+              const loan = cpuLoan.get(chip.index);
 
               return (
                 <div
                   key={`vcpu-${chip.index}`}
+                  data-onloan={loan ? 'true' : undefined}
+                  data-donor={loan?.donor}
                   onMouseEnter={() => setHoveredSlice(chip.slice)}
                   onMouseLeave={() => setHoveredSlice(null)}
                   className="h-20 rounded-xl relative overflow-hidden border flex flex-col items-center justify-between p-1.5 transition-all"
                   style={{
                     backgroundColor: `${cfg.color}20`,
-                    borderColor: cfg.color,
+                    borderColor: loan ? SLICE_CONFIG[loan.donor].color : cfg.color,
+                    borderStyle: loan ? 'dashed' : undefined,
+                    borderWidth: loan ? 2 : undefined,
                   }}
-                  title={`${cfg.name} Core #${chip.index + 1} (Util: ${(chip.util * 100).toFixed(1)}%)`}
+                  title={`${cfg.name} Core #${chip.index + 1} (Util: ${(chip.util * 100).toFixed(1)}%)${loan ? ` | on loan from ${SLICE_CONFIG[loan.donor].name}` : ''}`}
                 >
+                  {loan && <div className="absolute inset-0 loan-stripes z-[5]" />}
+                  {loan && <Clock size={11} className="absolute bottom-1 right-1 z-10 text-slate-900" />}
                   {/* Fill */}
                   <div
                     className="absolute bottom-0 left-0 right-0 transition-all duration-300"

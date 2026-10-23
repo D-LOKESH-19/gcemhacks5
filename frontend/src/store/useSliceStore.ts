@@ -6,10 +6,22 @@ import {
   ConnectionStatus,
   ChartSeriesPoint,
   DecisionRecord,
+  LedgerEntry,
+  Triple,
 } from '../types/api';
 
 const MAX_RING_BUFFER = 300;
 const MAX_FEED_ITEMS = 200;
+const MAX_LEDGER = 200;        // loan ledger cap (LENDING_SPEC E2E-L5)
+const MAX_LENDING_HISTORY = 120;
+
+export interface LendingHistoryPoint {
+  step: number;
+  forecast: Triple;
+  need: Triple;      // forecast + margin
+  capacity: Triple;  // effective capacity at the applied allocation
+  risk: Triple;
+}
 
 export interface SpikeMarker {
   step: number;
@@ -56,6 +68,11 @@ interface SliceState {
     rate_20: number;
   }>;
 
+  // Predictive lending: ledger built from streamed loan events (capped), plus recent forecast/capacity history
+  lendingLedger: LedgerEntry[];
+  lendingHistory: LendingHistoryPoint[];
+  lendingLastStep: number;
+
   // Event feed & Decision audit table
   eventFeed: string[];
   decisionHistory: DecisionRecord[];
@@ -90,6 +107,10 @@ export const useSliceStore = create<SliceState>((set) => ({
   agentSharesHistory: [],
   trafficArrivalsHistory: [],
   shieldInterventionHistory: [],
+
+  lendingLedger: [],
+  lendingHistory: [],
+  lendingLastStep: 0,
 
   eventFeed: [],
   decisionHistory: [],
@@ -130,6 +151,9 @@ export const useSliceStore = create<SliceState>((set) => ({
       trafficArrivalsHistory: [],
       shieldInterventionHistory: [],
       decisionHistory: [],
+      lendingLedger: [],
+      lendingHistory: [],
+      lendingLastStep: 0,
       eventFeed: ['Simulation reset. Traffic baseline active.'],
       spikeMarkers: [],
     }),
@@ -146,6 +170,7 @@ export const useSliceStore = create<SliceState>((set) => ({
         static: pols.static ? pols.static.violation_rate : 0,
         heuristic: pols.heuristic ? pols.heuristic.violation_rate : 0,
         agent: pols.agent ? pols.agent.violation_rate : 0,
+        enhanced: pols.enhanced ? pols.enhanced.violation_rate : undefined,
         slaLimit: slaLimits && slaLimits.urllc ? slaLimits.urllc.max_violation_rate : 0.005,
       };
 
@@ -155,6 +180,7 @@ export const useSliceStore = create<SliceState>((set) => ({
         static: pols.static ? pols.static.throughput.embb : 0,
         heuristic: pols.heuristic ? pols.heuristic.throughput.embb : 0,
         agent: pols.agent ? pols.agent.throughput.embb : 0,
+        enhanced: pols.enhanced ? pols.enhanced.throughput.embb : undefined,
       };
 
       // 3. Agent PRB/vCPU shares
@@ -227,7 +253,33 @@ export const useSliceStore = create<SliceState>((set) => ({
         }
       }
 
+      // 6. Predictive lending: ledger from streamed events, forecast/capacity history (all backend values)
+      let nextLedger = state.lendingLedger;
+      let nextLendHist = state.lendingHistory;
+      const lend = pols.enhanced?.allocation?.lending;
+      if (step < state.lendingLastStep) {
+        nextLedger = [];   // simulation reset or new episode: ledger and history clear together
+        nextLendHist = [];
+      }
+      if (lend && lend.available !== false && lend.risk) {
+        const seen = new Set(nextLedger.map((e) => `${e.loan_id}|${e.step}|${e.kind}|${e.resource}|${e.donor}`));
+        const fresh = (lend.loans_events ?? []).filter((e) => !seen.has(`${e.loan_id}|${e.step}|${e.kind}|${e.resource}|${e.donor}`));
+        if (fresh.length > 0) nextLedger = [...nextLedger, ...fresh.map((e) => ({ ...e, seen_step: step }))].slice(-MAX_LEDGER);
+        const cap = pols.enhanced?.allocation?.effective_capacity ?? [0, 0, 0];
+        const hp: LendingHistoryPoint = {
+          step,
+          forecast: (lend.forecast ?? [0, 0, 0]) as Triple,
+          need: (lend.forecast ?? [0, 0, 0]).map((f, i) => f + (lend.margin?.[i] ?? 0)) as Triple,
+          capacity: cap as Triple,
+          risk: lend.risk,
+        };
+        nextLendHist = [...nextLendHist, hp].slice(-MAX_LENDING_HISTORY);
+      }
+
       return {
+        lendingLedger: nextLedger,
+        lendingHistory: nextLendHist,
+        lendingLastStep: step,
         latestPayload: data,
         violationHistory: nextViol,
         throughputHistory: nextThru,

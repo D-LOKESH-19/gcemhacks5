@@ -19,6 +19,12 @@ MIN_LOAN = 0.005   # share; a returning loan below this is closed (ramp is geome
 EPS = 1e-9
 BOTTLENECK_TOL = 0.05  # radio and compute within 5% of each other: both are bottlenecks
 LEDGER_CAP = 200
+SLICE_NAMES = {"embb": "eMBB", "urllc": "URLLC", "murllc": "mURLLC"}
+
+
+def _name(s: str) -> str:
+    """Display name of a slice in ledger and overload text."""
+    return SLICE_NAMES.get(s, s.upper())
 
 
 class Lender:
@@ -49,6 +55,7 @@ class Lender:
         self.low_streak = np.zeros(self.n, dtype=int)
         self.ledger: List[Dict[str, Any]] = []
         self.prev_overload = False
+        self._notes: List[str] = []
         self.closed: List[Dict[str, Any]] = []
         self.counters = {"opened": 0, "enlarged": 0, "returned_events": 0, "recalls": 0, "expired": 0,
                          "overload_steps": 0, "steps": 0}
@@ -174,7 +181,7 @@ class Lender:
                 amt = min(lent_d, max(0.0, target - (raw[r][d] - lent_d)))
                 if amt > EPS:
                     self._reduce(mine, amt, "recalled", events, rank, touched,
-                                 f"{self.slices[d].upper()} risk {risk_eff[d]:.2f} > recall {recall:.2f}: needs "
+                                 f"{_name(self.slices[d])} risk {risk_eff[d]:.2f} > recall {recall:.2f}: needs "
                                  f"{target * self.pool[r]:.1f} {UNIT_NAMES[r]}, has {(raw[r][d] - lent_d) * self.pool[r]:.1f}")
 
         # --- gradual return once the borrower has been calm long enough (hysteresis)
@@ -189,7 +196,7 @@ class Lender:
                         give = loan["amount"]
                     loan["amount"] -= give
                     self.low_since.setdefault(id(loan), self.step_no - int(self.low_streak[b]))
-                    events.append(self._event("returned", loan, give, f"{loan['borrower'].upper()} risk below {low:.2f} for "
+                    events.append(self._event("returned", loan, give, f"{_name(loan['borrower'])} risk below {low:.2f} for "
                                                                      f"{int(self.low_streak[b])} steps: returning {ramp:.0%} of remaining"))
                     self.counters["returned_events"] += 1
 
@@ -202,7 +209,7 @@ class Lender:
                 if excess > EPS and lent[r][d] > EPS:
                     mine = [l for l in self.loans if l["donor"] == self.slices[d] and l["resource"] == r]
                     self._reduce(mine, min(excess, lent[r][d]), "recalled", events, rank, touched,
-                                 f"{self.slices[d].upper()} lendable share fell below its protected minimum "
+                                 f"{_name(self.slices[d])} lendable share fell below its protected minimum "
                                  f"({prot[r][d] * self.pool[r]:.1f} {UNIT_NAMES[r]})")
         self._close_empty(events)
 
@@ -244,7 +251,7 @@ class Lender:
                     if take <= EPS:
                         continue
                     self._open_or_enlarge(r, self.slices[j], self.slices[i], take, burst[i], risk_raw[i], events,
-                                          f"{self.slices[i].upper()} risk {risk_raw[i]:.2f} >= {high:.2f}: forecast "
+                                          f"{_name(self.slices[i])} risk {risk_raw[i]:.2f} >= {high:.2f}: forecast "
                                           f"{fc[i]:.0f}+margin {mg[i]:.0f} pkt/step vs capacity "
                                           f"{eff[r][i] * self.pk[r]:.0f} ({UNIT_NAMES[r]}-limited)")
                     funded += take
@@ -254,11 +261,12 @@ class Lender:
                 if need[r][i] - claim > 1e-9:
                     unfunded[r][i] = need[r][i] - claim
                     overload_notes.append(
-                        f"Cannot fully fund {self.slices[i].upper()} risk: lendable {avail * self.pool[r]:.1f} "
+                        f"Cannot fully fund {_name(self.slices[i])} risk: lendable {avail * self.pool[r]:.1f} "
                         f"{UNIT_NAMES[r]}, need {need[r][i] * self.pool[r]:.1f} {UNIT_NAMES[r]}. Protecting URLLC and mURLLC first."
                         + (" (blocked: slice is lending this resource)" if blocked else ""))
                 avail -= claim
         overload = bool(overload_notes)
+        self._notes = overload_notes  # exact numbers for the current step, shown while overload lasts
         if overload:
             self.counters["overload_steps"] += 1
             if not self.prev_overload:
@@ -380,6 +388,7 @@ class Lender:
             "lent": {r: [float(x) for x in lent_d[r]] for r in RESOURCES},
             "borrowed": {r: [float(x) for x in bor_d[r]] for r in RESOURCES},
             "overload": bool(overload),
+            "overload_notes": list(self._notes) if overload else [],
             "unfunded": {r: [float(x * self.pool[r]) for x in unfunded[r]] for r in RESOURCES},
             "unfunded_share": {r: [float(x) for x in unfunded[r]] for r in RESOURCES},
             "pipeline": {"raw": {r: [float(x) for x in raw[r]] for r in RESOURCES},
