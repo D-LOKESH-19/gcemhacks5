@@ -120,22 +120,22 @@ interface SliceBadgeProps {
 
 export const SliceBadge: React.FC<SliceBadgeProps> = ({ slice, className = "" }) => {
   const norm = slice.toLowerCase();
-  let color = "bg-slate-800 text-slate-300 border-slate-700";
+  let color = "bg-slate-100 text-slate-700 border-slate-300";
   let label = slice.toUpperCase();
 
   if (norm === "embb") {
-    color = "bg-cyan-950/60 text-cyan-400 border-cyan-800/60";
+    color = "bg-sky-50 text-sky-700 border-sky-300";
     label = "eMBB";
   } else if (norm === "urllc") {
-    color = "bg-amber-950/60 text-amber-400 border-amber-800/60";
+    color = "bg-amber-50 text-amber-800 border-amber-300";
     label = "URLLC";
   } else if (norm === "murllc") {
-    color = "bg-purple-950/60 text-purple-400 border-purple-800/60";
+    color = "bg-purple-50 text-purple-700 border-purple-300";
     label = "mURLLC";
   }
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ${color} ${className}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${color} ${className}`}>
       {label}
     </span>
   );
@@ -148,22 +148,22 @@ interface PolicyBadgeProps {
 
 export const PolicyBadge: React.FC<PolicyBadgeProps> = ({ policy, className = "" }) => {
   const norm = policy.toLowerCase();
-  let color = "bg-slate-800 text-slate-300 border-slate-700";
+  let color = "bg-slate-100 text-slate-700 border-slate-300";
   let label = policy;
 
   if (norm === "static") {
-    color = "bg-rose-950/60 text-rose-400 border-rose-800/60";
+    color = "bg-rose-50 text-rose-700 border-rose-300";
     label = "Static Baseline";
   } else if (norm === "heuristic") {
-    color = "bg-slate-800/90 text-slate-300 border-slate-600";
+    color = "bg-slate-100 text-slate-700 border-slate-300";
     label = "Heuristic";
   } else if (norm === "agent") {
-    color = "bg-emerald-950/60 text-emerald-400 border-emerald-800/60";
+    color = "bg-emerald-50 text-emerald-700 border-emerald-300";
     label = "RL Agent + Shield";
   }
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ${color} ${className}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${color} ${className}`}>
       {label}
     </span>
   );

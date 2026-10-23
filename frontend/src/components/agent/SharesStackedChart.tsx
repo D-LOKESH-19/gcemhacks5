@@ -42,16 +42,16 @@ export const SharesStackedChart: React.FC = () => {
   }, [agentSharesHistory, resourceType]);
 
   return (
-    <div className="p-4 rounded-xl bg-bg-card border border-border-subtle shadow-sm flex flex-col justify-between">
+    <div className="p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_10px_25px_-5px_rgba(2,132,199,0.06)] flex flex-col justify-between">
       {/* Chart Header & Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-2.5 border-b border-border-subtle mb-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-2.5 border-b border-slate-100 mb-2">
         <div className="flex items-center gap-2">
-          <Layers size={16} className="text-emerald-400" />
+          <Layers size={16} className="text-sky-600" />
           <div>
-            <h2 className="text-xs font-bold text-text-primary tracking-tight uppercase">
+            <h2 className="text-xs font-bold text-slate-900 tracking-tight uppercase">
               RL Agent Dynamic Joint Shares (100% Stacked)
             </h2>
-            <p className="text-[11px] text-text-muted">
+            <p className="text-[11px] text-slate-500">
               Continuous simplex resource redistribution across slices.
             </p>
           </div>
@@ -60,13 +60,13 @@ export const SharesStackedChart: React.FC = () => {
         {/* Controls: PRB vs vCPU toggle & Heuristic overlay (FT-39, FT-43) */}
         <div className="flex items-center gap-2">
           {/* PRB vs vCPU Toggle */}
-          <div className="flex items-center rounded-lg bg-bg-base border border-border-subtle p-0.5">
+          <div className="flex items-center rounded-lg bg-slate-100 border border-slate-200 p-0.5">
             <button
               onClick={() => setResourceType("prb")}
               className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                 resourceType === "prb"
-                  ? "bg-slate-700 text-cyan-300 shadow-sm"
-                  : "text-text-muted hover:text-text-primary"
+                  ? "bg-white text-sky-700 shadow-sm font-semibold"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               <HardDrive size={12} />
@@ -76,8 +76,8 @@ export const SharesStackedChart: React.FC = () => {
               onClick={() => setResourceType("vcpu")}
               className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                 resourceType === "vcpu"
-                  ? "bg-slate-700 text-purple-300 shadow-sm"
-                  : "text-text-muted hover:text-text-primary"
+                  ? "bg-white text-purple-700 shadow-sm font-semibold"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               <Cpu size={12} />
@@ -90,8 +90,8 @@ export const SharesStackedChart: React.FC = () => {
             onClick={() => setShowHeuristicOverlay(!showHeuristicOverlay)}
             className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${
               showHeuristicOverlay
-                ? "bg-slate-700 text-slate-200 border-slate-600"
-                : "bg-bg-base text-text-muted border-border-subtle hover:text-text-primary"
+                ? "bg-sky-50 text-sky-800 border-sky-300 font-semibold shadow-sm"
+                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
             }`}
             title="Toggle Heuristic URLLC allocation reference line"
           >
@@ -102,7 +102,7 @@ export const SharesStackedChart: React.FC = () => {
       </div>
 
       {/* Stacked Recharts Area */}
-      <div className="h-[270px] w-full">
+      <div className="h-[270px] w-full rounded-xl bg-slate-50/70 p-1 border border-slate-100">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={formattedData} margin={{ top: 10, right: 15, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />

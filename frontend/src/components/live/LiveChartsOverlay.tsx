@@ -74,22 +74,22 @@ export const LiveChartsOverlay: React.FC = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* Chart A: Real-Time Violation Rate Overlay */}
-      <div className="p-4 rounded-xl bg-bg-card border border-border-subtle shadow-sm flex flex-col">
-        <div className="flex items-center justify-between mb-2">
+      <div className="p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_10px_25px_-5px_rgba(2,132,199,0.06)] flex flex-col">
+        <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-100">
           <div>
-            <h2 className="text-xs font-bold text-text-primary uppercase tracking-tight">
-              Chart A: URLLC Violation Rate Overlay
+            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-tight">
+              URLLC/mURLLC Violation Rate
             </h2>
-            <p className="text-[11px] text-text-muted">
+            <p className="text-[11px] text-slate-500">
               Threshold breach comparison under dynamic traffic surges.
             </p>
           </div>
-          <span className="text-[11px] font-mono text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded">
-            SLA Ceiling: {slaUrllcLimit.toFixed(2)}%
+          <span className="text-xs font-mono font-bold text-[#dc2626] bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full">
+            SLA Limit: {slaUrllcLimit.toFixed(1)}%
           </span>
         </div>
 
-        <div className="h-[230px] w-full">
+        <div className="h-[230px] w-full rounded-xl bg-slate-50/70 p-1 border border-slate-100">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={formattedViolationData}
@@ -196,22 +196,22 @@ export const LiveChartsOverlay: React.FC = () => {
       </div>
 
       {/* Chart B: Real-Time Throughput / Served Overlay */}
-      <div className="p-4 rounded-xl bg-bg-card border border-border-subtle shadow-sm flex flex-col">
-        <div className="flex items-center justify-between mb-2">
+      <div className="p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_10px_25px_-5px_rgba(2,132,199,0.06)] flex flex-col">
+        <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-100">
           <div>
-            <h2 className="text-xs font-bold text-text-primary uppercase tracking-tight">
-              Chart B: eMBB Throughput Overlay
+            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-tight">
+              eMBB Throughput (pkts/step)
             </h2>
-            <p className="text-[11px] text-text-muted">
+            <p className="text-[11px] text-slate-500">
               Served bit-demand across policies under coupled resource sharing.
             </p>
           </div>
-          <span className="text-[11px] font-mono text-cyan-700 bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded">
+          <span className="text-xs font-mono font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full">
             Unit: pkts/step
           </span>
         </div>
 
-        <div className="h-[230px] w-full">
+        <div className="h-[230px] w-full rounded-xl bg-slate-50/70 p-1 border border-slate-100">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={formattedThroughputData}

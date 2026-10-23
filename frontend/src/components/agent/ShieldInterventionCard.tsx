@@ -28,27 +28,27 @@ export const ShieldInterventionCard: React.FC = () => {
   }, [shieldInterventionHistory]);
 
   return (
-    <div className="p-4 rounded-xl bg-bg-card border border-border-subtle shadow-sm flex flex-col justify-between">
+    <div className="p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_10px_25px_-5px_rgba(2,132,199,0.06)] flex flex-col justify-between">
       {/* Header */}
-      <div className="flex items-center justify-between pb-2.5 border-b border-border-subtle mb-3">
+      <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 mb-3">
         <div className="flex items-center gap-2">
-          <ShieldCheck size={16} className="text-emerald-400" />
-          <h2 className="text-xs font-bold text-text-primary tracking-tight uppercase">
+          <ShieldCheck size={16} className="text-sky-600" />
+          <h2 className="text-xs font-bold text-slate-900 tracking-tight uppercase">
             Safety Shield Supervisor Telemetry
           </h2>
         </div>
         <div className="flex items-center gap-1.5">
           <span
-            className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
               isShieldActive
-                ? "bg-emerald-950/80 text-emerald-300 border-emerald-800"
-                : "bg-slate-800 text-slate-400 border-slate-700"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                : "bg-slate-100 text-slate-600 border-slate-200"
             }`}
           >
             {isShieldActive ? "SHIELD ENGAGED" : "PASS-THROUGH"}
           </span>
           {isChanged && (
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/80 text-amber-300 border border-amber-800">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-300">
               ACTION ALTERED (&gt;3%)
             </span>
           )}
@@ -56,30 +56,30 @@ export const ShieldInterventionCard: React.FC = () => {
       </div>
 
       {/* Mandatory Plain-Text Shield Statement (FT-40) */}
-      <div className="p-3 rounded-lg bg-bg-base/80 border border-emerald-950 flex items-center justify-between gap-3 mb-3">
+      <div className="p-3.5 rounded-xl bg-sky-50/60 border border-sky-200/80 flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-md bg-emerald-950/80 text-emerald-400 border border-emerald-800/80">
+          <div className="p-1.5 rounded-full bg-sky-100 text-sky-700">
             <ShieldCheck size={18} />
           </div>
           <div>
-            <p className="text-xs font-semibold text-text-primary">
+            <p className="text-xs font-semibold text-slate-900">
               {`The shield changed the agent's decision in ${interventionRate20.toFixed(1)} percent of the last ${windowSteps} steps.`}
             </p>
-            <p className="text-[11px] text-text-muted mt-0.5">
+            <p className="text-[11px] text-slate-500 mt-0.5">
               Continuous sliding window audit of safety overrides across live simulation frames.
             </p>
           </div>
         </div>
         <div className="text-right shrink-0">
-          <span className="text-[10px] text-text-muted uppercase block">Intervention Rate</span>
-          <span className="text-xl font-mono font-bold text-emerald-400">
+          <span className="text-[10px] text-slate-500 uppercase block font-medium">Intervention Rate</span>
+          <span className="text-xl font-mono font-bold text-sky-700">
             {interventionRate20.toFixed(1)}%
           </span>
         </div>
       </div>
 
       {/* Mini Trend Chart */}
-      <div className="h-[140px] w-full mb-2">
+      <div className="h-[140px] w-full mb-2 rounded-xl bg-slate-50/70 p-1 border border-slate-100">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={formattedHistory} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />

@@ -110,36 +110,36 @@ export const SlaGridMatrix: React.FC = () => {
   };
 
   return (
-    <div className="p-4 rounded-xl bg-bg-card border border-border-subtle shadow-sm flex flex-col gap-3">
+    <div className="p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_10px_25px_-5px_rgba(2,132,199,0.06)] flex flex-col gap-3">
       {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
         <div className="flex items-center gap-2">
-          <Grid size={16} className="text-emerald-400" />
-          <h2 className="text-xs font-bold text-text-primary tracking-tight uppercase">
+          <Grid size={16} className="text-sky-600" />
+          <h2 className="text-xs font-bold text-slate-900 tracking-tight uppercase">
             SLA Contract Compliance Matrix (3 Policies × 3 Slices - FT-46)
           </h2>
         </div>
-        <span className="text-[10px] font-mono text-text-muted">Live 20-Step Window Audit</span>
+        <span className="text-[10px] font-mono text-slate-500">Live 20-Step Window Audit</span>
       </div>
 
       {/* 3x3 Table Layout */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="border-b border-border-subtle text-left text-[11px] text-text-muted font-mono uppercase">
-              <th className="py-2 px-3 w-44">Policy Candidate</th>
-              <th className="py-2 px-3">eMBB Slice (&gt;= 70%)</th>
-              <th className="py-2 px-3">URLLC Slice (&lt; 0.5%)</th>
-              <th className="py-2 px-3">mURLLC Slice (&lt; 1.0%)</th>
-              <th className="py-2 px-3 text-right">Window Compliance</th>
+            <tr className="border-b border-slate-200 bg-sky-50/50 text-left text-[11px] text-slate-700 font-mono uppercase font-bold">
+              <th className="py-2.5 px-3 w-44">Policy Candidate</th>
+              <th className="py-2.5 px-3">eMBB Slice (&gt;= 70%)</th>
+              <th className="py-2.5 px-3">URLLC Slice (&lt; 0.5%)</th>
+              <th className="py-2.5 px-3">mURLLC Slice (&lt; 1.0%)</th>
+              <th className="py-2.5 px-3 text-right">Window Compliance</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-subtle">
+          <tbody className="divide-y divide-slate-100">
             {policies.map((p) => (
-              <tr key={p.key} className="hover:bg-slate-800/30 transition-colors">
+              <tr key={p.key} className="hover:bg-sky-50/40 transition-colors">
                 <td className="py-3 px-3 align-middle">
-                  <div className="font-bold text-xs text-text-primary">{p.name}</div>
-                  <div className="text-[10px] text-text-muted font-mono mt-0.5">
+                  <div className="font-bold text-xs text-slate-900">{p.name}</div>
+                  <div className="text-[10px] text-slate-500 font-mono mt-0.5">
                     {p.key === "static" ? "Fixed 33%" : p.key === "heuristic" ? "Instant Proportional" : "Safe PPO + Shield"}
                   </div>
                 </td>
@@ -147,10 +147,10 @@ export const SlaGridMatrix: React.FC = () => {
                 <td className="py-3 px-2 w-1/4">{renderCell(p.pol, "urllc")}</td>
                 <td className="py-3 px-2 w-1/4">{renderCell(p.pol, "murllc")}</td>
                 <td className="py-3 px-3 text-right align-middle font-mono">
-                  <span className={`text-sm font-bold ${p.key === "agent" ? "text-emerald-400" : "text-text-primary"}`}>
+                  <span className={`text-sm font-bold ${p.key === "agent" ? "text-emerald-600" : "text-slate-900"}`}>
                     {getWindowCompliance(p.key)}
                   </span>
-                  <span className="block text-[10px] text-text-muted">of 20-step windows</span>
+                  <span className="block text-[10px] text-slate-500">of 20-step windows</span>
                 </td>
               </tr>
             ))}
@@ -158,9 +158,9 @@ export const SlaGridMatrix: React.FC = () => {
         </table>
       </div>
 
-      <div className="flex items-center justify-between pt-2 border-t border-border-subtle text-[11px] text-text-muted font-mono">
+      <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-500 font-mono">
         <span>Evaluated continuously against SLA contract limits specified in config.yaml</span>
-        <span className="text-emerald-400">Zero tolerance for mission-critical violations</span>
+        <span className="text-emerald-600 font-semibold">Zero tolerance for mission-critical violations</span>
       </div>
     </div>
   );

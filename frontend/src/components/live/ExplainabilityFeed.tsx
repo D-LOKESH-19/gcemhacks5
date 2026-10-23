@@ -65,14 +65,15 @@ export const ExplainabilityFeed: React.FC = () => {
   };
 
   return (
-    <div className="rounded-xl bg-bg-card border border-border-subtle shadow-sm flex flex-col overflow-hidden">
+    <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_10px_25px_-5px_rgba(2,132,199,0.06)] flex flex-col overflow-hidden">
       {/* Feed Header */}
-      <div className="flex items-center justify-between p-3 border-b border-border-subtle bg-bg-base/40">
+      <div className="flex items-center justify-between p-3.5 border-b border-slate-100 bg-white">
         <div className="flex items-center gap-2">
-          <Terminal size={15} className="text-cyan-600" />
-          <h2 className="text-xs font-bold text-text-primary tracking-tight">Autonomous Decision & Explainability Feed</h2>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-300">
-            {filteredFeed.length} Events
+          <Terminal size={15} className="text-sky-600" />
+          <h2 className="text-xs font-bold text-slate-900 tracking-tight">Agent Decision Telemetry & Explainability Feed</h2>
+          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Live Micro-Feed ({filteredFeed.length})
           </span>
         </div>
 
@@ -82,10 +83,10 @@ export const ExplainabilityFeed: React.FC = () => {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`px-2 py-0.5 rounded text-[11px] font-medium uppercase tracking-wider transition-colors ${
+              className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium uppercase tracking-wider transition-colors ${
                 activeFilter === filter
-                  ? "bg-slate-200 text-slate-900 border border-slate-300 font-semibold"
-                  : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+                  ? "bg-sky-50 text-sky-800 border border-sky-300 font-semibold shadow-sm"
+                  : "text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-transparent"
               }`}
             >
               {filter}
@@ -93,7 +94,7 @@ export const ExplainabilityFeed: React.FC = () => {
           ))}
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1 text-slate-500 hover:text-slate-800 rounded ml-1 transition-colors"
+            className="p-1 text-slate-500 hover:text-slate-800 rounded-full ml-1 transition-colors"
             title={isExpanded ? "Collapse feed" : "Expand feed"}
           >
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}

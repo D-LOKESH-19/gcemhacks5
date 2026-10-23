@@ -31,22 +31,24 @@ export const Header: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-bg-card/90 backdrop-blur-md border-b border-border-subtle select-none">
+    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-sky-200/80 shadow-[0_4px_20px_rgba(2,132,199,0.06)] select-none">
       <div className="max-w-[1920px] mx-auto px-4 lg:px-6 h-14 flex items-center justify-between gap-4">
         {/* Brand / Title */}
         <div className="flex items-center gap-3 shrink-0">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-300 flex items-center justify-center text-emerald-600 group-hover:border-emerald-500 transition-colors shadow-sm">
-              <Activity size={18} />
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-lg bg-sky-600 flex items-center justify-center text-white font-extrabold text-xs shadow-sm group-hover:bg-sky-500 transition-colors">
+              5G
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-sm tracking-tight text-text-primary">5G Slicing Suite</span>
-                <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-300">
-                  Enterprise
+                <span className="font-extrabold text-base tracking-tight text-slate-900">
+                  5G <span className="bg-gradient-to-r from-sky-700 via-sky-600 to-sky-500 bg-clip-text text-transparent">SliceOS</span>
+                </span>
+                <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
+                  Suite
                 </span>
               </div>
-              <p className="text-[10px] text-text-muted leading-tight font-mono">Autonomous NOC</p>
+              <p className="text-[10px] text-slate-500 leading-tight font-mono">Autonomous Orchestrator</p>
             </div>
           </Link>
         </div>
@@ -62,8 +64,8 @@ export const Header: React.FC = () => {
                 className={({ isActive }) =>
                   `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     isActive
-                      ? "bg-slate-100 text-text-primary border border-slate-300 shadow-sm font-semibold"
-                      : "text-text-muted hover:text-text-primary hover:bg-slate-100/70 border border-transparent"
+                      ? "bg-sky-50 text-sky-800 border border-sky-300 shadow-sm font-semibold"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-sky-50/50 border border-transparent"
                   }`
                 }
               >
@@ -77,8 +79,8 @@ export const Header: React.FC = () => {
             className={({ isActive }) =>
               `flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 isActive
-                  ? "bg-slate-100 text-text-primary border border-slate-300 shadow-sm font-semibold"
-                  : "text-text-muted hover:text-text-primary hover:bg-slate-100/70 border border-transparent"
+                  ? "bg-sky-50 text-sky-800 border border-sky-300 shadow-sm font-semibold"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-sky-50/50 border border-transparent"
               }`
             }
             title="System Architecture & Story"
@@ -91,15 +93,15 @@ export const Header: React.FC = () => {
         {/* Right Status Group & Utility Actions */}
         <div className="flex items-center gap-2.5 shrink-0">
           {/* Step Counter */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-50 border border-border-subtle text-xs font-mono shadow-sm">
-            <span className="text-text-muted">Step:</span>
-            <span className="text-emerald-600 font-bold">{currentStep.toLocaleString()}</span>
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-mono shadow-sm">
+            <span className="text-slate-500">Step:</span>
+            <span className="text-sky-700 font-bold">{currentStep.toLocaleString()}</span>
           </div>
 
           {/* Scenario Badge */}
-          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-50 border border-border-subtle text-xs shadow-sm">
-            <span className="text-text-muted">Scenario:</span>
-            <span className="text-sky-600 font-semibold capitalize">{currentScenario.replace(/_/g, " ")}</span>
+          <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 border border-sky-200 text-xs shadow-sm">
+            <span className="text-slate-500">Scenario:</span>
+            <span className="text-sky-700 font-semibold capitalize">{currentScenario.replace(/_/g, " ")}</span>
           </div>
 
           {/* Live Connection Badge */}
@@ -108,7 +110,7 @@ export const Header: React.FC = () => {
           {/* Presenter Mode Button */}
           <button
             onClick={() => navigate("/present")}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs text-text-primary transition-colors shadow-sm"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 transition-colors shadow-sm"
             title="Presenter Mode (Press P)"
           >
             <Tv size={13} className="text-purple-600" />
@@ -118,7 +120,7 @@ export const Header: React.FC = () => {
           {/* Reciprocal Classic NOC View Button (Preserving Legacy) */}
           <a
             href="/legacy"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-sky-50 hover:bg-sky-100 border border-sky-300 text-sky-700 text-xs font-medium transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold transition-colors shadow-sm"
             title="Switch to Classic NOC View"
           >
             <span>🖥️ Classic View</span>

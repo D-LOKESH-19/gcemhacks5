@@ -11,25 +11,25 @@ export const DecisionAuditTable: React.FC = () => {
   }, [decisionHistory]);
 
   return (
-    <div className="p-4 rounded-xl bg-bg-card border border-border-subtle shadow-sm flex flex-col justify-between">
+    <div className="p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_10px_25px_-5px_rgba(2,132,199,0.06)] flex flex-col justify-between">
       {/* Table Header */}
-      <div className="flex items-center justify-between pb-2.5 border-b border-border-subtle mb-3">
+      <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 mb-3">
         <div className="flex items-center gap-2">
-          <Table size={16} className="text-cyan-400" />
-          <h2 className="text-xs font-bold text-text-primary tracking-tight uppercase">
+          <Table size={16} className="text-sky-600" />
+          <h2 className="text-xs font-bold text-slate-900 tracking-tight uppercase">
             Agent Decision Explainability Log (Last 20 Decisions - FT-41)
           </h2>
         </div>
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 border border-slate-300 text-slate-600">
+        <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600">
           {last20Decisions.length} / 20 Steps Recorded
         </span>
       </div>
 
       {/* Table Container */}
-      <div className="overflow-x-auto rounded-lg border border-border-subtle bg-white">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-left border-collapse text-[11px] font-mono">
           <thead>
-            <tr className="border-b border-border-subtle bg-slate-50 text-slate-600 text-[10px] uppercase">
+            <tr className="border-b border-slate-200 bg-sky-50/50 text-slate-700 text-[10px] uppercase font-bold">
               <th className="py-2.5 px-3">Step</th>
               <th className="py-2.5 px-3">Arrivals (e / u / m)</th>
               <th className="py-2.5 px-3">Raw PRB</th>
@@ -39,10 +39,10 @@ export const DecisionAuditTable: React.FC = () => {
               <th className="py-2.5 px-3">Explainability Reason</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-subtle">
+          <tbody className="divide-y divide-slate-100">
             {last20Decisions.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-6 text-center text-text-muted">
+                <td colSpan={7} className="py-6 text-center text-slate-500">
                   No decision records collected yet. Step the simulator to observe closed-loop actuation.
                 </td>
               </tr>
@@ -61,12 +61,12 @@ export const DecisionAuditTable: React.FC = () => {
                 const isChanged = row.shield_active || maxDiff > 0.03;
 
                 return (
-                  <tr key={row.step} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-2 px-3 font-bold text-text-primary">#{row.step}</td>
-                    <td className="py-2 px-3 text-text-muted">
-                      <span className="text-slice-embb font-semibold">{Math.round(arr.embb)}</span> /{" "}
-                      <span className="text-slice-urllc font-semibold">{Math.round(arr.urllc)}</span> /{" "}
-                      <span className="text-slice-murllc font-semibold">{Math.round(arr.murllc)}</span>
+                  <tr key={row.step} className="hover:bg-sky-50/40 transition-colors">
+                    <td className="py-2 px-3 font-bold text-sky-700">#{row.step}</td>
+                    <td className="py-2 px-3 text-slate-600">
+                      <span className="text-[#0ea5e9] font-semibold">{Math.round(arr.embb)}</span> /{" "}
+                      <span className="text-[#f59e0b] font-semibold">{Math.round(arr.urllc)}</span> /{" "}
+                      <span className="text-[#a855f7] font-semibold">{Math.round(arr.murllc)}</span>
                     </td>
                     <td className="py-2 px-3 text-text-muted">
                       {(raw.embb * 100).toFixed(0)}% / {(raw.urllc * 100).toFixed(0)}% /{" "}

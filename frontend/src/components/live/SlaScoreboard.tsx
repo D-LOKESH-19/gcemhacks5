@@ -49,119 +49,119 @@ export const SlaScoreboard: React.FC = () => {
   const agentCompliance = (agentStatus === "BREACH" ? 95.0 : 100.0).toFixed(1);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* 1. Static Baseline Tile */}
-      <div className="p-4 rounded-xl bg-bg-card border border-rose-200 hover:border-rose-300 transition-all flex flex-col justify-between shadow-sm">
-        <div className="flex items-center justify-between pb-2.5 border-b border-border-subtle">
+      <div className="p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 hover:border-slate-300 transition-all flex flex-col justify-between shadow-[0_10px_25px_-5px_rgba(2,132,199,0.06)]">
+        <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-policy-static"></span>
-            <span className="text-xs font-bold text-policy-static tracking-tight uppercase">Static Baseline</span>
+            <span className="text-sm font-bold text-slate-900 tracking-tight">Static Partition</span>
           </div>
           <StatusBadge status={staticStatus} size="sm" />
         </div>
 
         <div className="grid grid-cols-3 gap-2 py-3 text-center">
-          <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
-            <span className="text-[10px] text-text-muted block uppercase">URLLC Viol.</span>
-            <span className={`text-base font-mono font-bold ${staticUrllcVR > 0.5 ? "text-rose-600" : "text-text-primary"}`}>
+          <div className="p-2 rounded-xl bg-slate-50/70 border border-slate-200/70">
+            <span className="text-[10px] text-slate-500 block uppercase font-medium">URLLC Viol.</span>
+            <span className={`text-base font-mono font-bold ${staticUrllcVR > 0.5 ? "text-rose-600" : "text-slate-900"}`}>
               {staticUrllcVR.toFixed(2)}%
             </span>
           </div>
-          <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
-            <span className="text-[10px] text-text-muted block uppercase">mURLLC Viol.</span>
-            <span className={`text-base font-mono font-bold ${staticMurllcVR > 1.0 ? "text-rose-600" : "text-text-primary"}`}>
+          <div className="p-2 rounded-xl bg-slate-50/70 border border-slate-200/70">
+            <span className="text-[10px] text-slate-500 block uppercase font-medium">mURLLC Viol.</span>
+            <span className={`text-base font-mono font-bold ${staticMurllcVR > 1.0 ? "text-rose-600" : "text-slate-900"}`}>
               {staticMurllcVR.toFixed(2)}%
             </span>
           </div>
-          <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
-            <span className="text-[10px] text-text-muted block uppercase">eMBB Served</span>
-            <span className="text-base font-mono font-bold text-cyan-700">
+          <div className="p-2 rounded-xl bg-slate-50/70 border border-slate-200/70">
+            <span className="text-[10px] text-slate-500 block uppercase font-medium">eMBB Served</span>
+            <span className="text-base font-mono font-bold text-sky-600">
               {staticEmbbRatio.toFixed(1)}%
             </span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-border-subtle text-xs">
-          <span className="text-text-muted text-[11px]">20-Step SLA Compliance:</span>
+        <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+          <span className="text-slate-500 text-[11px]">20-Step SLA Compliance:</span>
           <span className="font-mono font-semibold text-rose-600">{staticCompliance}%</span>
         </div>
       </div>
 
       {/* 2. Heuristic Proportional Tile */}
-      <div className="p-4 rounded-xl bg-bg-card border border-slate-200 hover:border-slate-300 transition-all flex flex-col justify-between shadow-sm">
-        <div className="flex items-center justify-between pb-2.5 border-b border-border-subtle">
+      <div className="p-4 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/90 hover:border-slate-300 transition-all flex flex-col justify-between shadow-[0_10px_25px_-5px_rgba(2,132,199,0.06)]">
+        <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-policy-heuristic"></span>
-            <span className="text-xs font-bold text-policy-heuristic tracking-tight uppercase">Heuristic Proportional</span>
+            <span className="text-sm font-bold text-slate-900 tracking-tight">Demand Heuristic</span>
           </div>
           <StatusBadge status={heurStatus} size="sm" />
         </div>
 
         <div className="grid grid-cols-3 gap-2 py-3 text-center">
-          <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
-            <span className="text-[10px] text-text-muted block uppercase">URLLC Viol.</span>
-            <span className={`text-base font-mono font-bold ${heurUrllcVR > 0.5 ? "text-amber-600" : "text-text-primary"}`}>
+          <div className="p-2 rounded-xl bg-slate-50/70 border border-slate-200/70">
+            <span className="text-[10px] text-slate-500 block uppercase font-medium">URLLC Viol.</span>
+            <span className={`text-base font-mono font-bold ${heurUrllcVR > 0.5 ? "text-amber-600" : "text-slate-900"}`}>
               {heurUrllcVR.toFixed(2)}%
             </span>
           </div>
-          <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
-            <span className="text-[10px] text-text-muted block uppercase">mURLLC Viol.</span>
-            <span className={`text-base font-mono font-bold ${heurMurllcVR > 1.0 ? "text-amber-600" : "text-text-primary"}`}>
+          <div className="p-2 rounded-xl bg-slate-50/70 border border-slate-200/70">
+            <span className="text-[10px] text-slate-500 block uppercase font-medium">mURLLC Viol.</span>
+            <span className={`text-base font-mono font-bold ${heurMurllcVR > 1.0 ? "text-amber-600" : "text-slate-900"}`}>
               {heurMurllcVR.toFixed(2)}%
             </span>
           </div>
-          <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
-            <span className="text-[10px] text-text-muted block uppercase">eMBB Served</span>
-            <span className="text-base font-mono font-bold text-cyan-700">
+          <div className="p-2 rounded-xl bg-slate-50/70 border border-slate-200/70">
+            <span className="text-[10px] text-slate-500 block uppercase font-medium">eMBB Served</span>
+            <span className="text-base font-mono font-bold text-sky-600">
               {heurEmbbRatio.toFixed(1)}%
             </span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-border-subtle text-xs">
-          <span className="text-text-muted text-[11px]">20-Step SLA Compliance:</span>
+        <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+          <span className="text-slate-500 text-[11px]">20-Step SLA Compliance:</span>
           <span className="font-mono font-semibold text-slate-600">{heurCompliance}%</span>
         </div>
       </div>
 
-      {/* 3. RL Agent + Safety Shield Tile */}
-      <div className="p-4 rounded-xl bg-bg-card border border-emerald-200 hover:border-emerald-300 transition-all flex flex-col justify-between shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none"></div>
+      {/* 3. RL Agent + Safety Shield Tile (Signature Highlighted Sky-Blue Glass Border) */}
+      <div className="p-4 rounded-2xl bg-white/95 backdrop-blur-md border-2 border-sky-400 hover:border-sky-500 transition-all flex flex-col justify-between shadow-[0_12px_28px_-4px_rgba(2,132,199,0.18)] relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-sky-400/10 rounded-full blur-2xl pointer-events-none"></div>
 
-        <div className="flex items-center justify-between pb-2.5 border-b border-border-subtle relative z-10">
+        <div className="flex items-center justify-between pb-2.5 border-b border-sky-100 relative z-10">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-policy-agent animate-pulse"></span>
-            <span className="text-xs font-bold text-policy-agent tracking-tight uppercase flex items-center gap-1">
-              <ShieldCheck size={14} /> RL Agent + Shield
+            <span className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-1">
+              <ShieldCheck size={16} className="text-sky-600" /> Constrained RL + Hard Shield
             </span>
           </div>
           <StatusBadge status={agentStatus} size="sm" />
         </div>
 
         <div className="grid grid-cols-3 gap-2 py-3 text-center relative z-10">
-          <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
-            <span className="text-[10px] text-text-muted block uppercase">URLLC Viol.</span>
-            <span className="text-base font-mono font-bold text-emerald-700">
+          <div className="p-2 rounded-xl bg-sky-50/50 border border-sky-100">
+            <span className="text-[10px] text-slate-500 block uppercase font-medium">URLLC Viol.</span>
+            <span className="text-base font-mono font-bold text-emerald-600">
               {agentUrllcVR.toFixed(2)}%
             </span>
           </div>
-          <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
-            <span className="text-[10px] text-text-muted block uppercase">mURLLC Viol.</span>
-            <span className="text-base font-mono font-bold text-emerald-700">
+          <div className="p-2 rounded-xl bg-sky-50/50 border border-sky-100">
+            <span className="text-[10px] text-slate-500 block uppercase font-medium">mURLLC Viol.</span>
+            <span className="text-base font-mono font-bold text-emerald-600">
               {agentMurllcVR.toFixed(2)}%
             </span>
           </div>
-          <div className="p-2 rounded-lg bg-bg-base/70 border border-border-subtle">
-            <span className="text-[10px] text-text-muted block uppercase">eMBB Served</span>
-            <span className="text-base font-mono font-bold text-cyan-700">
+          <div className="p-2 rounded-xl bg-sky-50/50 border border-sky-100">
+            <span className="text-[10px] text-slate-500 block uppercase font-medium">eMBB Served</span>
+            <span className="text-base font-mono font-bold text-sky-600">
               {agentEmbbRatio.toFixed(1)}%
             </span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-border-subtle text-xs relative z-10">
-          <span className="text-text-muted text-[11px]">20-Step SLA Compliance:</span>
-          <span className="font-mono font-semibold text-emerald-700">{agentCompliance}%</span>
+        <div className="flex items-center justify-between pt-2 border-t border-sky-100 text-xs relative z-10">
+          <span className="text-slate-500 text-[11px]">20-Step SLA Compliance:</span>
+          <span className="font-mono font-semibold text-emerald-600">{agentCompliance}%</span>
         </div>
       </div>
     </div>
