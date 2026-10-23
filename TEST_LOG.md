@@ -443,3 +443,24 @@ This document records the automated verification logs across development phases,
 | **FT-16** | Color Palette Invariant | Strict separation of slice colors (eMBB `#22D3EE`, URLLC `#F59E0B`, mURLLC `#A78BFA`) and policy colors (Static `#F87171`, Heuristic `#CBD5E1`, Agent `#34D399`) | **PASSED** | P0 |
 | **FT-Live** | Spike Injection & Control | Real-time spike injection, pause toggle, and nominal banner pulse integrated | **PASSED** | P1 |
 
+---
+
+## Phase F3: Explainability Feed, Overlay Charts & Control Actions (FT-17 to FT-30)
+- **Date**: 2026-10-24
+- **Branch**: `a/core-sla`
+- **Script**: `node frontend/test_phase_f3.cjs` + `npm --prefix frontend run build`
+- **Result**: **8/8 PASSED (P0/P1)**
+
+### Test Matrix
+
+| ID | Test Category | Acceptance Criteria | Result | Severity |
+| :---: | :--- | :--- | :---: | :---: |
+| **FT-17** | Backend Connectivity | Live simulator backend responds at `/health` with status `ok` | **PASSED** | P0 |
+| **FT-18** | Policy Lines & SLA Dash | Overlay charts render Static `#F87171`, Heuristic `#CBD5E1`, Agent `#34D399` plus SLA dashed ReferenceLine | **PASSED** | P0 |
+| **FT-19** | Dynamic Chart Y-Axis | Y-axis upper bound dynamically evaluates `max(2 * SLA limit, 1.2 * maxVal)` | **PASSED** | P1 |
+| **FT-20** | Synchronized Spikes | `/spike` endpoint triggers slice surges synchronized across policies | **PASSED** | P0 |
+| **FT-23** | Feed Deduplication | Consecutive duplicate explainability events collapse into counter tags (`xN`) | **PASSED** | P1 |
+| **FT-25** | Pause & Reset Lifecycle | `/pause` and `/reset` cleanly manipulate simulator execution state | **PASSED** | P0 |
+| **FT-26** | Feed Category Filtering | Explainability feed filters by spikes, bots, shield, and SLA categories | **PASSED** | P1 |
+| **FT-27** | Simplex Share Display | Resource cards display PRB/vCPU shares summing to 100% and real shield intervention meter | **PASSED** | P0 |
+
