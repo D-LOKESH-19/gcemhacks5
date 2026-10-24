@@ -1,0 +1,29 @@
+Scenario,Policy,Feasible,SLA Met (%),Violation Rate Mean,Violation Rate CI95,Window Compliance Rate,p99 Violation Rate,Mean eMBB Ratio,Worst Window
+Steady Load,(a) Unconstrained (No Shield),Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Steady Load,(b) Constrained PPO (No Shield),Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Steady Load,(c) Shield without RL,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Steady Load,(d) Full Model,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+eMBB Surge,(a) Unconstrained (No Shield),Feasible,30.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.6783,0.0000
+eMBB Surge,(b) Constrained PPO (No Shield),Feasible,85.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.7977,0.0000
+eMBB Surge,(c) Shield without RL,Feasible,5.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.6394,0.0000
+eMBB Surge,(d) Full Model,Feasible,5.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.6394,0.0000
+URLLC Burst,(a) Unconstrained (No Shield),Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+URLLC Burst,(b) Constrained PPO (No Shield),Feasible,100.0%,0.0002,"[0.0000, 0.0005]",100.0%,0.0000,1.0000,0.0157
+URLLC Burst,(c) Shield without RL,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.9994,0.0000
+URLLC Burst,(d) Full Model,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.9993,0.0000
+mURLLC Storm,(a) Unconstrained (No Shield),Feasible,50.0%,0.0079,"[0.0035, 0.0136]",95.0%,0.0455,1.0000,0.2107
+mURLLC Storm,(b) Constrained PPO (No Shield),Feasible,10.0%,0.0229,"[0.0148, 0.0326]",91.0%,0.1709,1.0000,0.3614
+mURLLC Storm,(c) Shield without RL,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+mURLLC Storm,(d) Full Model,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 0.3x Load,(a) Unconstrained (No Shield),Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 0.3x Load,(b) Constrained PPO (No Shield),Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 0.3x Load,(c) Shield without RL,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 0.3x Load,(d) Full Model,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 1.0x Load,(a) Unconstrained (No Shield),Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 1.0x Load,(b) Constrained PPO (No Shield),Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 1.0x Load,(c) Shield without RL,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 1.0x Load,(d) Full Model,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 3.0x Load (Stress),(a) Unconstrained (No Shield),Overload,0.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.2741,0.0000
+Bots 3.0x Load (Stress),(b) Constrained PPO (No Shield),Overload,0.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.2987,0.0008
+Bots 3.0x Load (Stress),(c) Shield without RL,Overload,0.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.1649,0.0000
+Bots 3.0x Load (Stress),(d) Full Model,Overload,0.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.1649,0.0000

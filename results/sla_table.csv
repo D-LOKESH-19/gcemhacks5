@@ -1,0 +1,29 @@
+Scenario,Policy,Feasible,SLA Met (%),Violation Rate Mean,Violation Rate CI95,Window Compliance Rate,p99 Violation Rate,Mean eMBB Ratio,Worst Window
+Steady Load,Static,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Steady Load,Heuristic,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Steady Load,Heuristic + Shield,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Steady Load,Agent,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+eMBB Surge,Static,Feasible,0.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.5907,0.0000
+eMBB Surge,Heuristic,Feasible,20.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.6619,0.0000
+eMBB Surge,Heuristic + Shield,Feasible,5.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.6394,0.0000
+eMBB Surge,Agent,Feasible,5.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.6394,0.0000
+URLLC Burst,Static,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+URLLC Burst,Heuristic,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+URLLC Burst,Heuristic + Shield,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.9994,0.0000
+URLLC Burst,Agent,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.9993,0.0000
+mURLLC Storm,Static,Feasible,50.0%,0.0082,"[0.0036, 0.0141]",95.0%,0.0478,1.0000,0.2147
+mURLLC Storm,Heuristic,Feasible,80.0%,0.0023,"[0.0009, 0.0040]",97.5%,0.0002,1.0000,0.0626
+mURLLC Storm,Heuristic + Shield,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+mURLLC Storm,Agent,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 0.3x Load,Static,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 0.3x Load,Heuristic,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 0.3x Load,Heuristic + Shield,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 0.3x Load,Agent,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 1.0x Load,Static,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 1.0x Load,Heuristic,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 1.0x Load,Heuristic + Shield,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 1.0x Load,Agent,Feasible,100.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,1.0000,0.0000
+Bots 3.0x Load (Stress),Static,Overload,0.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.2261,0.0000
+Bots 3.0x Load (Stress),Heuristic,Overload,0.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.2644,0.0000
+Bots 3.0x Load (Stress),Heuristic + Shield,Overload,0.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.1649,0.0000
+Bots 3.0x Load (Stress),Agent,Overload,0.0%,0.0000,"[0.0000, 0.0000]",100.0%,0.0000,0.1649,0.0000
