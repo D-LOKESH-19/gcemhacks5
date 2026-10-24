@@ -26,7 +26,7 @@ from baselines import StaticPolicy, HeuristicPolicy
 from shield import apply_shield, shares_to_action_logits
 import sla
 from allocation_engine import largest_remainder_counts, build_allocation_block, SLICES
-from lender import EnhancedPolicy
+from lending.lender import EnhancedPolicy
 
 
 class SpikeRequest(BaseModel):
@@ -908,17 +908,17 @@ def get_lending():
 @app.get("/api/lending/results")
 def get_lending_results():
     """Held-out evaluation of predictive lending for the Results page, read from results/lending_*.csv|json
-    (written by lending_run_eval.py). Verdict wording comes from lending_report.verdict, the same function
+    (written by lending/run_eval.py). Verdict wording comes from lending.report.verdict, the same function
     that writes results/lending_report.md."""
     import pandas as pd
-    from lending_report import verdict
+    from lending.report import verdict
 
     R = "results"
     files = ["lending_paired.csv", "lending_loans.csv", "lending_headline.json", "lending_seeds.json", "lending_regime.json",
              "lending_predictor_eval.json", "lending_tuning_val.json", "lending_reliability_eval_all.csv"]
     missing = [f for f in files if not os.path.exists(os.path.join(R, f))]
     if missing:
-        return {"available": False, "message": f"Run python lending_run_eval.py first (missing {', '.join(missing)})."}
+        return {"available": False, "message": f"Run python -m lending.run_eval first (missing {', '.join(missing)})."}
 
     def clean(df: "pd.DataFrame") -> List[Dict[str, Any]]:
         return json.loads(df.to_json(orient="records"))  # NaN becomes null

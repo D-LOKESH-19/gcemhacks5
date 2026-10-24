@@ -1,7 +1,7 @@
 """Run the full Phase L4 evaluation on the HELD-OUT seeds and write results/lending_*.csv, plots and headline.
 
-Usage: python lending_run_eval.py
-Thresholds must already be frozen in config.yaml (tuned on validation seeds by lending_tune.py).
+Usage: python -m lending.run_eval
+Thresholds must already be frozen in config.yaml (tuned on validation seeds by lending.tune).
 """
 import json
 import os
@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-import lending_calibration as lc
-from lending_eval import (POLICY_ORDER, SCENARIOS, load_cfg, make_policies, paired_bootstrap, paired_table,
+import lending.calibration as lc
+from lending.evaluation import (POLICY_ORDER, SCENARIOS, load_cfg, make_policies, paired_bootstrap, paired_table,
                           run_matrix, summary_table)
-from lending_seeds import LENDING_EVALUATION_SEEDS, LENDING_VALIDATION_SEEDS
+from lending.seeds import LENDING_EVALUATION_SEEDS, LENDING_VALIDATION_SEEDS
 
 OUT = "results"
 BG, FG, MUTED, GRID = "#0F172A", "#E2E8F0", "#94A3B8", "#334155"

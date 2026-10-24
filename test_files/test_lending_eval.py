@@ -13,8 +13,8 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _ROOT)
 os.chdir(_ROOT)
 
-from lending_eval import SCENARIOS, load_cfg, make_policies, run_matrix, episode_metrics  # noqa: E402
-from lending_seeds import LENDING_EVALUATION_SEEDS, LENDING_VALIDATION_SEEDS  # noqa: E402
+from lending.evaluation import SCENARIOS, load_cfg, make_policies, run_matrix, episode_metrics  # noqa: E402
+from lending.seeds import LENDING_EVALUATION_SEEDS, LENDING_VALIDATION_SEEDS  # noqa: E402
 
 R = "results"
 results = []

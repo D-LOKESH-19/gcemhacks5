@@ -11,7 +11,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
-from predictor import Predictor
+from lending.predictor import Predictor
 
 RESOURCES = ("prb", "cpu")
 UNIT_NAMES = {"prb": "PRB", "cpu": "vCPU"}

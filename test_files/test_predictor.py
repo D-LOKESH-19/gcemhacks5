@@ -12,10 +12,10 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _ROOT)
 os.chdir(_ROOT)
 
-import lending_calibration as lc  # noqa: E402
+import lending.calibration as lc  # noqa: E402
 from evaluate import SCENARIOS, PolicyWrapper, run_single_episode  # noqa: E402
-from lending_seeds import LENDING_EVALUATION_SEEDS, LENDING_VALIDATION_SEEDS  # noqa: E402
-from predictor import MIN_RESIDUALS, Predictor  # noqa: E402
+from lending.seeds import LENDING_EVALUATION_SEEDS, LENDING_VALIDATION_SEEDS  # noqa: E402
+from lending.predictor import MIN_RESIDUALS, Predictor  # noqa: E402
 from sim import SliceEnv  # noqa: E402
 
 CFG = lc.load_cfg()
@@ -87,7 +87,7 @@ def pl1():
     allowed = {"arrivals", "queue", "shares", "prb", "vcpu", "violations"}
     check("PL-1b", log <= allowed, f"predictor reads only observable keys: {sorted(log)}")
 
-    src = open(os.path.join(_ROOT, "predictor.py")).read()
+    src = open(os.path.join(_ROOT, "lending", "predictor.py")).read()
     code = "\n".join(l for l in src.splitlines() if not l.strip().startswith("#"))
     forbidden = re.findall(r"\b(import sim|from sim|SliceEnv|p_burst|burst_len|rate_burst|set_spike|bot_schedule|spike_factor)\b", code)
     check("PL-1c", not forbidden, f"predictor.py does not reference simulator internals (found: {forbidden})")

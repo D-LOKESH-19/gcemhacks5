@@ -12,7 +12,7 @@ sys.path.insert(0, _ROOT)
 os.chdir(_ROOT)
 
 import api  # noqa: E402
-from lender import LEDGER_CAP, Lender  # noqa: E402
+from lending.lender import LEDGER_CAP, Lender  # noqa: E402
 
 results = []
 

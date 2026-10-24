@@ -18,7 +18,7 @@ from stable_baselines3 import PPO  # noqa: E402
 
 import shield as shield_mod  # noqa: E402
 from evaluate import SCENARIOS, PolicyWrapper, run_single_episode  # noqa: E402
-from lender import EnhancedPolicy, Lender  # noqa: E402
+from lending.lender import EnhancedPolicy, Lender  # noqa: E402
 from sim import SliceEnv  # noqa: E402
 
 BASE = yaml.safe_load(open("config.yaml"))

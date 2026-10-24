@@ -17,7 +17,7 @@ from stable_baselines3 import PPO
 
 import sla
 from evaluate import SCENARIOS as BASE_SCENARIOS, PolicyWrapper, run_single_episode
-from lender import EnhancedPolicy
+from lending.lender import EnhancedPolicy
 from sim import SliceEnv
 
 MODEL_PATH = "models/agent_pre_lending.zip"   # byte-identical to models/agent.zip

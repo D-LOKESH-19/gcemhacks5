@@ -181,9 +181,9 @@ Versus **Static**, Enhanced (like the shielded Agent) cuts URLLC+mURLLC violated
 **Under overload we only claim that URLLC and mURLLC are protected first and eMBB degrades.** We never claim all SLAs hold.
 
 ```bash
-python lending_tune.py            # tune on validation seeds 7000-7019 only
-python lending_run_eval.py        # held-out evaluation on seeds 8000-8019 -> results/lending_*.csv, plots
-python lending_report.py          # results/lending_report.md (verdict wording computed from the intervals)
+python -m lending.tune            # tune on validation seeds 7000-7019 only
+python -m lending.run_eval        # held-out evaluation on seeds 8000-8019 -> results/lending_*.csv, plots
+python -m lending.report          # results/lending_report.md (verdict wording computed from the intervals)
 python test_files/test_predictor.py && python test_files/test_lender.py   && python test_files/test_lending_integration.py && python test_files/test_lending_eval.py   && python test_files/test_lending_e2e.py
 node test_files/test_lending_ui.cjs && node test_files/test_lending_e2e.cjs   # real Chromium, no extra dependency
 ```
@@ -246,10 +246,15 @@ gcmehack5/
 ├── test_locations_10b.py # Phase 10b Locations API, telemetry, and event log tests (LT-13 to LT-17, 37, 40)
 ├── test_locations_10c.py # Phase 10c UI, zone cards, dot scaling, and honesty strip tests (LT-19 to LT-30, 32, 33, 38, 39)
 ├── test_locations_10d.py # Phase 10d End-to-End Scenarios & Regression (E2E-14, E2E-15, E2E-17, E2E-18, E2E-19)
-├── predictor.py         # Phase L: per-slice forecast, burst detector and calibrated SLA-risk estimate (past traffic only)
-├── lender.py            # Phase L: loans, returns, recalls, overload admission; EnhancedPolicy = Agent + Lender + Shield
-├── lending_eval.py / lending_tune.py / lending_run_eval.py / lending_report.py / lending_calibration.py / lending_seeds.py
-│                        # Phase L: paired evaluation, validation-seed tuning, report, predictor calibration, seed lists
+├── lending/             # Phase L package: predictive lending (run its tools from the repo root with python -m lending.<tool>)
+│   ├── predictor.py     #   per-slice forecast, burst detector and calibrated SLA-risk estimate (past traffic only)
+│   ├── lender.py        #   loans, returns, recalls, overload admission; EnhancedPolicy = Agent + Lender + Shield
+│   ├── evaluation.py    #   paired evaluation engine (policies, metrics, paired bootstrap)
+│   ├── tune.py          #   threshold tuning on validation seeds only
+│   ├── run_eval.py      #   held-out evaluation, CSVs and plots
+│   ├── report.py        #   results/lending_report.md (verdict wording from the intervals)
+│   ├── calibration.py   #   offline predictor calibration on recorded traces
+│   └── seeds.py         #   validation (7000-7019) and evaluation (8000-8019) seed lists
 ├── TESTING_GUIDE.md     # Master testing verification matrix and execution guide
 ├── TEST_LOG.md          # Cumulative Phase test execution logbook
 ├── frontend/            # Enterprise React 18 + TypeScript + Vite + Tailwind CSS Suite

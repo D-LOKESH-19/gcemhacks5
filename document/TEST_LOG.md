@@ -826,9 +826,9 @@ The original Agent + Shield also has 0 violations in all of these, so no violati
 ## Phase L4: Evaluation (LE-1 to LE-10)
 - **Date**: 2026-10-24
 - **Branch**: `a/core-sla`
-- **Pipeline**: `python lending_tune.py` (validation seeds only) -> `python lending_run_eval.py` (held-out seeds) -> `python lending_report.py` -> `python test_files/test_lending_eval.py`
+- **Pipeline**: `python -m lending.tune` (validation seeds only) -> `python -m lending.run_eval` (held-out seeds) -> `python -m lending.report` -> `python test_files/test_lending_eval.py`
 - **Result**: **10/10 checks passed.** These tests verify that the evaluation is computed correctly, paired, honest and reproducible. **They do not say Enhanced wins; it does not (see below).** Re-run after the evaluation: `test_predictor` 22/22, `test_lender` 37/37, `test_lending_integration` 14/14, LL-12 fingerprints 21/21. No product code changed in L4 (`git diff pre-lending` empty for `sim.py, shield.py, sla.py, train.py, baselines.py, evaluate.py`; `config.yaml`, `api.py`, `lender.py`, `predictor.py` unchanged since L3).
-- **New files**: `lending_eval.py`, `lending_tune.py`, `lending_run_eval.py`, `lending_report.py`, `test_files/test_lending_eval.py`; outputs `results/lending_*.csv|json|png|md` (CSV and PNG are git-ignored by the repo convention and reproducible with the commands above; the JSON files and `lending_report.md` are committed).
+- **New files**: `lending_eval.py`, `lending_tune.py`, `lending_run_eval.py`, `lending_report.py` (now `lending/evaluation.py`, `tune.py`, `run_eval.py`, `report.py`), `test_files/test_lending_eval.py`; outputs `results/lending_*.csv|json|png|md` (CSV and PNG are git-ignored by the repo convention and reproducible with the commands above; the JSON files and `lending_report.md` are committed).
 
 ### Seeds (printed by the scripts and tests, LE-9)
 - Tuning / validation: `[7000 .. 7019]` (20 seeds). Evaluation (held-out): `[8000 .. 8019]` (20 seeds). Disjoint; also disjoint from train 42-44, old validation 51-55, old evaluation 100-119, baseline 9001-9003.
@@ -964,3 +964,11 @@ The L4 log and the L4 hand-over said returns raise storm utilization. That read 
 - `README.md` section 3 still carries an older headline ("guarantees 0.00% URLLC/mURLLC SLA violations ... +1.05% eMBB") written before the SLA phase; it conflicts with the honest-claims list in `SLA_RL_SPEC.md` ('guaranteed under any load' must not be said). Not edited here.
 - `SlaScoreboard` / `SlaGridMatrix` compliance figures that are not backend values (see L5), and the broken `npm run lint` (missing parser).
 - Decisions listed in `document/LENDING_PITCH.md` section 6 (mid-episode storm scenario, relaxing a shield floor for idle donors, training with the lender in the loop).
+
+---
+
+## Refactor: lending code grouped into the `lending/` package
+- **Date**: 2026-10-24. **No behaviour change.** Purely a move plus import rewrites (`git mv`, so history is kept).
+- **Mapping**: `predictor.py` -> `lending/predictor.py`; `lender.py` -> `lending/lender.py`; `lending_eval.py` -> `lending/evaluation.py`; `lending_tune.py` -> `lending/tune.py`; `lending_run_eval.py` -> `lending/run_eval.py`; `lending_report.py` -> `lending/report.py`; `lending_calibration.py` -> `lending/calibration.py`; `lending_seeds.py` -> `lending/seeds.py`. Run the tools from the repo root: `python -m lending.tune`, `python -m lending.run_eval`, `python -m lending.report`, `python -m lending.calibration`.
+- **Unchanged on purpose**: `results/lending_*` output names, the `lending:` config key, `/api/lending*` endpoints, test file names. Earlier entries in this log use the old file names.
+- **Verification after the move**: 23/23 Python suites (test_predictor 22/22, test_lender 37/37, test_lending_integration 14/14, test_lending_eval 10/10, test_lending_e2e 4/4), LL-12 fingerprints 21/21, 12/12 older Node suites, `test_lending_ui.cjs` 44/44, `test_lending_e2e.cjs` 10/10, `python -m lending.report` regenerates `results/lending_report.md` byte-identical.

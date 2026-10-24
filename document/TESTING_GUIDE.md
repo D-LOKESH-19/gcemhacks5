@@ -51,7 +51,7 @@ This guide documents the verification matrix, automated test suites, acceptance 
 | Predictor | `test_files/test_predictor.py` | PL-1 to PL-8: no oracle, forecast quality, risk behaviour, calibration, burst detection, zero traffic, speed, warm-up | `python test_files/test_predictor.py` |
 | Lender | `test_files/test_lender.py` | LL-1 to LL-15 and EP-1/3/5/8: protected minimum, conservation, bottleneck, return, recall, TTL, funding order, overload, mode off == original, determinism, speed | `python test_files/test_lender.py` |
 | Integration | `test_files/test_lending_integration.py` | LI-1 to LI-6: four policies on identical traffic, pipeline fields, shield last, stream fields, capabilities, no regression vs the `pre-lending` api.py | `python test_files/test_lending_integration.py` |
-| Evaluation | `test_files/test_lending_eval.py` | LE-1 to LE-10 (run after `lending_tune.py`, `lending_run_eval.py`, `lending_report.py`) | `python test_files/test_lending_eval.py` |
+| Evaluation | `test_files/test_lending_eval.py` | LE-1 to LE-10 (run after `python -m lending.tune`, `python -m lending.run_eval`, `python -m lending.report`) | `python test_files/test_lending_eval.py` |
 | UI (real browser) | `test_files/test_lending_ui.cjs` | LU-1 to LU-10 in Chromium over the DevTools Protocol: DOM vs live stream, console errors, overlap at 1920x1080 and 1366x768, reduced motion | `node test_files/test_lending_ui.cjs` |
 | E2E (Python) | `test_files/test_lending_e2e.py` | E2E-L2 repeatability, E2E-L4 mode off == agent via the API, ledger cap | `python test_files/test_lending_e2e.py` |
 | E2E (browser) | `test_files/test_lending_e2e.cjs` | E2E-L1 storm story from a cold start, E2E-L3 overload honesty on every page | `node test_files/test_lending_e2e.cjs` |

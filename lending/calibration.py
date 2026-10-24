@@ -2,7 +2,7 @@
 
 Replays recorded episodes through `Predictor` and compares the risk at step t with whether the SLA
 was actually missed at step t+1. Violation outcome: URLLC/mURLLC any violated packet; eMBB served
-ratio below the SLA minimum. Run: python lending_calibration.py [--eval]  (default: validation seeds)
+ratio below the SLA minimum. Run: python -m lending.calibration [--eval]  (default: validation seeds)
 """
 import json
 import os
@@ -14,8 +14,8 @@ import pandas as pd
 import yaml
 
 from evaluate import SCENARIOS, PolicyWrapper, run_single_episode
-from lending_seeds import LENDING_EVALUATION_SEEDS, LENDING_VALIDATION_SEEDS
-from predictor import Predictor
+from lending.seeds import LENDING_EVALUATION_SEEDS, LENDING_VALIDATION_SEEDS
+from lending.predictor import Predictor
 from shield import shares_to_action_logits
 from sim import SliceEnv
 

@@ -14,8 +14,8 @@ import sys
 import pandas as pd
 import yaml
 
-from lending_eval import SCENARIOS, lending_cfg, load_cfg, make_policies, run_matrix
-from lending_seeds import LENDING_EVALUATION_SEEDS, LENDING_VALIDATION_SEEDS
+from lending.evaluation import SCENARIOS, lending_cfg, load_cfg, make_policies, run_matrix
+from lending.seeds import LENDING_EVALUATION_SEEDS, LENDING_VALIDATION_SEEDS
 
 GRID = {
     "risk.high": [0.2, 0.3, 0.5],

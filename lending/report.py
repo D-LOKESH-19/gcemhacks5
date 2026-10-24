@@ -1,5 +1,5 @@
 """Write results/lending_report.md from the L4 CSV/JSON outputs. Verdict words are computed from the
-paired 95% intervals, never hand-written. Run after lending_run_eval.py."""
+paired 95% intervals, never hand-written. Run after `python -m lending.run_eval`."""
 import json
 import os
 

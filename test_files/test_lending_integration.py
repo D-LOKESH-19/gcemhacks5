@@ -18,7 +18,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 
 import api  # noqa: E402
 import shield as shield_mod  # noqa: E402
-from lender import EnhancedPolicy  # noqa: E402
+from lending.lender import EnhancedPolicy  # noqa: E402
 from sim import SliceEnv  # noqa: E402
 
 S = ["embb", "urllc", "murllc"]
