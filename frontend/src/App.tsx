@@ -11,6 +11,7 @@ import { ResultsPage } from "./pages/ResultsPage";
 import { PresenterPage } from "./pages/PresenterPage";
 import { StoryPage } from "./pages/StoryPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { MonitorPage } from "./pages/MonitorPage";
 
 export const App: React.FC = () => {
   return (
@@ -24,6 +25,7 @@ export const App: React.FC = () => {
           <Route path="/sla" element={<SlaCompliancePage />} />
           <Route path="/training" element={<TrainingPage />} />
           <Route path="/results" element={<ResultsPage />} />
+          <Route path="/monitor" element={<MonitorPage />} />
           <Route path="/present" element={<PresenterPage />} />
           <Route path="/about" element={<StoryPage />} />
           <Route path="*" element={<NotFoundPage />} />

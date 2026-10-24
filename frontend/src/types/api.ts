@@ -283,6 +283,7 @@ export interface Capabilities {
   delay: boolean;
   allocation?: boolean;
   lending?: boolean;
+  monitor?: boolean;
 }
 
 export interface PublicConfig {
@@ -365,4 +366,61 @@ export interface ChartSeriesPoint {
   agent: number;
   enhanced?: number;
   slaLimit?: number;
+}
+
+/* ---------- Monitor page (GET /api/monitor); every value comes from the backend ---------- */
+export type IncidentSeverity = 'critical' | 'warning' | 'info';
+export type IncidentType =
+  | 'deadline_miss' | 'sla_breach' | 'sla_at_risk' | 'embb_queue_full'
+  | 'infeasible_load' | 'lending_overload' | 'bottleneck' | 'shield_clamp';
+
+export interface Incident {
+  id: number;
+  type: IncidentType;
+  severity: IncidentSeverity;
+  policy: string;
+  slice: SliceType | 'all';
+  episode: number;
+  start_step: number;
+  end_step: number;
+  start_tick: number;
+  last_tick: number;
+  duration_steps: number;
+  peak: number;
+  total: number;
+  detail: string;
+  active: boolean;
+  closed_reason: string | null;
+}
+
+export interface MonitorLog {
+  tick: number;
+  episode: number;
+  step: number | null;
+  source: 'simulation' | 'monitor' | 'lending' | string;
+  level: IncidentSeverity;
+  text: string;
+}
+
+export interface MonitorTimelinePoint {
+  tick: number;
+  step: number;
+  episode: number;
+  missed: Record<string, number>;
+  active: Record<string, number>;
+}
+
+export interface MonitorSnapshot {
+  tick: number;
+  episode: number;
+  step: number | null;
+  totals: Record<IncidentSeverity, number>;
+  by_type: Record<IncidentType, number>;
+  by_policy: Record<string, Record<IncidentSeverity, number>>;
+  missed_packets: Record<string, number>;
+  active: Incident[];
+  incidents: Incident[];
+  logs: MonitorLog[];
+  timeline: MonitorTimelinePoint[];
+  limits: { incidents: number; logs: number; timeline: number };
 }

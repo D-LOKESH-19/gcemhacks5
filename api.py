@@ -27,6 +27,7 @@ from shield import apply_shield, shares_to_action_logits
 import sla
 from allocation_engine import largest_remainder_counts, build_allocation_block, SLICES
 from lending.lender import EnhancedPolicy
+from monitor import IncidentMonitor
 
 
 class SpikeRequest(BaseModel):
@@ -83,6 +84,7 @@ class SimulationManager:
         self.history_heuristic: List[Dict[str, Any]] = []
         self.history_agent: List[Dict[str, Any]] = []
         self.history_enhanced: List[Dict[str, Any]] = []
+        self.monitor = IncidentMonitor(self.cfg)  # Monitor page; survives episode rollover, cleared on user reset
         self.live_cal: deque = deque(maxlen=3000)  # (slice, predicted risk, observed violation) pairs
 
         # Audit & timing tracking
@@ -615,6 +617,7 @@ class SimulationManager:
             "event_logs": self.event_logs[-8:],
         }
 
+        self.monitor.observe(payload)
         return payload
 
     def _lending_block(self, li: Optional[Dict[str, Any]]) -> Dict[str, Any]:
@@ -822,6 +825,7 @@ def set_spike(req: SpikeRequest):
 @app.post("/reset")
 def reset_simulation():
     sim_manager.reset_all()
+    sim_manager.monitor.reset()
     return {"status": "simulation_reset"}
 
 
@@ -874,6 +878,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 )
             elif cmd.get("action") == "reset":
                 sim_manager.reset_all()
+                sim_manager.monitor.reset()
             elif cmd.get("action") == "pause":
                 sim_manager.paused = not sim_manager.paused
     except WebSocketDisconnect:
@@ -895,8 +900,15 @@ def get_capabilities():
         "results": os.path.exists("results/sla_table.csv") and os.path.exists("results/ablation.csv"),
         "delay": True,
         "allocation": True,
+        "monitor": True,
         "lending": bool(sim_manager.policy_enhanced is not None and sim_manager.cfg.get("lending", {}).get("mode", "off") != "off"),
     }
+
+
+@app.get("/api/monitor")
+def get_monitor(limit: int = 200):
+    """Incidents (problems with start, end and peak), logs and a per-step timeline for the Monitor page."""
+    return sim_manager.monitor.snapshot(limit)
 
 
 @app.get("/api/lending")
@@ -1124,6 +1136,7 @@ def get_legacy():
 
 @app.get("/")
 @app.get("/allocation")
+@app.get("/monitor")
 @app.get("/traffic")
 @app.get("/agent")
 @app.get("/sla")

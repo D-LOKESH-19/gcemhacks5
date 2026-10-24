@@ -10,7 +10,8 @@ import {
   BarChart3, 
   Tv, 
   ExternalLink,
-  Info
+  Info,
+  Siren
 } from "lucide-react";
 import { useSliceStore } from "../../store/useSliceStore";
 import { ConnectionBadge } from "../common/Badge";
@@ -30,6 +31,7 @@ export const Header: React.FC = () => {
     ...(capabilities?.sla !== false ? [{ to: "/sla", label: "SLA Matrix", icon: ShieldCheck }] : []),
     ...(capabilities?.training_log !== false ? [{ to: "/training", label: "Training", icon: TrendingUp }] : []),
     ...(capabilities?.results !== false ? [{ to: "/results", label: "Results", icon: BarChart3 }] : []),
+    ...(capabilities?.monitor ? [{ to: "/monitor", label: "Monitor", icon: Siren }] : []),
   ];
 
   return (
@@ -125,7 +127,7 @@ export const Header: React.FC = () => {
             className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold transition-colors shadow-sm"
             title="Switch to Classic NOC View"
           >
-            <span>🖥️ Classic View</span>
+            <span className="hidden 2xl:inline">🖥️ Classic View</span>
             <ExternalLink size={12} />
           </a>
         </div>
