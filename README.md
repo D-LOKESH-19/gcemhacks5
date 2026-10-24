@@ -138,47 +138,156 @@ Instead of treating traffic as an opaque statistical number, the **Bots Feature*
 
 ---
 
-## 6. Live Demo Flow (3 Minutes)
+## 6. Phase 10: Logical Zones & Locations Feature
 
-1. **0:00 - 0:20 (The Real Problem):** Explain why fixed 60/25/15 partitions strand spectrum and why compute (vCPU) limits bottleneck radio throughput.
-2. **0:20 - 0:40 (The Architecture):** Show the 3-part design: joint radio+compute control, Lagrangian PPO, and deterministic safety shielding.
-3. **0:40 - 2:10 (Live Dashboard & Bots Demo):**
-   - **Interactive Bots:** Type 20 bots and watch the load arrive in real time. Notice how URLLC packets surge across all three panels simultaneously.
-   - Click **⚡ eMBB Surge (x2.5)**: Observe Static eMBB queue buffer rapidly filling towards 2000 packets; the Agent dynamically borrows idle capacity while keeping URLLC at its floor.
-   - Click **⚡ URLLC Burst (x3.0)** or **⚡ mURLLC Storm (x7.0)**: Observe the amber **Shield Active** badge light up on the Agent panel, maintaining 0.00% violations.
-   - Show the dynamic explainability event log terminal explaining allocations in real time.
-4. **2:10 - 2:40 (Scoreboard & Headline):** Point out the cumulative violation rates and headline banner comparison.
-5. **2:40 - 3:00 (Limitations & Next Steps):** State honest trade-offs (macro-tier 100 ms abstraction, HARQ puncturing, ns-3 full PHY validation).
+The **Locations Feature** organizes simulated user populations into 3 distinct logical operating zones:
+1. **🏢 Campus:** High-density video streaming zone (defaults to eMBB, nominal 40 users).
+2. **🏭 Factory:** Ultra-reliable industrial automation zone (defaults to URLLC, nominal 30 users).
+3. **🏙️ Smart City:** Massive IoT sensor deployment zone (defaults to mURLLC, nominal 100 users).
+
+### Key Design Principles & Guarantees:
+- **Location is strictly a visual/logical label:** User locations group and route traffic cleanly, but location alone **never** alters packet arrival rates, random seeds, queue dynamics, or rewards. All three policies receive bit-for-bit identical arrivals regardless of spatial tags.
+- **Single Source of Truth (`sla.py`):** SLA targets and status evaluations are computed centrally in `sla.py` from active slice metrics, never hardcoded in location logic or visual components.
+- **Estimated Delay is Display-Only:** The per-slice queue delay model is an informational estimate (`Estimated delay (model)`), completely decoupled from reward, cost, observation, and safety shield logic.
+- **Honest Load Regimes (Feasible vs. Overload):** When user demand exceeds total system capacity ($>90\%$ capacity), the UI displays the **⚠️ OVERLOAD: URLLC and mURLLC protected first** badge, transparently demonstrating graceful degradation.
 
 ---
 
-## 7. Project Structure
+## 6b. Phase L: SLA-aware predictive resource lending (our innovation)
+
+**Predict, Lend, Return, Admit overload.** On top of the unchanged RL agent and hard shield, a *lender* estimates the SLA risk of every slice from **past traffic only** (no simulator internals), lends the bottleneck resource (radio PRBs or edge vCPUs) from slices that can spare it while their own minimums stay protected, returns it step by step when the burst is over, and reports overload with exact numbers instead of hiding it.
+
+```
+Agent proposes  ->  Lender adjusts  ->  Shield enforces hard floors  ->  applied
+```
+
+- The RL model, observation (12 floats), action (6 floats), reward, old costs and the shield are **not changed**; `lending.mode: off` reproduces the original Agent + Shield bit for bit (tested on 21 fixed-seed runs and through the API).
+- A fourth policy, **Enhanced** (pink), runs on identical traffic next to Static, Heuristic and Agent. Allocation page: risk gauges with thresholds, forecast vs capacity, loan arrows, striped loaned cells, loan ledger, overload banner and a "Lender adjusts" pipeline stage. Results page: section "Innovation: predictive lending". API: `GET /api/lending`, `GET /api/lending/results`, `capabilities.lending`.
+
+### What the held-out evaluation shows (measured, not hoped for)
+
+20 held-out seeds (8000-8019) x 8 scenarios, paired per seed, 95% bootstrap intervals; thresholds were tuned only on separate validation seeds (7000-7019) and the 12-point tuning grid was flat, so the defaults were kept. Full numbers: `results/lending_report.md`.
+
+| Pitch claim | Evidence | Verdict |
+| --- | --- | --- |
+| **1. Fewer onset-window violations than the original agent and than reactive lending** | Enhanced and original Agent + Shield are identical on every seed (0.112 violated packets per seed for both, feasible scenarios). The original agent has one violation in 160 episodes (2.24 packets at step 2 of one storm run, before the predictor has history). Predictive vs reactive: identical on every seed. | **Not supported.** There is nothing left for lending to avoid in this simulator. |
+| **2. Capacity is returned, utilization and eMBB throughput recover** | Loans return step by step (storm: 23 steps mean duration, 12 steps return lag). With returns, utilization and eMBB ratio stay at the original agent's level (0.3785 vs 0.3784; 0.99983 vs 0.99983). | **The mechanism works; no improvement over the original agent is measured.** |
+| **3. The risk estimate is calibrated and overload is reported honestly** | Brier 0.00397 vs 0.07029 for a constant-rate predictor (skill 0.94), AUC 0.9989, calibration error 0.015 on held-out seeds. Overload is flagged on 99% of steps at 3x/5x bots and on 16% of steps in the eMBB surge, with the unfunded amount. | **Supported**, with caveats: risk is conservative (over-predicts in mid bins) and the demand forecast is only better than a naive last-value forecast for URLLC, not for eMBB or mURLLC. |
+
+Versus **Static**, Enhanced (like the shielded Agent) cuts URLLC+mURLLC violated packets from 111.7 to 0.112 per seed; that comes from the RL agent and the shield, not from lending.
+
+**Why lending cannot improve on the original agent here.** The shield's floors (15% plus 1.2 x load) already give URLLC and mURLLC ample capacity, so they have no violations to prevent, and they sit at their floors, so they have nothing to lend to eMBB. eMBB is where an SLA is missed (surge: served ratio 0.63 < 0.70; bots 3x: 0.17; bots 5x: 0.09), and no lendable capacity exists above the floors. The standard scenarios also start a spike at step 0, before any predictor history. Relaxing the shield floor for idle donors would be a separate, unapproved change.
+
+**Under overload we only claim that URLLC and mURLLC are protected first and eMBB degrades.** We never claim all SLAs hold.
+
+```bash
+python -m lending.tune            # tune on validation seeds 7000-7019 only
+python -m lending.run_eval        # held-out evaluation on seeds 8000-8019 -> results/lending_*.csv, plots
+python -m lending.report          # results/lending_report.md (verdict wording computed from the intervals)
+python test_files/test_predictor.py && python test_files/test_lender.py   && python test_files/test_lending_integration.py && python test_files/test_lending_eval.py   && python test_files/test_lending_e2e.py
+node test_files/test_lending_ui.cjs && node test_files/test_lending_e2e.cjs   # real Chromium, no extra dependency
+```
+
+Limits: slice-level simulator (not radio-level; ns-3 validation is future work), single cell, one trained agent, the lender is not trained in the loop (future work). Pitch notes, demo script and jury answers: `document/LENDING_PITCH.md`.
+
+---
+
+## 7. Live Demo Flow (3 Minutes)
+
+1. **0:00 - 0:25 (The Real Problem & Architecture):**
+   - Point out why fixed 60/25/15 partitions strand spectrum and why compute (vCPU) bottlenecks radio throughput.
+   - Introduce the 3-part design: joint radio+compute control, Lagrangian PPO, and deterministic safety shielding.
+2. **0:25 - 2:00 (E2E-14 Location Demo Story):**
+   - **Cold Start (20s):** Show nominal baseline where all policies hold green `SLA OK`.
+   - **Add 100 users at Campus (eMBB):** Campus counter updates; observe Static eMBB queue buffer rapidly filling and SLA chip turning amber/breach, while the Safe RL Agent dynamically borrows capacity to stay green. Explainability event log explicitly names Campus with exact SLA percentages.
+   - **Add 20 users at Factory (URLLC):** Notice URLLC load rise across all policies; Agent holds $\le 0.5\%$ violation limit.
+   - **Add 500 users at Smart City (mURLLC Storm):** Trigger an extreme IoT storm. The Agent's amber **🛡️ Shield Active** badge engages, protecting URLLC/mURLLC deadlines by construction while Static suffers severe violations.
+   - **Maximum Load Everywhere:** Set maximum bot populations in all zones to push total offered traffic into overload. The **⚠️ OVERLOAD: URLLC and mURLLC protected first** banner appears, honestly communicating that mission-critical slices take absolute priority.
+   - **Recovery:** Click **🔄 Reset** or remove added users to watch all zone chips and buffers recover to green.
+3. **2:00 - 2:35 (Scoreboard & SLA Contract):**
+   - Lead with the core thesis: *"Here are our SLAs, and here they hold while Static fails."*
+   - Compare cumulative violation rates on the scoreboard: Static fails URLLC/mURLLC SLAs under dynamic load, whereas the Agent achieves 0.00% critical violations while maximizing eMBB throughput.
+4. **2:35 - 3:00 (Honest Claims & Scope):**
+   - Deliver clear, honest technical takeaways and outline future ns-3 full-stack validation.
+
+---
+
+## 8. Honest Claims for Judges & Technical Pitch
+
+- **What We Say (Accurate):**
+  - *"Virtual users in logical zones generate real simulated traffic that all three policies receive identically."*
+  - *"SLA compliance is computed per slice by a single deterministic source of truth (`sla.py`)."*
+  - *"Safety shields guarantee strict priority for mission-critical URLLC/mURLLC traffic, even under severe resource overload."*
+- **What We Do NOT Claim (Avoided):**
+  - We do *not* claim multi-cell handovers, physical RF propagation, real geographic coordinates, or physical signal attenuation.
+  - Delay values are clearly labeled as a model estimate (`Estimated delay (model)`), not measured physical latency.
+
+---
+
+## 9. Project Structure
 
 ```
 gcmehack5/
-├── config.yaml          # Master configuration (rates, arrival means, SLA limits, bot parameters)
-├── sim.py               # Gymnasium 5G SliceEnv with vectorized bot population support
+├── config.yaml          # Master configuration (rates, arrival means, SLA targets, locations, bots)
+├── sim.py               # Gymnasium 5G SliceEnv with vectorized bots & logical location matrix
 ├── sim_selftest.py      # Simulator acceptance test suite
 ├── shield.py            # Deterministic safety shield + unit tests
+├── sla.py               # Single source of truth for SLA evaluation and feasibility classification
 ├── baselines.py         # Static and Demand-Proportional Heuristic policies
 ├── train.py             # Constrained RL (Lagrangian PPO) training loop with bot scaling
 ├── evaluate.py          # Benchmark scenario evaluation harness
-├── api.py               # FastAPI backend with WebSockets, spike injection, and /bots API
+├── api.py               # FastAPI backend with WebSockets, spike injection, /bots and /sla APIs
 ├── plot_results.py      # Publication-quality benchmark chart generator
 ├── test_bots_9a.py      # Phase 9a Bot simulator acceptance tests (BT-1 to BT-5, BT-8 to BT-11)
 ├── test_bots_9b.py      # Phase 9b Model fairness & scaling tests (BT-6, BT-7, BT-16)
 ├── test_bots_9c.py      # Phase 9c Bot API & WebSocket telemetry tests (BT-12, BT-13)
 ├── test_bots_9d.py      # Phase 9d UI, bounds clipping, and stress tests (BT-14, BT-15, BT-17, BT-18)
+├── test_locations_10a.py # Phase 10a Location config, matrix, and simulator tests (LT-1 to LT-12, 18, 31, 34-36)
+├── test_locations_10b.py # Phase 10b Locations API, telemetry, and event log tests (LT-13 to LT-17, 37, 40)
+├── test_locations_10c.py # Phase 10c UI, zone cards, dot scaling, and honesty strip tests (LT-19 to LT-30, 32, 33, 38, 39)
+├── test_locations_10d.py # Phase 10d End-to-End Scenarios & Regression (E2E-14, E2E-15, E2E-17, E2E-18, E2E-19)
+├── lending/             # Phase L package: predictive lending (run its tools from the repo root with python -m lending.<tool>)
+│   ├── predictor.py     #   per-slice forecast, burst detector and calibrated SLA-risk estimate (past traffic only)
+│   ├── lender.py        #   loans, returns, recalls, overload admission; EnhancedPolicy = Agent + Lender + Shield
+│   ├── evaluation.py    #   paired evaluation engine (policies, metrics, paired bootstrap)
+│   ├── tune.py          #   threshold tuning on validation seeds only
+│   ├── run_eval.py      #   held-out evaluation, CSVs and plots
+│   ├── report.py        #   results/lending_report.md (verdict wording from the intervals)
+│   ├── calibration.py   #   offline predictor calibration on recorded traces
+│   └── seeds.py         #   validation (7000-7019) and evaluation (8000-8019) seed lists
 ├── TESTING_GUIDE.md     # Master testing verification matrix and execution guide
+├── TEST_LOG.md          # Cumulative Phase test execution logbook
+├── frontend/            # Enterprise React 18 + TypeScript + Vite + Tailwind CSS Suite
+│   ├── src/             # Multi-page suite (Live Demo, Traffic & Bots, Agent Insights, SLA Matrix, Training, Results, Presenter)
+│   ├── dist/            # Production bundle with local @fontsource/inter (100% offline self-contained)
+│   └── package.json     # Pinned dependency manifest
 ├── static/
-│   ├── index.html       # High-performance live dashboard with interactive bot controls & canvas
+│   ├── index.html       # Classic NOC single-page monitor (preserved at http://localhost:8050/legacy)
 │   └── chart.min.js     # Bundled Chart.js for 100% offline support
 ├── models/
-│   ├── agent.zip            # Retrained bot-aware Lagrangian PPO policy
+│   ├── agent.zip            # Retrained bot-aware Lagrangian PPO policy (SHA256 verified)
 │   └── agent_pre_bots.zip   # Pre-bots baseline checkpoint (rollback safety)
 ├── results/
 │   ├── evaluation_table.csv    # Benchmark metrics across seeds
 │   ├── training.png            # Convergence curves (Reward, Cost, Lambda)
+│   ├── lending_*.csv|json|png|md # Phase L results (paired evaluation, ablations, calibration, report)
 │   └── scenarios_comparison.png # Comparison bar charts
 └── requirements.txt     # Pinned Python dependencies
 ```
+
+---
+
+## 10. Dashboard Access & Dual-View Coexistence
+
+5G SliceOS provides two complementary operational interfaces with seamless 1-click reciprocal switching:
+
+1. **Enterprise React Suite (`http://localhost:8050/`)**:
+   - Production-grade multi-page React 18 + TypeScript + Tailwind CSS application.
+   - Comprehensive telemetry views: Hero Live Scoreboard, Traffic & Bots Orchestrator, Agent Insights & Shield Inspector, SLA Matrix Grid, Training Diagnostics, Scientific Benchmarking Results, and High-Contrast 2-Meter Presenter Mode.
+   - Zero external CDNs: Bundled local `@fontsource/inter` fonts enable 100% offline operation.
+
+2. **Classic NOC Monitor (`http://localhost:8050/legacy`)**:
+   - High-density single-page NOC dashboard with canvas bot visualizations, live SLA promise badges, and real-time Chart.js telemetry.
+   - Direct button `[🚀 Enterprise React Suite]` enables instant switching to the React suite.
+
+

@@ -1,0 +1,34 @@
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Training & logs
+runs/
+*.log
+
+# Checkpoints and models (except the gitkeep if empty)
+models/*.zip
+!models/.gitkeep
+
+# Results & evaluation outputs
+results/*.png
+results/*.csv
+!results/.gitkeep
+
+# Optional ns-3 workspace
+ns3/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+
+# Frontend build & dependencies
+frontend/node_modules/
