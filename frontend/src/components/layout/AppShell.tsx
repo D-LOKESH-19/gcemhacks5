@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Header } from "./Header";
+import { Sidebar } from "./Sidebar";
 import { HonestyStrip } from "./HonestyStrip";
 import { ToastContainer } from "../common/Toast";
 import { ErrorBoundary } from "../common/ErrorBoundary";
@@ -11,6 +12,26 @@ export const AppShell: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { setCapabilities, setPublicConfig } = useSliceStore();
+
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("sliceos_sidebar_collapsed") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("sliceos_sidebar_collapsed", String(next));
+      } catch {
+        // Ignore localStorage errors
+      }
+      return next;
+    });
+  };
 
   // Initialize and maintain WebSocket connection across page changes
   useWebSocketStream();
@@ -41,9 +62,12 @@ export const AppShell: React.FC = () => {
   // Global Presenter Mode shortcut (key 'p' or 'P')
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is typing into an input/textarea
       const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
         return;
       }
 
@@ -64,16 +88,33 @@ export const AppShell: React.FC = () => {
   const isPresenterPage = location.pathname === "/present";
 
   return (
-    <div className="min-h-screen bg-bg-base text-text-primary flex flex-col font-sans selection:bg-emerald-500/20 selection:text-emerald-300">
-      {!isPresenterPage && <Header />}
-      
-      <main className="flex-1 flex flex-col w-full max-w-[1920px] mx-auto p-3 sm:p-4 lg:p-6 overflow-x-hidden">
-        <ErrorBoundary fallbackTitle="Page Error">
-          <Outlet />
-        </ErrorBoundary>
-      </main>
+    <div className="min-h-screen bg-bg-base text-text-primary flex font-sans selection:bg-emerald-500/20 selection:text-emerald-300">
+      {/* Collapsible Left Navigation Sidebar (Hidden on Presenter Page) */}
+      {!isPresenterPage && (
+        <Sidebar
+          isCollapsed={isSidebarCollapsed}
+          onToggle={toggleSidebar}
+        />
+      )}
 
-      {!isPresenterPage && <HonestyStrip />}
+      {/* Main Content Column with Top Status Header */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+        {!isPresenterPage && (
+          <Header
+            onToggleSidebar={toggleSidebar}
+            isSidebarCollapsed={isSidebarCollapsed}
+          />
+        )}
+
+        <main className="flex-1 flex flex-col w-full max-w-[1920px] mx-auto p-3 sm:p-4 lg:p-6 overflow-x-hidden">
+          <ErrorBoundary fallbackTitle="Page Error">
+            <Outlet />
+          </ErrorBoundary>
+        </main>
+
+        {!isPresenterPage && <HonestyStrip />}
+      </div>
+
       <ToastContainer />
     </div>
   );
